@@ -102,10 +102,10 @@ public partial class AudioManager : Node
 				GD.PrintErr("Unknown BGM: " + name);
 				return;
 			}
-            stream.Loop = true;
-            // TOOD: allow custom BGM to have a loop offset
-            stream.LoopOffset = 0d;
-            BGMDictionary.Add(name, stream);
+			stream.Loop = true;
+			// TOOD: allow custom BGM to have a loop offset
+			stream.LoopOffset = 0d;
+			BGMDictionary.Add(name, stream);
 		}
 
 		BGM.Stream = stream;

@@ -46,8 +46,9 @@ public partial class GameManager : Node
 		ValidPartyMembers.Add("KelRW", typeof(KelRW));
 		ValidPartyMembers.Add("HeroRW", typeof(HeroRW));
 		ValidPartyMembers.Add("Sunny", typeof(Sunny));
+		ValidPartyMembers.Add("Basil", typeof(Basil));
 
-		ValidEnemies.Add("LostSproutMole", typeof(LostSproutMole));
+        ValidEnemies.Add("LostSproutMole", typeof(LostSproutMole));
 		ValidEnemies.Add("ForestBunny?", typeof(ForestBunnyQuestion));
 		ValidEnemies.Add("Sweetheart", typeof(Sweetheart));
 		ValidEnemies.Add("SlimeGirls", typeof(SlimeGirls));

@@ -306,9 +306,77 @@ public class Database
 			}
 		);
 
-		// TODO: special skills (vertigo, cripple, suffocate), these require a special animation
+        Skills["Vertigo"] = new Skill(
+            name: "VERTIGO",
+            description: "Deals damage to all foes based on user's\nSPEED and greatly reduces their ATTACK.",
+            target: SkillTarget.AllEnemies,
+            cost: 45,
+            effect: async (self, target) =>
+            {
+                AudioManager.Instance.PlaySFX("SE_bs_scare4", 0.5f, 0.9f);
+                await GameManager.Instance.AnimationManager.WaitForSpecialAnimation(
+						"res://assets/pictures/dark_overlay.png",
+						"res://assets/pictures/fear_hands_effect.png"
+					);
+                BattleLogManager.Instance.QueueMessage(self, target, "[actor] throws the foes off balance!");
+                BattleLogManager.Instance.QueueMessage("All foes' ATTACK fell!");
+                foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
+				{
+					enemy.AddStatModifier(Modifier.AttackDown, 3, silent: true);
+					GameManager.Instance.AnimationManager.PlayAnimation(219, enemy);
+					BattleManager.Instance.Damage(self, enemy, () => { return self.CurrentStats.SPD * 3f - enemy.CurrentStats.DEF; }, false);
+                }
+            }
+        );
 
-		Skills["AttackAgain1"] = new Skill(
+        Skills["Cripple"] = new Skill(
+            name: "CRIPPLE",
+            description: "Deals big damage to all foes and\ngreatly reduces their SPEED.",
+            target: SkillTarget.AllEnemies,
+            cost: 45,
+            effect: async (self, target) =>
+            {
+				AudioManager.Instance.PlaySFX("SE_something_ALT");
+                await GameManager.Instance.AnimationManager.WaitForSpecialAnimation(
+                        "res://assets/pictures/dark_overlay.png",
+                        "res://assets/pictures/fear_spiders_effect.png"
+                    );
+                BattleLogManager.Instance.QueueMessage(self, target, "[actor] cripples the foes!");
+                BattleLogManager.Instance.QueueMessage("All foes' SPEED fell!");
+                foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
+                {
+                    enemy.AddStatModifier(Modifier.SpeedDown, 3, silent: true);
+                    GameManager.Instance.AnimationManager.PlayAnimation(219, enemy);
+                    BattleManager.Instance.Damage(self, enemy, () => { return self.CurrentStats.ATK * 3.5f - enemy.CurrentStats.DEF; }, false);
+                }
+            }
+        );
+
+        Skills["Suffocate"] = new Skill(
+           name: "SUFFOCATE",
+           description: "Deals 400 damage to all foes and\ngreatly reduces their DEFENSE.",
+           target: SkillTarget.AllEnemies,
+           cost: 45,
+           effect: async (self, target) =>
+           {
+               AudioManager.Instance.PlaySFX("SE_reverse_swell", 0.8f, 0.9f);
+               await GameManager.Instance.AnimationManager.WaitForSpecialAnimation(
+                       "res://assets/pictures/dark_overlay.png",
+                       "res://assets/pictures/fear_hair.png"
+                   );
+               BattleLogManager.Instance.QueueMessage(self, target, "[actor] suffocates the foes!");
+               BattleLogManager.Instance.QueueMessage("All foes feel a shortness of breath.");
+               BattleLogManager.Instance.QueueMessage("All foes' DEFENSE fell!");
+               foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
+               {
+                   GameManager.Instance.AnimationManager.PlayAnimation(219, enemy);
+                   BattleManager.Instance.Damage(self, enemy, () => { return 400; }, false, 0f);
+                   enemy.AddStatModifier(Modifier.DefenseDown, 3, silent: true);
+               }
+           }
+        );
+
+        Skills["AttackAgain1"] = new Skill(
 			name: "Attack Again 1",
 			description: "Omori Followup",
 			target: SkillTarget.Enemy,
@@ -536,9 +604,37 @@ public class Database
 			goesFirst: true
 		);
 
+        // BASIL //
+        Skills["BAttack"] = new Skill(
+            name: "Attack",
+            description: "Basic Attack",
+            target: SkillTarget.Enemy,
+            cost: 0,
+            effect: async (self, target) =>
+            {
+                await Task.Delay(1000);
+                await GameManager.Instance.AnimationManager.WaitForAnimation(142, target);
+                BattleLogManager.Instance.QueueMessage(self, target, "[actor] attacks [target]!");
+                BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }, false);
+            },
+            hidden: true
+        );
 
-		// AUBREY //
-		Skills["AAttack"] = new Skill(
+        Skills["BodySlam"] = new Skill(
+            name: "BODY SLAM",
+            description: "Deals damage that increases with more ENERGY.\nCost: 40",
+            target: SkillTarget.Enemy,
+            cost: 40,
+            effect: async (self, target) =>
+            {
+                await GameManager.Instance.AnimationManager.WaitForAnimation(124, target);
+                BattleLogManager.Instance.QueueMessage(self, target, "[actor] body slams [target]!");
+                BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2 + (BattleManager.Instance.Energy * self.Level) - target.CurrentStats.DEF; }, false);
+            }
+        );
+
+        // AUBREY //
+        Skills["AAttack"] = new Skill(
 			name: "Attack",
 			description: "Basic Attack",
 			target: SkillTarget.Enemy,

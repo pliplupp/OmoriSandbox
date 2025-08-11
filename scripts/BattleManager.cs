@@ -970,7 +970,7 @@ public partial class BattleManager : Node
 			if (Energy > 10)
 				Energy = 10;
 		}
-		SpawnDamageNumber(rounded, target.CenterPoint);
+		SpawnDamageNumber(rounded, target.CenterPoint, critical: critical);
 		// we don't need to play a hitsound if the attack is a critical
 		if (!critical)
 		{
@@ -1133,9 +1133,9 @@ public partial class BattleManager : Node
 			who.SetState(state);
 	}
 
-	public void SpawnDamageNumber(int damage, Vector2 position, DamageType type = DamageType.Damage)
+	public void SpawnDamageNumber(int damage, Vector2 position, DamageType type = DamageType.Damage, bool critical = false)
 	{
-		DamageNumber dmg = new(damage, type)
+		DamageNumber dmg = new(damage, type, critical)
 		{
 			Position = position,
 			ZAsRelative = false,

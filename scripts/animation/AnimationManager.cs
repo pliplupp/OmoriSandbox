@@ -12,6 +12,7 @@ public partial class AnimationManager : Node2D
 	private TextureRect Battleback;
 	private AnimatedSprite2D ReleaseEnergy;
 	private AnimatedSprite2D RedHands;
+	private Node2D FullScreenEffectNode;
 
 	private Dictionary<int, RPGMAnimatedSprite> Animations = [];
 
@@ -29,10 +30,11 @@ public partial class AnimationManager : Node2D
 	public override void _Ready()
 	{
 		Battleback = GetNode<TextureRect>("../../UI/Battleback");
-		ReleaseEnergy = GetNode<AnimatedSprite2D>("../../UI/ReleaseEnergy");
-		RedHands = GetNode<AnimatedSprite2D>("../../UI/RedHands");
+		FullScreenEffectNode = GetNode<Node2D>("../../UI/FullScreenEffects");
+        ReleaseEnergy = GetNode<AnimatedSprite2D>("../../UI/FullScreenEffects/ReleaseEnergy");
+		RedHands = GetNode<AnimatedSprite2D>("../../UI/FullScreenEffects/RedHands");
 
-		string data = FileAccess.GetFileAsString("res://animations/animations.json");
+        string data = FileAccess.GetFileAsString("res://animations/animations.json");
 		List<AnimationInfo> animationData = JsonConvert.DeserializeObject<List<AnimationInfo>>(data);
 		foreach (AnimationInfo info in animationData)
 		{
@@ -231,6 +233,57 @@ public partial class AnimationManager : Node2D
         RedHands.Play();
         RedHands.AnimationFinished += Handle;
         return tcs.Task;
+    }
+
+	// since Omori and Basil special skills use the same logic, we can combine them here
+	public Task WaitForSpecialAnimation(string overlay, string effect)
+	{
+		TaskCompletionSource tcs = new();
+
+		Sprite2D overlayTex = new()
+		{
+			Texture = ResourceLoader.Load<Texture2D>(overlay),
+			Position = Vector2.Zero,
+			Centered = false,
+			Modulate = Colors.Transparent
+        };
+		FullScreenEffectNode.AddChild(overlayTex);
+
+        Sprite2D effectTex = new()
+		{
+			Texture = ResourceLoader.Load<Texture2D>(effect),
+			Position = new Vector2(320f, 150f),
+			Scale = new Vector2(2f, 2f),
+			Modulate = Colors.Transparent
+        };
+		FullScreenEffectNode.AddChild(effectTex);
+
+
+        void Finished()
+        {
+			overlayTex.QueueFree();
+			effectTex.QueueFree();
+			tcs.SetResult();
+        }
+
+        Tween overlayTween = GetTree().CreateTween();
+		overlayTween.TweenProperty(overlayTex, "modulate:a", 0.60f, 1f);
+		overlayTween.TweenInterval(0.66f);
+		overlayTween.TweenProperty(overlayTex, "modulate:a", 0f, 0.66f);
+
+		Tween effectTween = GetTree().CreateTween();
+		effectTween.TweenProperty(effectTex, "modulate:a", 1f, 1f);
+		effectTween.Parallel().TweenProperty(effectTex, "position:y", 180f, 1f);
+		effectTween.Parallel().TweenProperty(effectTex, "scale", new Vector2(0.65f, 0.65f), 1f);
+		effectTween.TweenInterval(0.66f);
+        effectTween.TweenProperty(effectTex, "modulate:a", 0f, 0.66f);
+        effectTween.Parallel().TweenProperty(effectTex, "position:y", 150f, 0.66f);
+        effectTween.Parallel().TweenProperty(effectTex, "scale", new Vector2(2f, 2f), 0.66f);
+		effectTween.TweenInterval(0.33f);
+		// only one tween needs to call Finished
+		effectTween.TweenCallback(Callable.From(Finished));
+
+		return tcs.Task;
     }
 
     private void StartAnimation(int id, Vector2 position, bool targetsEnemy)

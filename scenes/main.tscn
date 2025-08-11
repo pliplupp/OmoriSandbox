@@ -112,16 +112,18 @@ text = "0"
 layout_mode = 2
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 10
-text = "OmoriSandbox v0.3.0"
+text = "OmoriSandbox v0.4.0"
 
-[node name="ReleaseEnergy" type="AnimatedSprite2D" parent="CanvasLayer/UI"]
+[node name="FullScreenEffects" type="Node2D" parent="CanvasLayer/UI"]
+
+[node name="ReleaseEnergy" type="AnimatedSprite2D" parent="CanvasLayer/UI/FullScreenEffects"]
 visible = false
 z_index = 20
 position = Vector2(320, 243.5)
 scale = Vector2(1, 1.01458)
 sprite_frames = ExtResource("11_dp3eg")
 
-[node name="RedHands" type="AnimatedSprite2D" parent="CanvasLayer/UI"]
+[node name="RedHands" type="AnimatedSprite2D" parent="CanvasLayer/UI/FullScreenEffects"]
 visible = false
 z_index = 20
 position = Vector2(320, 243.5)
@@ -170,7 +172,7 @@ theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 24
 
 [node name="Energy" type="Sprite2D" parent="CanvasLayer/UI"]
-z_index = -4
+z_index = -5
 position = Vector2(320, 360)
 texture = ExtResource("4_tipki")
 region_enabled = true
