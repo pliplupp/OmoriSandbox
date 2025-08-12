@@ -1,0 +1,41 @@
+[gd_scene load_steps=5 format=3 uid="uid://dag4g5i5bp6xa"]
+
+[ext_resource type="Texture2D" uid="uid://c722n87jixox5" path="res://assets/system/ACS_Bubble_Vent.png" id="1_4hjhl"]
+[ext_resource type="Texture2D" uid="uid://kbjbvwx6bpq5" path="res://assets/system/ACSArrows.png" id="2_a21wm"]
+[ext_resource type="Texture2D" uid="uid://ypbrsarksukf" path="res://assets/system/ACS_Bubble_Mull.png" id="3_puu3t"]
+[ext_resource type="Texture2D" uid="uid://bfuyx1xr4u72e" path="res://assets/system/ACS_Bubble_Comfort.png" id="4_1c2og"]
+
+[node name="omori_followup" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(59, -24)
+texture = ExtResource("1_4hjhl")
+region_rect = Rect2(256, 95, 127, 99)
+
+[node name="Sprite2D" type="Sprite2D" parent="Sprite2D"]
+position = Vector2(-6, -46)
+texture = ExtResource("2_a21wm")
+region_enabled = true
+region_rect = Rect2(96, 0, 29, 29)
+
+[node name="Sprite2D3" type="Sprite2D" parent="."]
+position = Vector2(-31, -7)
+texture = ExtResource("3_puu3t")
+region_rect = Rect2(129, 95, 127, 99)
+
+[node name="Sprite2D" type="Sprite2D" parent="Sprite2D3"]
+position = Vector2(-60, 0)
+texture = ExtResource("2_a21wm")
+region_enabled = true
+region_rect = Rect2(66, 0, 29, 29)
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+position = Vector2(-40, 61)
+texture = ExtResource("4_1c2og")
+region_rect = Rect2(2, 96, 127, 99)
+
+[node name="Sprite2D" type="Sprite2D" parent="Sprite2D2"]
+position = Vector2(-10, 42)
+texture = ExtResource("2_a21wm")
+region_enabled = true
+region_rect = Rect2(0, 0, 29, 29)

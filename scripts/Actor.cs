@@ -155,6 +155,7 @@ public abstract class Actor
 						current.HIT += 1000;
 						break;
 					case Modifier.ReleaseEnergy:
+					case Modifier.ReleaseEnergyBasil:
 						current.SPD = RoundedStat(current.SPD * 1.25f);
 						current.ATK = RoundedStat(current.ATK * 1.25f);
 						current.DEF = RoundedStat(current.DEF * 1.25f);
@@ -331,7 +332,7 @@ public abstract class Actor
 		}
 		else
 		{
-			BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " cannot feel " + state.ToUpper() + "!");
+			BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " cannot be " + state.ToUpper() + "!");
 		}
 	}
 

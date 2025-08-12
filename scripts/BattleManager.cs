@@ -2,7 +2,6 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 public partial class BattleManager : Node
@@ -26,6 +25,8 @@ public partial class BattleManager : Node
 	private bool FollowupActive = true;
 	private bool ForceHideFollowup = false;
 	private int FollowupTier = 1;
+	private bool UseBasilReleaseEnergy = false;
+	private bool UseBasilFollowups = false;
 
     public static BattleManager Instance { get; private set; }
 
@@ -34,13 +35,15 @@ public partial class BattleManager : Node
 		Instance = this;
 	}
 
-	public void Init(List<PartyMemberComponent> party, List<EnemyComponent> enemies, Dictionary<string, int> items, int followupTier)
+	public void Init(List<PartyMemberComponent> party, List<EnemyComponent> enemies, Dictionary<string, int> items, int followupTier, bool useBasilFollowups, bool useBasilReleaseEnergy)
 	{
 		CurrentParty = party;
 		Enemies = enemies;
 		Items = items;
-		Energy = 3;
+		Energy = 10;
 		FollowupTier = followupTier;
+		UseBasilFollowups = useBasilFollowups;
+		UseBasilReleaseEnergy = useBasilReleaseEnergy;
 
 		Delay = new Timer
 		{
@@ -384,7 +387,6 @@ public partial class BattleManager : Node
 		switch (Phase)
 		{
 			case BattlePhase.FightRun:
-				CheckBattleOver();
 				HandleFightRun();
 				break;
 			case BattlePhase.PlayerCommand:
@@ -418,8 +420,8 @@ public partial class BattleManager : Node
 				GD.Print("Command Index: " + CommandIndex);
 				if (CommandIndex >= Commands.Count)
 				{
-					Enemies.ForEach(x => x.Actor.ProcessEndOfTurn());
-					SetPhase(BattlePhase.FightRun);
+                    EndOfTurn();
+                    SetPhase(BattlePhase.FightRun);
 				}
 				else
 				{
@@ -500,13 +502,6 @@ public partial class BattleManager : Node
 		CurrentPartyMemberTarget = -1;
 		CommandIndex = -1;
 		Commands.Clear();
-		// tick down stat turn timers
-		CurrentParty.ForEach(x => x.Actor.DecreaseStatTurnCounter());
-		Enemies.ForEach(x =>
-		{
-			x.Actor.DecreaseStatTurnCounter();
-			x.Actor.ProcessStartOfTurn();
-		});
 		BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " and friends do?");
 		MenuManager.Instance.ShowButtons(CurrentParty[0].Actor.IsRealWorld);
 		MenuManager.Instance.ShowMenu(MenuState.Party);
@@ -634,6 +629,7 @@ public partial class BattleManager : Node
 			CommandIndex++;
 			if (CommandIndex >= Commands.Count)
 			{
+				EndOfTurn();
 				SetPhase(BattlePhase.FightRun);
 				return;
 			}
@@ -669,9 +665,17 @@ public partial class BattleManager : Node
 		{
 			if (skill.Cost > 0)
 			{
-				currentAction.Actor.CurrentJuice -= skill.Cost;
+				// if the current actor does not have enough juice to use their skill, replace it with a basic attack
+				if (currentAction.Actor.CurrentJuice < skill.Cost)
+				{
+					currentAction.Action = currentAction.Actor.Skills.First().Value;
+				}
+				else
+				{
+					currentAction.Actor.CurrentJuice -= skill.Cost;
+				}
 			}
-			if (currentAction.Actor is PartyMember && skill.Name.EndsWith("Attack"))
+			if (currentAction.Actor is PartyMember && currentAction.Action.Name.EndsWith("Attack"))
 			{
 				if (ForceHideFollowup)
 				{
@@ -722,9 +726,14 @@ public partial class BattleManager : Node
 				{
 					if (Energy == 10 && CurrentParty.All(x => x.Actor.CurrentState != "toast"))
 					{
-						if (Database.TryGetSkill($"ReleaseEnergy{FollowupTier}", out Skill skill))
-							ForceCommand(current.Actor, null, skill);
-						return true;
+                        if (UseBasilReleaseEnergy)
+                        {
+							if (Database.TryGetSkill($"ReleaseEnergyBasil", out Skill skill))
+								ForceCommand(current.Actor, null, skill);
+                        }
+                        else if (Database.TryGetSkill($"ReleaseEnergy{FollowupTier}", out Skill skill))
+                            ForceCommand(current.Actor, null, skill);
+                        return true;
 					}
 				}
 				break;
@@ -786,27 +795,56 @@ public partial class BattleManager : Node
 				}
 				break;
 			case 4:
-				if (direction == "down")
+
+				if (UseBasilFollowups)
 				{
-					if (Database.TryGetSkill($"PassToOmori{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
+					if (direction == "down")
+					{
+						if (Database.TryGetSkill("Comfort", out Skill skill))
+							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
+						return true;
+					}
+					if (direction == "left")
+					{
+						if (GetPartyMember(1).CurrentState == "toast")
+							return false;
+						if (Database.TryGetSkill("Mull", out Skill skill))
+							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
+						return true;
+					}
+					if (direction == "up")
+					{
+						if (GetPartyMember(2).CurrentState == "toast")
+							return false;
+						if (Database.TryGetSkill("Vent", out Skill skill))
+							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
+						return true;
+					}
 				}
-				if (direction == "left")
+				else
 				{
-					if (GetPartyMember(1).CurrentState == "toast")
-						return false;
-					if (Database.TryGetSkill($"PassToAubrey{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
-				}
-				if (direction == "up")
-				{
-					if (GetPartyMember(2).CurrentState == "toast")
-						return false;
-					if (Database.TryGetSkill($"PassToHero{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
+					if (direction == "down")
+					{
+						if (Database.TryGetSkill($"PassToOmori{FollowupTier}", out Skill skill))
+							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
+						return true;
+					}
+					if (direction == "left")
+					{
+						if (GetPartyMember(1).CurrentState == "toast")
+							return false;
+						if (Database.TryGetSkill($"PassToAubrey{FollowupTier}", out Skill skill))
+							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
+						return true;
+					}
+					if (direction == "up")
+					{
+						if (GetPartyMember(2).CurrentState == "toast")
+							return false;
+						if (Database.TryGetSkill($"PassToHero{FollowupTier}", out Skill skill))
+							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
+						return true;
+					}
 				}
 				break;
 		}
@@ -828,6 +866,31 @@ public partial class BattleManager : Node
 		else
 			Energy -= 3;
 	}
+
+	private void EndOfTurn()
+	{
+        CheckBattleOver();
+        // tick down stat turn timers
+        CurrentParty.ForEach(x =>
+        {
+            x.Actor.DecreaseStatTurnCounter();
+            if (x.Actor.HasStatModifier(Modifier.ReleaseEnergyBasil))
+            {
+                int heal = (int)Math.Round(x.Actor.CurrentStats.MaxHP * 0.1f, MidpointRounding.AwayFromZero);
+                int juice = (int)Math.Round(x.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
+                x.Actor.Heal(heal);
+                x.Actor.HealJuice(juice);
+                SpawnDamageNumber(heal, x.Actor.CenterPoint, DamageType.Heal);
+                SpawnDamageNumber(juice, x.Actor.CenterPoint + new Vector2(0, 50), DamageType.JuiceGain);
+            }
+        });
+        Enemies.ForEach(x =>
+        {
+			x.Actor.ProcessEndOfTurn();
+            x.Actor.DecreaseStatTurnCounter();
+            x.Actor.ProcessStartOfTurn();
+        });
+    }
 
 	public void OnBattleLogFinished()
 	{

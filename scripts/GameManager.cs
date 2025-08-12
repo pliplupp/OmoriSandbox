@@ -74,6 +74,8 @@ public partial class GameManager : Node
 		List<EnemyComponent> enemy = [];
 		Dictionary<string, int> items = [];
 		int FollowupTier = -1;
+		bool UseBasilFollowups = false;
+		bool UseBasilReleaseEnergy = false;
 
 		ConfigFile config = new();
 
@@ -113,6 +115,8 @@ public partial class GameManager : Node
 				foreach (var kv in (Godot.Collections.Dictionary<string, int>)config.GetValue(s, "toys"))
 					items.Add(kv.Key, kv.Value);
 				FollowupTier = (int)config.GetValue(s, "followup_tier");
+				UseBasilFollowups = (bool)config.GetValue(s, "use_basil_followups");
+				UseBasilReleaseEnergy = (bool)config.GetValue(s, "use_basil_release_energy");
             }
 			else if (section.StartsWith("actor"))
 			{
@@ -121,16 +125,26 @@ public partial class GameManager : Node
 					GD.PushWarning("Party is full, skipping extra [actor] entry.");
 					continue;
 				}
-				PartyMemberComponent add = SpawnPartyMember(
-						(string)config.GetValue(s, "name"),
-						Followups[(int)config.GetValue(s, "position") - 1],
-						(int)config.GetValue(s, "position"),
-						(string)config.GetValue(s, "weapon"),
-						(string)config.GetValue(s, "charm"),
-						(string[])config.GetValue(s, "skills"),
-						(int)config.GetValue(s, "level"),
-						(string)config.GetValue(s, "emotion")
-					);
+
+				int position = (int)config.GetValue(s, "position");
+				PackedScene followup;
+				// piratesoftware ahh code
+				// TODO: improve setting basil followup
+				if (position == 4 && UseBasilFollowups)
+					followup = Followups[4];				
+				else 
+					followup = Followups[position - 1];
+
+                PartyMemberComponent add = SpawnPartyMember(
+							(string)config.GetValue(s, "name"),
+							followup,
+							(int)config.GetValue(s, "position"),
+							(string)config.GetValue(s, "weapon"),
+							(string)config.GetValue(s, "charm"),
+							(string[])config.GetValue(s, "skills"),
+							(int)config.GetValue(s, "level"),
+							(string)config.GetValue(s, "emotion")
+						);
 
 				if (add == null)
 				{
@@ -167,7 +181,7 @@ public partial class GameManager : Node
 			GD.Print("Using Followup Tier " + FollowupTier);
         }
 
-		BattleManager.Instance.Init(party, enemy, items, FollowupTier);
+		BattleManager.Instance.Init(party, enemy, items, FollowupTier, UseBasilFollowups, UseBasilReleaseEnergy);
 	}
 
 	private EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral")
