@@ -1756,7 +1756,8 @@ public class Database
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] massages [target]!");
 				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(86, false);
 				target.SetState("neutral", true);
-				BattleLogManager.Instance.QueueMessage(target.Name.ToUpper() + " calms down...");
+				if (target.CurrentState == "neutral")
+					BattleLogManager.Instance.QueueMessage(target.Name.ToUpper() + " calms down...");
 			}
 		);
 		Skills["SpicyFood"] = new Skill(
@@ -2543,6 +2544,157 @@ public class Database
 					BattleManager.Instance.RandomEmotion(partyMember.Actor);
 				}
 				await Task.Delay(664);
+			},
+			hidden: true
+		);
+
+		// BIG STRONG TREE //
+		Skills["BSTDoNothing"] = new Skill(
+			name: "BSTDoNothing",
+			description: "BSTDoNothing",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				int roll = GameManager.Instance.Random.RandiRange(0, 1);
+				if (roll == 0)
+					BattleLogManager.Instance.QueueMessage("A gentle breeze blows across the leaves.");
+				else
+					BattleLogManager.Instance.QueueMessage("BIG STRONG TREE stands firm\nbecause it is a tree.");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+
+		// DOWNLOAD WINDOW //
+		Skills["DWDoNothing1"] = new Skill(
+			name: "DWDoNothing1",
+			description: "DWDoNothing1",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage("DOWNLOAD WINDOW is at 99%.");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		Skills["DWDoNothing2"] = new Skill(
+			name: "DWDoNothing2",
+			description: "DWDoNothing2",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage("DOWNLOAD WINDOW is still at 99%.");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		Skills["Crash"] = new Skill(
+			name: "Crash",
+			description: "Crash",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				GameManager.Instance.AnimationManager.PlayScreenAnimation(165, false);
+				await Task.Delay(3652);
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] crashes and burns!");
+				foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
+				{
+					BattleManager.Instance.Damage(self, member.Actor, () => { return member.Actor.CurrentStats.MaxHP * 0.8f; }, true, 0f, false, true);
+				}
+			},
+			hidden: true
+		);
+
+		// SPACE EX BOYFRIEND //
+		Skills["SEBAttack"] = new Skill(
+			name: "SEBAttack",
+			description: "SEBAttack",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				await GameManager.Instance.AnimationManager.WaitForAnimation(123, target, false);
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] kicks [target]!");
+				BattleManager.Instance.Damage(self, target, () => { return (self.CurrentStats.ATK * 2) + 5 - target.CurrentStats.DEF; }, false);
+			},
+			hidden: true
+		);
+
+		Skills["SEBDoNothing"] = new Skill(
+			name: "SEBDoNothing",
+			description: "SEBDoNothing",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] looks wistfully\ninto the distance.");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+
+		Skills["AngstySong"] = new Skill(
+			name: "AngstySong",
+			description: "AngstySong",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] sings sadly...");
+				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(154, false);
+				MakeSad(target);
+			},
+			hidden: true
+		);
+
+		Skills["AngrySong"] = new Skill(
+			name: "AngrySong",
+			description: "AngrySong",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] wails wildly!");
+				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(153, false);
+				foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
+				{
+					BattleManager.Instance.Damage(self, member.Actor, () => { return self.CurrentStats.ATK * 2 - member.Actor.CurrentStats.DEF; }, false);
+				}
+			},
+			hidden: true
+		);
+
+		Skills["SpaceLaser"] = new Skill(
+			name: "SpaceLaser",
+			description: "SpaceLaser",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				await GameManager.Instance.AnimationManager.WaitForAnimation(160, target, false);
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] fires his laser!");
+				BattleManager.Instance.Damage(self, target, () => { return (self.CurrentStats.ATK * 2.5f) - target.CurrentStats.DEF; }, false);
+			},
+			hidden: true
+		);
+
+		Skills["BulletHell"] = new Skill(
+			name: "BulletHell",
+			description: "BulletHell",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] fires wildly!");
+				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(168, false);
+				foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
+				{
+					BattleManager.Instance.Damage(self, member.Actor, () => { return 20; }, false, neverCrit: true);
+				}
 			},
 			hidden: true
 		);

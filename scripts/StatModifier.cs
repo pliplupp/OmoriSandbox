@@ -35,6 +35,7 @@ public enum Modifier
     DefenseDown,
     SpeedDown,
     SweetheartLock,
+    SpaceExBoyfriendLock,
     Flex,
     ReleaseEnergy,
     ReleaseEnergyBasil,

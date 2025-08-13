@@ -54,8 +54,11 @@ public partial class GameManager : Node
 		ValidEnemies.Add("SlimeGirls", typeof(SlimeGirls));
 		ValidEnemies.Add("HumphreyUvula", typeof(HumphreyUvula));
 		ValidEnemies.Add("AubreyEnemy", typeof(AubreyEnemy));
+		ValidEnemies.Add("BigStrongTree", typeof(BigStrongTree));
+		ValidEnemies.Add("DownloadWindow", typeof(DownloadWindow));
+		ValidEnemies.Add("SpaceExBoyfriend", typeof(SpaceExBoyfriend));
 
-		Instance = this;
+        Instance = this;
 
 		AnimationManager = new();
 		AddChild(AnimationManager);

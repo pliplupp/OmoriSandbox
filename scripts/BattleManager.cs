@@ -40,7 +40,7 @@ public partial class BattleManager : Node
 		CurrentParty = party;
 		Enemies = enemies;
 		Items = items;
-		Energy = 10;
+		Energy = 3;
 		FollowupTier = followupTier;
 		UseBasilFollowups = useBasilFollowups;
 		UseBasilReleaseEnergy = useBasilReleaseEnergy;
@@ -345,7 +345,18 @@ public partial class BattleManager : Node
 	public void OnSelectSkill(Skill skill)
 	{
 		SelectedAction = skill;
-		if (CurrentParty[CurrentPartyMember].Actor.CurrentJuice - (SelectedAction as Skill).Cost < 0)
+		// TODO: handle emotion locked skills better
+		if (CurrentParty[CurrentPartyMember].Actor.CurrentState == "afraid" && !(skill.Name == "GUARD" || skill.Name == "CALM DOWN"))
+		{
+			AudioManager.Instance.PlaySFX("sys_buzzer");
+			return;
+        }
+		if (CurrentParty[CurrentPartyMember].Actor.CurrentState == "stressed" && skill.Name != "GUARD")
+		{
+            AudioManager.Instance.PlaySFX("sys_buzzer");
+            return;
+        }
+		if (CurrentParty[CurrentPartyMember].Actor.CurrentJuice - skill.Cost < 0)
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
 			return;
@@ -964,12 +975,19 @@ public partial class BattleManager : Node
 		float finalDamage = baseDamage * damageVariance;
 		string selfState = self.CurrentState;
 		string targetState = target.CurrentState;
+
 		// TODO: handle these better
+		// like this is actually terrible please improve at some point
 		if (self.HasStatModifier(Modifier.SweetheartLock))
 			selfState = "happy";
 		if (target.HasStatModifier(Modifier.SweetheartLock))
 			targetState = "happy";
-		finalDamage = CalculateEmotionModifiers(selfState, targetState, finalDamage, out int effectiveness);
+		if (self.HasStatModifier(Modifier.SpaceExBoyfriendLock))
+			selfState = selfState.Replace("se_", "");
+		if (target.HasStatModifier(Modifier.SpaceExBoyfriendLock))
+			targetState = targetState.Replace("se_", "");
+
+        finalDamage = CalculateEmotionModifiers(selfState, targetState, finalDamage, out int effectiveness);
 		if ((critical || target.HasStatModifier(Modifier.Tickle)) && !neverCrit)
 		{
 			finalDamage = (finalDamage * 1.5f) + 2;
@@ -1033,7 +1051,7 @@ public partial class BattleManager : Node
 			if (Energy > 10)
 				Energy = 10;
 		}
-		SpawnDamageNumber(rounded, target.CenterPoint, critical: critical);
+		SpawnDamageNumber(rounded, target.CenterPoint, critical: (critical && !neverCrit));
 		// we don't need to play a hitsound if the attack is a critical
 		if (!critical)
 		{
@@ -1097,6 +1115,13 @@ public partial class BattleManager : Node
 
 	private float CalculateEmotionModifiers(string self, string target, float damage, out int effect)
 	{
+		if (self != "neutral" && target == "afraid")
+		{
+			// afraid takes 50% more damage from all emotions
+			effect = 0;
+			return damage * 1.5f;
+		}
+
 		int selfIndex = GetEffectivenessIndex(self);
 		int targetIndex = GetEffectivenessIndex(target);
 		effect = 0;
