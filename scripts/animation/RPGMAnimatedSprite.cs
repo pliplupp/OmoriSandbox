@@ -16,30 +16,32 @@ public class RPGMAnimatedSprite
 	private readonly Dictionary<int, Shake> FrameShake = [];
 	private readonly int Columns;
 
-	public RPGMAnimatedSprite(int id, int layer, Texture2D texture)
-	{
-		Id = id;
-		Layer = layer;
-		Texture = new()
-		{
-			Atlas = texture
-		};
-		Columns = texture.GetWidth() / SIZE;
-	}
-
 	public RPGMAnimatedSprite(int id, int layer, Texture2D texture, Texture2D altTexture)
 	{
 		Id = id;
 		Layer = layer;
-		Texture = new()
+		// certain animations have an alt texture but no texture
+		// so we have to handle that here
+		if (texture != null)
 		{
-			Atlas = texture
-		};
-		AltTexture = new()
+			Texture = new()
+			{
+				Atlas = texture
+			};
+		}
+		if (altTexture != null)
 		{
-			Atlas = altTexture
-		};
-		Columns = texture.GetWidth() / SIZE;
+			AltTexture = new()
+			{
+				Atlas = altTexture
+			};
+		}
+		if (Texture == null && AltTexture == null)
+		{
+			GD.PushError($"Created an animation with no textures! (ID: {Id})");
+			return;
+		}
+		Columns = (texture ?? altTexture).GetWidth() / SIZE;
 	}
 
 	public void CreateFrame(List<Frame> frames)
@@ -66,7 +68,7 @@ public class RPGMAnimatedSprite
 
 	public AtlasTexture GetTextureAt(int pattern)
 	{
-		if (pattern < 99)
+		if (Texture != null && pattern < 99)
 		{
 			int column = pattern % Columns;
 			int row = pattern / Columns;

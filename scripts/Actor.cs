@@ -53,7 +53,6 @@ public abstract class Actor
 		get
 		{
 			Stats current = GetBaseStats();
-			// TODO: afraid and stressed out
 			switch (CurrentState)
 			{
 				case "happy":
@@ -95,7 +94,24 @@ public abstract class Actor
 					current.DEF = RoundedStat(current.DEF * 1.5f);
 					current.SPD = RoundedStat(current.SPD * 0.5f);
 					break;
-			}
+				case "stressed":
+					current.ATK = RoundedStat(current.ATK * 1.2f);
+					current.DEF = RoundedStat(current.DEF * 0.9f);
+					break;
+                case "se_angry":
+                    current.ATK = RoundedStat(current.ATK * 1.25f);
+                    current.DEF = RoundedStat(current.DEF * 0.9f);
+                    break;
+                case "se_enraged":
+                    current.ATK = RoundedStat(current.ATK * 1.5f);
+                    current.DEF = RoundedStat(current.DEF * 0.5f);
+                    break;
+                case "se_furious":
+                    current.ATK = RoundedStat(current.ATK * 2f);
+                    current.DEF = RoundedStat(current.DEF * 0.3f);
+                    break;
+
+            }
 
 			// TODO: try NOT to do this???
 			// needs to be refactored 
@@ -155,6 +171,7 @@ public abstract class Actor
 						current.HIT += 1000;
 						break;
 					case Modifier.ReleaseEnergy:
+					case Modifier.ReleaseEnergyBasil:
 						current.SPD = RoundedStat(current.SPD * 1.25f);
 						current.ATK = RoundedStat(current.ATK * 1.25f);
 						current.DEF = RoundedStat(current.DEF * 1.25f);
@@ -331,7 +348,7 @@ public abstract class Actor
 		}
 		else
 		{
-			BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " cannot feel " + state.ToUpper() + "!");
+			BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " cannot be " + state.ToUpper() + "!");
 		}
 	}
 
@@ -342,6 +359,6 @@ public abstract class Actor
 		Sprite.Animation = state;
 		CurrentState = state;
 		if (!silent)
-			BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " became " + state.ToUpper() + "!");
+			BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " became " + state.Replace("se_", "").ToUpper() + "!");
 	}
 }

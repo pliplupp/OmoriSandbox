@@ -4,6 +4,7 @@ public partial class DamageNumber : Node2D
 {
     private int[] Digits;
     private DamageType DamageType;
+    private bool Critical;
     private static Texture2D Texture;
 
     private const int WIDTH = 30;
@@ -11,11 +12,15 @@ public partial class DamageNumber : Node2D
     private const float SPACING = 25f;
     private const float SCALE = 1f;
 
-    public DamageNumber(int damage, DamageType type = DamageType.Damage)
+    public DamageNumber(int damage, DamageType type = DamageType.Damage, bool critical = false)
     {
         Digits = damage.ToString().Select(digit => (int)char.GetNumericValue(digit)).ToArray();
         DamageType = type;
-        Modulate = Colors.Transparent;
+        Critical = critical;
+        if (Critical)
+            Modulate = Color.Color8(255, 0, 0, 0);
+        else
+            Modulate = Colors.Transparent;
     }
 
     // since we spawn in damage numbers we need to cache this texture from elsewhere
@@ -28,6 +33,11 @@ public partial class DamageNumber : Node2D
     {
         Tween tween = GetTree().CreateTween();
         tween.TweenProperty(this, "modulate:a", 1f, 0.1f);
+        if (Critical)
+        {
+            tween.Parallel().TweenProperty(this, "modulate:g", 1f, 0.5f);
+            tween.Parallel().TweenProperty(this, "modulate:b", 1f, 0.5f);
+        }
 
         if (DamageType == DamageType.Miss)
         {
