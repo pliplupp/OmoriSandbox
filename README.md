@@ -40,14 +40,14 @@ The following features are currently missing and/or not fully functional in the 
 ### Missing
 - [ ] Dots animation on the Energy Bar
 - [x] Tier 2 and 3 Followups
-- [ ] Omori's special skills (Vertigo, Cripple, Suffocate)
+- [x] Omori's special skills (Vertigo, Cripple, Suffocate)
 - [ ] Some Screen Tint/Wave Effects
 - [ ] Faraway Town Snacks and Toys
 - [ ] Sales Tag, Chef's Hat, Contract, Abbi's Eye, Unused Charms
 - [ ] In-Battle Dialogue
 - [ ] Any skills that perform a Taunt
 ### Partially Functional
-- [ ] Afraid and Stressed Out
+- [x] Afraid and Stressed Out
 - [ ] Party sizes below 4
 - [x] Skills that use the `<Not User>` tag
 - [ ] Boss-Specific Behavior
