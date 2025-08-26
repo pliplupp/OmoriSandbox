@@ -37,6 +37,8 @@ public partial class PartyMemberEditorComponent : Control
 	private AnimatedSprite2D Face;
 	private StateAnimator Animator;
 
+	public int ActorPosition { get; private set; }
+
 	private readonly string[] States = ["neutral", "happy", "sad", "angry", "ecstatic", "depressed", "furious", "manic", "miserable", "furious", "manic", "afraid", "stressed"];
 
 	// TODO: add layer property
@@ -58,11 +60,13 @@ public partial class PartyMemberEditorComponent : Control
 			CharmDropdown.AddItem(charm);
 	}
 
-	public void Init(Control battleCard)
+	public void Init(Control battleCard, int position)
 	{
 		BattleCard = battleCard;
 		Animator = BattleCard.GetNode<StateAnimator>("Battlecard/StateAnimatorComponent");
 		Face = BattleCard.GetNode<AnimatedSprite2D>("Battlecard/Face");
+
+		ActorPosition = position;
 
 		RemoveButton.Pressed += () =>
 		{
@@ -76,11 +80,13 @@ public partial class PartyMemberEditorComponent : Control
 		// charms are optional so we can leave it unselected
 		Populate("Omori");
 	}
-	public void Init(Control battleCard, string name, string weapon, string charm, int level, bool followupsDisabled, string emotion, string[] skills)
+	public void Init(Control battleCard, string name, string weapon, string charm, int level, bool followupsDisabled, string emotion, string[] skills, int position)
 	{
 		BattleCard = battleCard;
 		Animator = BattleCard.GetNode<StateAnimator>("Battlecard/StateAnimatorComponent");
 		Face = BattleCard.GetNode<AnimatedSprite2D>("Battlecard/Face");
+
+		ActorPosition = position;
 
 		RemoveButton.Pressed += () =>
 		{

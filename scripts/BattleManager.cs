@@ -341,8 +341,8 @@ public partial class BattleManager : Node
 		CurrentParty.Clear();
 		Enemies.Clear();
 		Items.Clear();
-        MenuManager.Instance.ShowMenu(MenuState.None);
-        EnergyBar.Visible = false;
+		MenuManager.Instance.ShowMenu(MenuState.None);
+		EnergyBar.Visible = false;
 		BattleLogManager.Instance.ClearBattleLog();
 		BattleLogManager.Instance.Visible = false;
 		Delay.Timeout -= OnDelayTimeout;
@@ -535,7 +535,10 @@ public partial class BattleManager : Node
 		CurrentPartyMemberTarget = -1;
 		CommandIndex = -1;
 		Commands.Clear();
-		BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " and friends do?");
+		if (CurrentParty.Count > 1)
+			BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " and friends do?");
+		else
+			BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " do?");
 		MenuManager.Instance.ShowButtons(CurrentParty[0].Actor.IsRealWorld);
 		MenuManager.Instance.ShowMenu(MenuState.Party);
 	}
@@ -586,6 +589,12 @@ public partial class BattleManager : Node
 
 	private void SelectTarget()
 	{
+		if (Enemies.Count == 0)
+		{
+			AudioManager.Instance.PlaySFX("sys_buzzer");
+			return;
+		}
+
 		if ((SelectedAction.Target == SkillTarget.Ally || 
 			(SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1)) 
 			&& CurrentParty[CurrentPartyMemberTarget].Actor.CurrentState == "toast")

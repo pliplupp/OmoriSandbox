@@ -29,4 +29,11 @@ public partial class PartyMenu : Menu
             AudioManager.Instance.PlaySFX("SYS_select");
         }
     }
+
+    public override void OnOpen()
+    {
+        CursorIndex = 0;
+        UpdateCursor();
+        Show();
+    }
 }

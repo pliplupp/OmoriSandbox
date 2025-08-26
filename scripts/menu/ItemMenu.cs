@@ -16,25 +16,26 @@ public partial class ItemMenu : Menu
 	{
 		Items.Clear();
 		Items.AddRange(toys ? BattleManager.Instance.GetToys() : BattleManager.Instance.GetSnacks());
+		Empty = Items.Count == 0;
 		Page = 0;
 		UpdatePage();
 	}
 
 	private void UpdatePage()
 	{
-		int start = Page * 4;
-		int end = Mathf.Min(start + 4, Items.Count);
-		foreach (Label l in ItemLabels)
-			l.Text = "";
-		DisplayedItems = Items.GetRange(start, end - start);
-        if (DisplayedItems.Count == 0)
+        CostText.Text = "";
+        foreach (Label l in ItemLabels)
+            l.Text = "";
+        if (Empty)
 		{
 			CursorPositions = Positions.GetRange(0, 1);
 			CursorIndex = 0;
 			UpdateCursor();
-			Empty = true;
 			return;
 		}
+		int start = Page * 4;
+		int end = Mathf.Min(start + 4, Items.Count);
+		DisplayedItems = Items.GetRange(start, end - start);
 		for (int i = 0; i < DisplayedItems.Count; i++)
 		{
 			ItemLabels[i].Text = DisplayedItems[i].Item1.Name;
