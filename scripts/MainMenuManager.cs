@@ -355,6 +355,7 @@ public partial class MainMenuManager : Node
 		if (PresetDropdown.Selected == -1)
 			return;
 
+		ResetToDefault();
 		string presetName = PresetDropdown.GetItemText(PresetDropdown.Selected);
 		string path = "user://presets/" + presetName + ".json";
 		if (!FileAccess.FileExists(path))
