@@ -349,7 +349,7 @@ public abstract class Actor
 
 			// bug fix for when omori changes state during the plot armor turn
 			// this REAALLLY needs to be handled better soon...
-			if (this is Omori omori && omori.OldEmotion != null)
+			if (this is Omori omori && omori.OldEmotion != null && state != "plotarmor")
 			{
 				omori.OldEmotion = state;
 			}

@@ -218,7 +218,15 @@ public partial class MainMenuManager : Node
 		ResetButton.Pressed += PreResetToDefault;
 
 		ResetPresetDropdown();
+
+		Instance = this;
 	}
+
+	public void ReturnToTitle()
+	{
+		MainMenu.Visible = true;
+        AudioManager.Instance.PlayBGM("ow_cattail_fields");
+    }
 
 	private void PreSave()
 	{
@@ -657,6 +665,8 @@ public partial class MainMenuManager : Node
 		dialog.PopupCentered();
 		dialog.Show();
 	}
+
+	public static MainMenuManager Instance;
 
 	[Export]
 	private Control[] AddActorControls;

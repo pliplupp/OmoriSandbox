@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 public partial class ItemMenu : Menu
@@ -26,18 +27,27 @@ public partial class ItemMenu : Menu
 		foreach (Label l in ItemLabels)
 			l.Text = "";
 		DisplayedItems = Items.GetRange(start, end - start);
+        if (DisplayedItems.Count == 0)
+		{
+			CursorPositions = Positions.GetRange(0, 1);
+			CursorIndex = 0;
+			UpdateCursor();
+			Empty = true;
+			return;
+		}
 		for (int i = 0; i < DisplayedItems.Count; i++)
 		{
 			ItemLabels[i].Text = DisplayedItems[i].Item1.Name;
 		}
-		CursorPositions = Positions.GetRange(0, DisplayedItems.Count);
-		CursorIndex = 0;
-		UpdateCursor();
-		ShowItemInfo();
+        CursorPositions = Positions.GetRange(0, DisplayedItems.Count);
+        CursorIndex = 0;
+        UpdateCursor();
+        ShowItemInfo();
 	}
 
 	protected override void MoveCursor(Vector2I direction)
 	{
+		if (Empty) return;
 		if (direction.Y > 0 && Page < Mathf.CeilToInt((float)Items.Count / 4) - 1 && CursorIndex > 1)
 		{
 			Page++;
@@ -65,8 +75,7 @@ public partial class ItemMenu : Menu
 
 	private void ShowItemInfo()
 	{
-		if (DisplayedItems.Count == 0)
-			return;
+		if (Empty) return;
 		(Item, int) i = DisplayedItems[CursorIndex];
 		CostText.Text = "x" + i.Item2.ToString();
 		BattleLogManager.Instance.ClearAndShowMessage($"{i.Item1.Name}\n{i.Item1.Description}");
@@ -74,6 +83,7 @@ public partial class ItemMenu : Menu
 
 	protected override void OnSelect()
 	{
+		if (Empty) return;
 		Item selected = DisplayedItems[CursorIndex].Item1;
 		BattleManager.Instance.OnSelectItem(selected);
 	}

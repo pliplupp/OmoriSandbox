@@ -25,22 +25,32 @@ public partial class SkillMenu : Menu
 			Skills.Add(s);
 			idx++;
 		}
-		CursorIndex = 0;
+        if (SkillLabels.All(x => x.Text == ""))
+        {
+			CursorPositions = Positions.GetRange(0, 1);
+			CursorIndex = 0;
+			UpdateCursor();
+            Empty = true;
+            return;
+        }
+        CursorIndex = 0;
 		CursorPositions = Positions.GetRange(0, Skills.Count);
 		UpdateCursor();
-		ShowSkillInfo();
+        ShowSkillInfo();
 	}
 	
 	private void ShowSkillInfo()
 	{
-		Skill s = Skills[CursorIndex];
+        if (Empty) return;
+        Skill s = Skills[CursorIndex];
 		CostText.Text = s.Cost.ToString();
 		BattleLogManager.Instance.ClearAndShowMessage($"{s.Name}\n{s.Description}");
 	}
 
 	protected override void MoveCursor(Vector2I direction)
 	{
-		int x = CursorIndex % 2;
+        if (Empty) return;
+        int x = CursorIndex % 2;
 		int y = CursorIndex / 2;
 		x = (x + direction.X + GridSize.X) % GridSize.X;
 		y = (y + direction.Y + GridSize.Y) % GridSize.Y;
@@ -54,7 +64,8 @@ public partial class SkillMenu : Menu
 
 	protected override void OnSelect()
 	{
-		Skill selected = Skills[CursorIndex];
+        if (Empty) return;
+        Skill selected = Skills[CursorIndex];
 		BattleManager.Instance.OnSelectSkill(selected);
 	}
 }

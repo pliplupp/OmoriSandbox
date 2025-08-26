@@ -37,13 +37,13 @@
 [node name="BattleCanvas" type="CanvasLayer" parent="."]
 layer = 0
 
-[node name="GameManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("UIParent", "BattlebackParent", "FPSLabel")]
+[node name="GameManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("BattlebackParent", "FPSLabel", "Party")]
 script = ExtResource("14_a8y0u")
 BattlecardUI = ExtResource("5_tefeu")
 EnemyUI = ExtResource("8_choun")
-UIParent = NodePath("../UI")
 BattlebackParent = NodePath("../UI/Battleback")
 FPSLabel = NodePath("../UI/HBoxContainer/FPS")
+Party = NodePath("../UI/Party")
 Followups = Array[PackedScene]([ExtResource("4_muem4"), ExtResource("5_dp3eg"), ExtResource("6_0ld40"), ExtResource("7_gqmmt"), ExtResource("8_vxglm")])
 
 [node name="BattleManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("EnergyText", "EnergyBar")]
@@ -160,6 +160,8 @@ offset_right = 1280.0
 offset_bottom = 480.0
 texture = ExtResource("14_og1vs")
 stretch_mode = 1
+
+[node name="Party" type="Node" parent="BattleCanvas/UI"]
 
 [node name="BattleLog" type="TextureRect" parent="BattleCanvas/UI" node_paths=PackedStringArray("ImmediateLabel")]
 visible = false

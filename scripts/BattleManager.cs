@@ -335,6 +335,23 @@ public partial class BattleManager : Node
 		SetPhase(BattlePhase.PlayerCommand);
 	}
 
+	public void OnRunSelected()
+	{
+		GameManager.Instance.DespawnAll();
+		CurrentParty.Clear();
+		Enemies.Clear();
+		Items.Clear();
+        MenuManager.Instance.ShowMenu(MenuState.None);
+        EnergyBar.Visible = false;
+		BattleLogManager.Instance.ClearBattleLog();
+		BattleLogManager.Instance.Visible = false;
+		Delay.Timeout -= OnDelayTimeout;
+		Delay.QueueFree();
+		BattleLogManager.Instance.FinishedLogging -= OnBattleLogFinished;
+		Phase = BattlePhase.FightRun;
+		MainMenuManager.Instance.ReturnToTitle();
+	}
+
 	public void OnSelectAttack()
 	{
 		SelectedAction = CurrentParty[CurrentPartyMember].Actor.Skills.Values.First();

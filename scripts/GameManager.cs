@@ -6,9 +6,9 @@ public partial class GameManager : Node
 {
 	[Export] public PackedScene BattlecardUI;
 	[Export] public PackedScene EnemyUI;
-	[Export] public Control UIParent;
 	[Export] public TextureRect BattlebackParent;
 	[Export] public Label FPSLabel;
+	[Export] public Node Party;
 
 	[Export] public PackedScene[] Followups;
 
@@ -120,6 +120,19 @@ public partial class GameManager : Node
 		BattleManager.Instance.Init(party, enemy, items, FollowupTier, UseBasilFollowups, UseBasilReleaseEnergy);
 	}
 
+	public void DespawnAll()
+	{
+		foreach (Node child in Party.GetChildren())
+		{
+			child.QueueFree();
+		}
+
+		foreach (Node child in BattlebackParent.GetChildren())
+		{
+			child.QueueFree();
+		}
+	}
+
 	private EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true)
 	{
 		Enemy instance = Database.CreateEnemy(who);
@@ -138,7 +151,7 @@ public partial class GameManager : Node
 		if (instance == null)
 			return null;
 		Control card = BattlecardUI.Instantiate<Control>();
-		UIParent.AddChild(card);
+		Party.AddChild(card);
 		switch (position)
 		{
 			case 0:

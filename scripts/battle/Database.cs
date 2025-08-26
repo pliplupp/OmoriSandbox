@@ -652,7 +652,7 @@ public class Database
 
 		// SUNNY
 
-		Skills["SAttack"] = new Skill(
+		Skills["SRWAttack"] = new Skill(
 			name: "Attack",
 			description: "Basic Attack",
 			target: SkillTarget.Enemy,
@@ -2337,7 +2337,6 @@ public class Database
 				target = BattleManager.Instance.GetRandomAlivePartyMember();
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false);
 				await Task.Delay(917);
-				target = BattleManager.Instance.GetRandomAlivePartyMember();
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false);
 			},
 			hidden: true
