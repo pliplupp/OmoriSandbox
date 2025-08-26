@@ -10,28 +10,60 @@ Simply download the latest release archive from the "Releases" section and extra
 ## Usage
 **Important Note**: As of writing, the project is currently in an "alpha" state, allowing users to try out the sandbox for themselves during active development. While battles are functional from start to finish, __many features including skills, weapons, items, enemies, etc. are missing from the current build.__ Expect bugs, glitches, or potential inaccuracies. See the [To-Dos](#To-Dos) section to see the current status of any missing features. If you happen to find a bug, please report it in the "Issues" tab.
 
-When the Sandbox opens for the first time, it may appear to hang for a couple of seconds. This is **normal** and is simply the Sandbox loading all of its necessary files. After loading, the battle will immediately begin. If you need to restart the fight for any reason, you must fully close and reopen the Sandbox. The "Run" option will not work in any battle and is there for accuracy purposes.
+When the Sandbox opens for the first time, it may appear to hang for a couple of seconds. This is **normal** and is simply the Sandbox loading all of its necessary files. After loading, the title screen will appear. There are four buttons available:
+1. "Play" will run the currently selected battle preset.
+2. "Configure" will open the visual preset configuration GUI.
+3. "Open Preset Folder" will open the folder where your presets are stored. **You should only directly modify these files if you know what you're doing.**
+4. "Open Custom Folder" will open the folder where your customizations are stored. Customization is explained further below.
 
-### Configuring the Battle
-The battle itself can be configured from the `config.ini` file, usually located at `%appdata%\Godot\app_userdata\OmoriSandbox`. (To access this folder, simply paste the directory into the Windows Run dialog `Windows Key + R`). You can open the config file in any text editor to view and modify it's contents. There is documentation inside the config file explaining each section.
+## Configuring Battles
+Battles can be configured via the visual editor accessed by clicking the "Configure" button on the title screen. There are five tabs at the top of the screen, and various buttons laid out across the screen. When you are satisfied with your edits, you can enter a preset name into the input box and click `Save Preset` to save your preset. The preset will then appear in the dropdown in the main menu. Selecting your newly created preset and clicking "Play" will begin the battle! During a battle, you can select "Run" to return back to the title screen. If you click "Play" again, the battle will restart from the beginning.
 
-If your config file becomes unfixable or corrupted, simply delete the file, and the Sandbox will generate a default one the next time the Sandbox is launched. By default, the battle will be against Sweetheart, with a full dream world party at level 20 with pre-selected skills and items.
+Each section of the editor is explained below:
+
+### Settings
+General settings for the battle. Most of the options are self-explainatory. 
+
+Choosing a Battleback will update the background of the editor to give you a preview of the currently selected battleback. 
+
+The BGM "Preview" button will play the currently selected audio track in the background. Clicking the "Stop" button will stop the audio.
+
+If `Use Basil Followups` is checked, the character in the bottom right corner will use Basil's Followups instead of Kel's.
+
+If `Use Basil Release Energy` is checked, Omori's "Release Energy" Followup will use the Basil version instead of the Omori version.
+
+### Items
+Click the `+ Add Item` button to add an item to your inventory. This section handles both Toys and Snacks. You can use the input box to set the amount of each item that you want, or press the `X` button to remove the item from your inventory.
+
+### Skill Search
+Allows you to search for skills to put into actor skill inputs as explained below. Type your search query into the search bar and click `Search` to pull up all internal skill names that match your query. It should be noted that skill names are case-sensitive and should be input as such.
+
+### Actors
+Clicking the `+ Add Actor` button in one of the corners will create a tab in this section. All aspects of said actor can be customized in each respective named tab.
+
+If `Disable Followups` is checked, that actor will not be able to use any followups. Useful for Real World actors.
+
+As mentioned in the previous section, each entry in the Skills section is case-sensitive, and must be entered exactly as they appear in the Skill Search. The `Attack Skill` section is the skill that gets used whenever the `Attack` button is selected. While this can be any skill, the regular attack skills follow the format of `XAttack`, where `X` is the actor's first initial. Real World actors use the format `XRWAttack`.
+
+For example, Omori would use `OAttack` for his attack, and Real World Aubrey would use `ARWAttack` for hers.
+
+### Enemies
+Clicking the `+ Add Enemy` button at the bottom will create a tab in this section. All aspects of said enemy can be customized in each respective named tab.
+
+The `XPos` and `YPos` boxes dictate the screen coordinates the enemy appears at, relative to the center of their sprite. `(0, 0)` is the top left, and `(640, 480)` is the bottom right of the screen.
+
+If `FallsOffScreen` is checked, the enemy will fall off the screen when defeated.
+
+The `Visible` checkbox is useful for when there are multiple enemies on the screen, or when an enemy is blocking something you need to see. This checkbox has no effect in battle.
 
 ## Customization
-The Sandbox currently supports customization via a `custom` folder in the same folder as the aforementioned config file.
-A valid file structure would look like so:
-```
-OmoriSandbox/
-| custom/
-| |	battlebacks/
-| |	bgm/
-| config.ini
-```
+The Sandbox currently supports customization via a `custom` folder, which can be accessed via the `Open Custom Folder` button on the title screen.
+
 Custom battlebacks should be placed in the `custom/battlebacks` folder, and should be in `.png` format. (640x480 pixels recommended)
 
 Custom BGM should be placed in the `custom/bgm` folder, and should be in `.ogg` format.
 
-You can use custom assets like any other vanilla asset in their respective `config.ini` sections.
+Custom assets will appear in their respetive dropdowns in the visual preset editor.
 
 As of writing, any other customization, such as custom party members, enemies, items, skills, etc. are not officially supported. The above system will eventually be replaced with official modding in a future release.
 
@@ -57,8 +89,8 @@ The following features are currently missing and/or not fully functional in the 
 - [ ] Official Mod Support/Modding API + Documentation
 - [ ] General Refactoring and Code Improvements
 - [ ] Porting more enemies and boss fights
-- [ ] Title Screen
-- [ ] A GUI driven config system
+- [X] Title Screen
+- [X] A GUI driven config system
 
 ## Contributing
 Contributions to the project are welcome! You can help contribute to the project in three main ways:
