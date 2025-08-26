@@ -2,15 +2,21 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 public class Database
 {
+	private static readonly Dictionary<string, Type> PartyMembers = [];
+	private static readonly Dictionary<string, Type> Enemies = [];
 	private static readonly Dictionary<string, Skill> Skills = [];
 	private static readonly Dictionary<string, Item> Items = [];
 	private static readonly Dictionary<string, Weapon> Weapons = [];
 	private static readonly Dictionary<string, Charm> Charms = [];
+
+	static Database()
+	{
+		Init();
+	}
 
 	public static bool TryGetSkill(string name, out Skill skill)
 	{
@@ -32,8 +38,83 @@ public class Database
 		return Charms.TryGetValue(name, out charm);
 	}
 
-	public static void Init()
+	public static PartyMember CreatePartyMember(string who)
 	{
+		if (!PartyMembers.TryGetValue(who, out Type member))
+		{
+			GD.PrintErr("Unknown party member: " + who);
+			return null;
+		}
+		return (PartyMember)Activator.CreateInstance(member);
+	}
+
+	public static Enemy CreateEnemy(string who)
+	{
+		if (!Enemies.TryGetValue(who, out Type member))
+		{
+			GD.PrintErr("Unknown enemy: " + who);
+			return null;
+		}
+		return (Enemy)Activator.CreateInstance(member);
+	}
+
+	public static IEnumerable<string> GetAllWeaponNames()
+	{
+		return Weapons.Keys;
+	}
+
+	public static IEnumerable<string> GetAllCharmNames()
+	{
+		return Charms.Keys;
+	}
+
+	public static IEnumerable<string> GetAllItemNames()
+	{
+		return Items.Keys;
+	}
+
+	public static IEnumerable<string> GetAllPartyMemberNames()
+	{
+		return PartyMembers.Keys;
+	}
+
+	public static IEnumerable<string> GetAllEnemyNames()
+	{
+		return Enemies.Keys;
+	}
+
+	public static IEnumerable<string> GetAllSkillNames()
+	{
+		return Skills.Keys;
+	}
+
+	private static void Init()
+	{
+		#region PARTY MEMBERS
+		PartyMembers.Add("Omori", typeof(Omori));
+		PartyMembers.Add("Aubrey", typeof(Aubrey));
+		PartyMembers.Add("Hero", typeof(Hero));
+		PartyMembers.Add("Kel", typeof(Kel));
+		PartyMembers.Add("Tony", typeof(Tony));
+		PartyMembers.Add("AubreyRW", typeof(AubreyRW));
+		PartyMembers.Add("KelRW", typeof(KelRW));
+		PartyMembers.Add("HeroRW", typeof(HeroRW));
+		PartyMembers.Add("Sunny", typeof(Sunny));
+		PartyMembers.Add("Basil", typeof(Basil));
+		#endregion
+
+		#region ENEMIES
+		Enemies.Add("LostSproutMole", typeof(LostSproutMole));
+		Enemies.Add("ForestBunny?", typeof(ForestBunnyQuestion));
+		Enemies.Add("Sweetheart", typeof(Sweetheart));
+		Enemies.Add("SlimeGirls", typeof(SlimeGirls));
+		Enemies.Add("HumphreyUvula", typeof(HumphreyUvula));
+		Enemies.Add("AubreyEnemy", typeof(AubreyEnemy));
+		Enemies.Add("BigStrongTree", typeof(BigStrongTree));
+		Enemies.Add("DownloadWindow", typeof(DownloadWindow));
+		Enemies.Add("SpaceExBoyfriend", typeof(SpaceExBoyfriend));
+		#endregion
+
 		#region SKILLS
 		Skills["Guard"] = new Skill(
 			name: "GUARD",
@@ -571,7 +652,7 @@ public class Database
 
 		// SUNNY
 
-		Skills["SAttack"] = new Skill(
+		Skills["SRWAttack"] = new Skill(
 			name: "Attack",
 			description: "Basic Attack",
 			target: SkillTarget.Enemy,
@@ -2256,7 +2337,6 @@ public class Database
 				target = BattleManager.Instance.GetRandomAlivePartyMember();
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false);
 				await Task.Delay(917);
-				target = BattleManager.Instance.GetRandomAlivePartyMember();
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false);
 			},
 			hidden: true
@@ -2598,9 +2678,9 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] crashes and burns!");
 				GameManager.Instance.AnimationManager.PlayScreenAnimation(165, false);
 				await Task.Delay(3652);
-				BattleLogManager.Instance.QueueMessage(self, target, "[actor] crashes and burns!");
 				foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
 				{
 					BattleManager.Instance.Damage(self, member.Actor, () => { return member.Actor.CurrentStats.MaxHP * 0.8f; }, true, 0f, false, true);

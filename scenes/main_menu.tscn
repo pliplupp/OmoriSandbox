@@ -1,32 +1,557 @@
-[gd_scene load_steps=2 format=3 uid="uid://dxm1fg4428tk"]
+[gd_scene load_steps=9 format=3 uid="uid://dxm1fg4428tk"]
 
 [ext_resource type="Texture2D" uid="uid://bkfc0aptec36b" path="res://assets/logo.png" id="1_l6cm7"]
+[ext_resource type="Script" uid="uid://b1cjgogphng5l" path="res://scripts/MainMenuManager.cs" id="1_wu84c"]
+[ext_resource type="FontFile" uid="uid://bdh481cgsv8wf" path="res://fonts/OMORI_GAME2.ttf" id="2_ekxnf"]
+[ext_resource type="PackedScene" uid="uid://d1q22va25i15g" path="res://scenes/enemy_editor_component.tscn" id="3_oa1go"]
+[ext_resource type="PackedScene" uid="uid://5jek8whi4if3" path="res://scenes/party_member_editor_component.tscn" id="4_8ln24"]
+[ext_resource type="PackedScene" uid="uid://d32syyvyr6iwr" path="res://scenes/party_member.tscn" id="5_rtw2f"]
+[ext_resource type="Texture2D" uid="uid://cmbljlf76y4r6" path="res://assets/title_screen.png" id="5_tbmy8"]
+[ext_resource type="Texture2D" uid="uid://d36ge2cnq6lkj" path="res://assets/battlebacks/battleback_vf_default.png" id="8_tbmy8"]
 
-[node name="MainMenu" type="Control"]
-layout_mode = 3
+[node name="MainMenu" type="CanvasLayer"]
+
+[node name="MainMenuManager" type="Node" parent="." node_paths=PackedStringArray("AddActorControls", "AddEnemyControl", "ActorTabs", "EnemyTabs", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "DataFolderButton", "CustomFolderButton", "GithubButton", "TitlePresetDropdown", "BattlebackPreview", "BattlebackDropdown", "BGMDropdown", "PreviewButton", "FollowupTierSlider", "FollowupTierValue", "BasilFollowupsCheckbox", "BasilReleaseEnergyCheckbox", "AddItemButton", "ItemContainer", "SearchInput", "SearchButton", "Results", "SavePresetButton", "PresetInput", "LoadPresetButton", "DeletePresetButton", "PresetDropdown", "ResetButton", "ReturnButton")]
+script = ExtResource("1_wu84c")
+AddActorControls = [NodePath("../Editor/Actors/AddActor1"), NodePath("../Editor/Actors/AddActor2"), NodePath("../Editor/Actors/AddActor3"), NodePath("../Editor/Actors/AddActor4")]
+AddEnemyControl = NodePath("../Editor/Actors/AddEnemy")
+PartyMemberEditor = ExtResource("4_8ln24")
+EnemyEditor = ExtResource("3_oa1go")
+BattleCard = ExtResource("5_rtw2f")
+ActorTabs = NodePath("../Editor/SettingsTabs/Actors/VBoxContainer/ActorTabs")
+EnemyTabs = NodePath("../Editor/SettingsTabs/Enemies/VBoxContainer/EnemyTabs")
+MainMenu = NodePath("../Main")
+Editor = NodePath("../Editor")
+PlayButton = NodePath("../Main/VBoxContainer/Play")
+ConfigureButton = NodePath("../Main/VBoxContainer/Configure")
+DataFolderButton = NodePath("../Main/VBoxContainer/HBoxContainer2/DataFolder")
+CustomFolderButton = NodePath("../Main/VBoxContainer/HBoxContainer2/CustomFolder")
+GithubButton = NodePath("../Main/Github")
+TitlePresetDropdown = NodePath("../Main/VBoxContainer/HBoxContainer/PresetDropdown")
+BattlebackPreview = NodePath("../Editor/BattlebackPreview")
+BattlebackDropdown = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Battleback/OptionButton")
+BGMDropdown = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGM/OptionButton")
+PreviewButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGM/Button")
+FollowupTierSlider = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier/HSlider")
+FollowupTierValue = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier/Label2")
+BasilFollowupsCheckbox = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BasilFollowups")
+BasilReleaseEnergyCheckbox = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BasilReleaseEnergy")
+AddItemButton = NodePath("../Editor/SettingsTabs/Items/VBoxContainer/AddItemButton")
+ItemContainer = NodePath("../Editor/SettingsTabs/Items/VBoxContainer/ScrollContainer/ItemsContainer")
+SearchInput = NodePath("../Editor/SettingsTabs/Skill Search/VBoxContainer/HBoxContainer/SearchInput")
+SearchButton = NodePath("../Editor/SettingsTabs/Skill Search/VBoxContainer/HBoxContainer/Search")
+Results = NodePath("../Editor/SettingsTabs/Skill Search/VBoxContainer/Results")
+SavePresetButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Save/Save")
+PresetInput = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Save/PresetName")
+LoadPresetButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Load/Load")
+DeletePresetButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Load/Delete")
+PresetDropdown = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Load/PresetDropdown")
+ResetButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Reset")
+ReturnButton = NodePath("../Editor/Return")
+
+[node name="Main" type="CanvasLayer" parent="."]
+
+[node name="Background" type="TextureRect" parent="Main"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -315.0
+offset_right = 68.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.25, 1)
+texture = ExtResource("5_tbmy8")
 
-[node name="ColorRect" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 1)
-
-[node name="Logo" type="TextureRect" parent="."]
+[node name="Logo" type="TextureRect" parent="Main"]
 texture_filter = 1
-layout_mode = 1
+clip_contents = true
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -144.5
-offset_right = 144.5
-offset_bottom = 288.0
+offset_left = -144.0
+offset_right = 145.0
+offset_bottom = 190.0
 grow_horizontal = 2
 texture = ExtResource("1_l6cm7")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="Version" type="Label" parent="Main"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = -13.0
+offset_right = 71.0
+offset_bottom = -3.0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 14
+text = "OmoriSandbox v0.5.0"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Main"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -110.0
+offset_top = -200.0
+offset_right = 110.0
+offset_bottom = -22.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Main/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Main/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 24
+text = "Battle Preset: "
+
+[node name="PresetDropdown" type="OptionButton" parent="Main/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 24
+clip_text = true
+fit_to_longest_item = false
+allow_reselect = true
+
+[node name="Play" type="Button" parent="Main/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 40
+text = "Play"
+
+[node name="Configure" type="Button" parent="Main/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 40
+text = "Configure"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Main/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="DataFolder" type="Button" parent="Main/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+text = "Open Preset Folder"
+
+[node name="CustomFolder" type="Button" parent="Main/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+text = "Open Custom Folder"
+
+[node name="Credits" type="Label" parent="Main"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -73.0
+offset_top = -38.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 14
+text = "Developed by EBro912
+Discord: alltoasters
+Background art edit by Krob
+OMORI and assets by OMOCAT"
+horizontal_alignment = 2
+
+[node name="Github" type="Button" parent="Main"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -38.0
+offset_top = -89.0
+offset_right = -2.0
+offset_bottom = -67.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 14
+text = "Github"
+
+[node name="Editor" type="CanvasLayer" parent="."]
+visible = false
+
+[node name="BattlebackPreview" type="TextureRect" parent="Editor"]
+z_index = -99
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("8_tbmy8")
+
+[node name="Actors" type="Control" parent="Editor"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="AddActor1" type="Control" parent="Editor/Actors"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 306.0
+offset_right = 20.0
+offset_bottom = 306.0
+
+[node name="Button" type="Button" parent="Editor/Actors/AddActor1"]
+z_index = -4
+layout_mode = 0
+offset_left = 10.0
+offset_top = 20.0
+offset_right = 102.0
+offset_bottom = 50.0
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 15
+text = "+ Add Actor"
+
+[node name="AddActor2" type="Control" parent="Editor/Actors"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 5.0
+offset_right = 20.0
+offset_bottom = 5.0
+
+[node name="Button" type="Button" parent="Editor/Actors/AddActor2"]
+z_index = -4
+layout_mode = 0
+offset_left = 10.0
+offset_top = 20.0
+offset_right = 102.0
+offset_bottom = 50.0
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 15
+text = "+ Add Actor"
+
+[node name="AddActor3" type="Control" parent="Editor/Actors"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 506.0
+offset_top = 5.0
+offset_right = 506.0
+offset_bottom = 5.0
+
+[node name="Button" type="Button" parent="Editor/Actors/AddActor3"]
+z_index = -4
+layout_mode = 0
+offset_left = 10.0
+offset_top = 20.0
+offset_right = 102.0
+offset_bottom = 50.0
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 15
+text = "+ Add Actor"
+
+[node name="AddActor4" type="Control" parent="Editor/Actors"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 506.0
+offset_top = 306.0
+offset_right = 506.0
+offset_bottom = 306.0
+
+[node name="Button" type="Button" parent="Editor/Actors/AddActor4"]
+z_index = -4
+layout_mode = 0
+offset_left = 10.0
+offset_top = 20.0
+offset_right = 102.0
+offset_bottom = 50.0
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 15
+text = "+ Add Actor"
+
+[node name="AddEnemy" type="Control" parent="Editor/Actors"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 260.0
+offset_top = 356.0
+offset_right = 260.0
+offset_bottom = 356.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Button" type="Button" parent="Editor/Actors/AddEnemy"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 20.0
+offset_right = 112.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 15
+text = "+ Add Enemy"
+
+[node name="SettingsTabs" type="TabContainer" parent="Editor"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_right = 250.0
+offset_bottom = 50.0
+grow_horizontal = 2
+scale = Vector2(0.75, 0.75)
+current_tab = 0
+clip_tabs = false
+tab_focus_mode = 1
+deselect_enabled = true
+
+[node name="Settings" type="MarginContainer" parent="Editor/SettingsTabs"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 2
+metadata/_tab_index = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Settings"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
+layout_mode = 2
+text = "Battle Settings"
+horizontal_alignment = 1
+
+[node name="Battleback" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/Battleback"]
+layout_mode = 2
+text = "Battleback"
+
+[node name="OptionButton" type="OptionButton" parent="Editor/SettingsTabs/Settings/VBoxContainer/Battleback"]
+layout_mode = 2
+allow_reselect = true
+
+[node name="BGM" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGM"]
+layout_mode = 2
+text = "BGM"
+
+[node name="OptionButton" type="OptionButton" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGM"]
+layout_mode = 2
+allow_reselect = true
+
+[node name="Button" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGM"]
+layout_mode = 2
+text = "Preview"
+
+[node name="FollowupTier" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier"]
+layout_mode = 2
+text = "Followup Tier"
+
+[node name="HSlider" type="HSlider" parent="Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 3.0
+value = 1.0
+rounded = true
+
+[node name="Label2" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier"]
+layout_mode = 2
+text = "1"
+
+[node name="BasilFollowups" type="CheckBox" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
+layout_mode = 2
+text = "Use Basil Followups"
+
+[node name="BasilReleaseEnergy" type="CheckBox" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
+layout_mode = 2
+text = "Use Basil Release Energy"
+
+[node name="Save" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
+layout_mode = 2
+
+[node name="PresetName" type="LineEdit" parent="Editor/SettingsTabs/Settings/VBoxContainer/Save"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+placeholder_text = "Preset Name..."
+
+[node name="Save" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/Save"]
+layout_mode = 2
+text = "Save Preset"
+
+[node name="Load" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
+layout_mode = 2
+
+[node name="PresetDropdown" type="OptionButton" parent="Editor/SettingsTabs/Settings/VBoxContainer/Load"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+
+[node name="Load" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/Load"]
+layout_mode = 2
+text = "Load Preset"
+
+[node name="Delete" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/Load"]
+layout_mode = 2
+text = "Delete Preset"
+
+[node name="Reset" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Reset All to Defaults"
+
+[node name="Items" type="MarginContainer" parent="Editor/SettingsTabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 2
+metadata/_tab_index = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Items"]
+layout_mode = 2
+
+[node name="ItemsLabel" type="Label" parent="Editor/SettingsTabs/Items/VBoxContainer"]
+layout_mode = 2
+text = "Items"
+horizontal_alignment = 1
+
+[node name="AddItemButton" type="Button" parent="Editor/SettingsTabs/Items/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "+ Add Item"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Editor/SettingsTabs/Items/VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="ItemsContainer" type="GridContainer" parent="Editor/SettingsTabs/Items/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="Skill Search" type="MarginContainer" parent="Editor/SettingsTabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 2
+metadata/_tab_index = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Skill Search"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="Editor/SettingsTabs/Skill Search/VBoxContainer"]
+layout_mode = 2
+text = "Skill Search"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Editor/SettingsTabs/Skill Search/VBoxContainer"]
+layout_mode = 2
+
+[node name="SearchInput" type="LineEdit" parent="Editor/SettingsTabs/Skill Search/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+placeholder_text = "Enter skill name..."
+
+[node name="Search" type="Button" parent="Editor/SettingsTabs/Skill Search/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Search"
+
+[node name="Label" type="Label" parent="Editor/SettingsTabs/Skill Search/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "Note: Basic attack skills are formatted as FirstInitalAttack.
+Example: OAttack -> Omori's Attack | ARWAttack -> Aubrey (Real World)'s Attack"
+
+[node name="Results" type="TextEdit" parent="Editor/SettingsTabs/Skill Search/VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+editable = false
+wrap_mode = 1
+
+[node name="Actors" type="MarginContainer" parent="Editor/SettingsTabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 2
+metadata/_tab_index = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Actors"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Editor/SettingsTabs/Actors/VBoxContainer"]
+layout_mode = 2
+text = "Actors"
+horizontal_alignment = 1
+
+[node name="ActorTabs" type="TabContainer" parent="Editor/SettingsTabs/Actors/VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+clip_tabs = false
+
+[node name="Enemies" type="MarginContainer" parent="Editor/SettingsTabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 2
+metadata/_tab_index = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Enemies"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Editor/SettingsTabs/Enemies/VBoxContainer"]
+layout_mode = 2
+text = "Enemies"
+horizontal_alignment = 1
+
+[node name="EnemyTabs" type="TabContainer" parent="Editor/SettingsTabs/Enemies/VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+clip_tabs = false
+
+[node name="Return" type="Button" parent="Editor"]
+z_index = 5
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -59.5
+offset_top = -50.0
+offset_right = 59.5
+offset_bottom = -19.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Return to Title"

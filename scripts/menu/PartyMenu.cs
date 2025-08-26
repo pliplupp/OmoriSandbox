@@ -21,9 +21,12 @@ public partial class PartyMenu : Menu
         {
             MenuManager.Instance.ShowMenu(MenuState.Battle);
             BattleManager.Instance.OnFightSelected();
-            AudioManager.Instance.PlaySFX("SYS_select");
-            return;
+            AudioManager.Instance.PlaySFX("SYS_select");        
         }
-        AudioManager.Instance.PlaySFX("sys_buzzer");
+        else
+        {
+            BattleManager.Instance.OnRunSelected();
+            AudioManager.Instance.PlaySFX("SYS_select");
+        }
     }
 }

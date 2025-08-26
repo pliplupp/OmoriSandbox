@@ -8,6 +8,6 @@ public class Basil : PartyMember
     public override int[] DEFTree => new[] { 5, 6, 8, 9, 10, 12, 13, 15, 16, 17, 19, 21, 22, 25, 26, 29, 30, 31, 33, 35, 36, 37, 39, 41, 42, 43, 44, 45, 48, 49, 51, 52, 54, 56, 57, 59, 61, 64, 67, 70, 73, 76, 79, 82, 85, 86, 87, 88, 89, 90 };
     public override int[] SPDTree => new[] { 1, 3, 5, 6, 8, 10, 11, 13, 14, 16, 18, 19, 21, 23, 24, 26, 27, 29, 31, 32, 34, 36, 37, 39, 40, 42, 44, 45, 47, 49, 50, 52, 53, 55, 57, 58, 60, 62, 63, 65, 66, 68, 70, 71, 73, 75, 76, 78, 79, 80 };
     public override int BaseLuck => 10;
-    protected override string[] InvalidStates => ["stressed"];
+    public override string[] InvalidStates => ["stressed"];
     public override bool IsRealWorld => false;
 }

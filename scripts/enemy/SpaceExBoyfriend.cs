@@ -15,7 +15,6 @@ public class SpaceExBoyfriend : Enemy
         return state == "neutral" || state == "sad" || state == "happy"
             || state == "angry" || state == "hurt";
     }
-    public override bool FallsOffScreen => false;
 
     private bool EmotionLocked = false;
     private int Stage = 0;
@@ -106,23 +105,23 @@ public class SpaceExBoyfriend : Enemy
 
     public override void ProcessBattleConditions()
     {
-        if (Stage > 2)
+        if (Stage > 2 || CurrentHP <= 0)
             return;
 
-        if (CurrentHP < 338 && Stage == 2)
+        if (CurrentHP < 338 && Stage <= 2)
         {
             EmotionLocked = false;
             ForceState("se_furious");
             EmotionLocked = true;
-            Stage++;
+            Stage = 3;
         }
 
-        if (CurrentHP < 675 && Stage == 1)
+        if (CurrentHP < 675 && Stage <= 1)
         {
             EmotionLocked = false;
             ForceState("se_enraged");
             EmotionLocked = true;
-            Stage++;
+            Stage = 2;
         }
 
         if (CurrentHP < 1013 && Stage == 0)
@@ -130,7 +129,7 @@ public class SpaceExBoyfriend : Enemy
             ForceState("se_angry");
             EmotionLocked = true;
             AddStatModifier(Modifier.SpaceExBoyfriendLock, 1, int.MaxValue);
-            Stage++;
+            Stage = 1;
         }
     }
 }

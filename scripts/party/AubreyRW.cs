@@ -15,6 +15,6 @@ public class AubreyRW : PartyMember
     public override int[] SPDTree => [12];
 
     public override int BaseLuck => 5;
-    protected override string[] InvalidStates => ["miserable", "manic", "furious", "stressed"];
+    public override string[] InvalidStates => ["miserable", "manic", "furious", "stressed"];
     public override bool IsRealWorld => true;
 }

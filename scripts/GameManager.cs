@@ -6,14 +6,11 @@ public partial class GameManager : Node
 {
 	[Export] public PackedScene BattlecardUI;
 	[Export] public PackedScene EnemyUI;
-	[Export] public Control UIParent;
 	[Export] public TextureRect BattlebackParent;
 	[Export] public Label FPSLabel;
+	[Export] public Node Party;
 
 	[Export] public PackedScene[] Followups;
-
-	private readonly Dictionary<string, Type> ValidPartyMembers = [];
-	private readonly Dictionary<string, Type> ValidEnemies = [];
 
 	public RandomNumberGenerator Random = new();
 	public AnimationManager AnimationManager { get; private set; }
@@ -33,32 +30,7 @@ public partial class GameManager : Node
 
 	public override void _Ready()
 	{
-		Database.Init();
-
-		// these can (potentially) be file-driven instead of class based at some point
-
-		ValidPartyMembers.Add("Omori", typeof(Omori));
-		ValidPartyMembers.Add("Aubrey", typeof(Aubrey));
-		ValidPartyMembers.Add("Hero", typeof(Hero));
-		ValidPartyMembers.Add("Kel", typeof(Kel));
-		ValidPartyMembers.Add("Tony", typeof(Tony));
-		ValidPartyMembers.Add("AubreyRW", typeof(AubreyRW));
-		ValidPartyMembers.Add("KelRW", typeof(KelRW));
-		ValidPartyMembers.Add("HeroRW", typeof(HeroRW));
-		ValidPartyMembers.Add("Sunny", typeof(Sunny));
-		ValidPartyMembers.Add("Basil", typeof(Basil));
-
-        ValidEnemies.Add("LostSproutMole", typeof(LostSproutMole));
-		ValidEnemies.Add("ForestBunny?", typeof(ForestBunnyQuestion));
-		ValidEnemies.Add("Sweetheart", typeof(Sweetheart));
-		ValidEnemies.Add("SlimeGirls", typeof(SlimeGirls));
-		ValidEnemies.Add("HumphreyUvula", typeof(HumphreyUvula));
-		ValidEnemies.Add("AubreyEnemy", typeof(AubreyEnemy));
-		ValidEnemies.Add("BigStrongTree", typeof(BigStrongTree));
-		ValidEnemies.Add("DownloadWindow", typeof(DownloadWindow));
-		ValidEnemies.Add("SpaceExBoyfriend", typeof(SpaceExBoyfriend));
-
-        Instance = this;
+		Instance = this;
 
 		AnimationManager = new();
 		AddChild(AnimationManager);
@@ -67,172 +39,137 @@ public partial class GameManager : Node
 
 		// Omori, Aubrey, Hero, Kel
 		// TODO: properly handle less than 4 party members
-		LoadBattleConfig();
 	}
 
-	// TODO: replace with a GUI-based config system
-	private void LoadBattleConfig()
+	public void LoadBattlePreset(Godot.Collections.Dictionary<string, Variant> data)
 	{
 		List<PartyMemberComponent> party = [];
 		List<EnemyComponent> enemy = [];
-		Dictionary<string, int> items = [];
-		int FollowupTier = -1;
-		bool UseBasilFollowups = false;
-		bool UseBasilReleaseEnergy = false;
+		Godot.Collections.Dictionary<string, int> items = data["items"].AsGodotDictionary<string, int>();
+		Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>> actors = data["actors"].AsGodotArray<Godot.Collections.Dictionary<string, Variant>>();
+		Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>> enemies = data["enemies"].AsGodotArray<Godot.Collections.Dictionary<string, Variant>>();
+		int FollowupTier = data["followupTier"].AsInt32();
+		bool UseBasilFollowups = data["basilFollowups"].AsBool();
+		bool UseBasilReleaseEnergy = data["basilReleaseEnergy"].AsBool();
 
-		ConfigFile config = new();
-
-		if (!FileAccess.FileExists("user://config.ini"))
-		{
-			// copy default config if it doesn't exist
-			GD.PushWarning("Config file does not exist. Creating a new one using default settings...");
-			string content = FileAccess.GetFileAsString("res://assets/default_config.ini");
-			using var dest = FileAccess.Open("user://config.ini", FileAccess.ModeFlags.Write);
-			dest.StoreString(content);
-			dest.Close();
-		}
-
-		Error err = config.Load("user://config.ini");
-		if (err != Error.Ok)
-		{
-			GD.PrintErr("Failed to load config: " + err);
-			return;
-		}
-
-		foreach (string s in config.GetSections())
-		{
-			string section = s.ToLower();
-			if (section == "general")
-			{
-				CustomDataPath = (string)config.GetValue(s, "custom_path");
-				AudioManager.Instance.PlayBGM((string)config.GetValue(s, "bgm"));
-				string battleback = (string)config.GetValue(s, "battleback");
-				if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback + ".png"))
-					BattlebackParent.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback + ".png");
-				else if (FileAccess.FileExists(CustomDataPath + "/battlebacks/" + battleback + ".png"))
-					BattlebackParent.Texture = ImageTexture.CreateFromImage(Image.LoadFromFile(CustomDataPath + "/battlebacks/" + battleback + ".png"));
-				else
-					GD.PrintErr("No valid battleback found: " + battleback);
-				foreach (var kv in (Godot.Collections.Dictionary<string, int>)config.GetValue(s, "snacks"))
-					items.Add(kv.Key, kv.Value);
-				foreach (var kv in (Godot.Collections.Dictionary<string, int>)config.GetValue(s, "toys"))
-					items.Add(kv.Key, kv.Value);
-				FollowupTier = (int)config.GetValue(s, "followup_tier");
-				UseBasilFollowups = (bool)config.GetValue(s, "use_basil_followups");
-				UseBasilReleaseEnergy = (bool)config.GetValue(s, "use_basil_release_energy");
-            }
-			else if (section.StartsWith("actor"))
-			{
-				if (party.Count >= 4)
-				{
-					GD.PushWarning("Party is full, skipping extra [actor] entry.");
-					continue;
-				}
-
-				int position = (int)config.GetValue(s, "position");
-				PackedScene followup;
-				// piratesoftware ahh code
-				// TODO: improve setting basil followup
-				if (position == 4 && UseBasilFollowups)
-					followup = Followups[4];				
-				else 
-					followup = Followups[position - 1];
-
-                PartyMemberComponent add = SpawnPartyMember(
-							(string)config.GetValue(s, "name"),
-							followup,
-							(int)config.GetValue(s, "position"),
-							(string)config.GetValue(s, "weapon"),
-							(string)config.GetValue(s, "charm"),
-							(string[])config.GetValue(s, "skills"),
-							(int)config.GetValue(s, "level"),
-							(string)config.GetValue(s, "emotion")
-						);
-
-				if (add == null)
-				{
-					GD.PrintErr("Failed to load a party member, please check the config file.");
-					continue;
-				}
-				party.Add(add);
-				GD.Print("Loaded actor: " + add.Actor.Name);
-			}
-			else if (section.StartsWith("enemy"))
-			{
-				EnemyComponent add = SpawnEnemy(
-						(string)config.GetValue(s, "name"),
-						(Vector2)config.GetValue(s, "position"),
-						(string)config.GetValue(s, "emotion")
-					);
-				if (add == null)
-				{
-					GD.PrintErr("Failed to load an enemy, please check the config file.");
-					continue;
-				}
-				enemy.Add(add);
-				GD.Print("Loaded enemy: " + add.Actor.Name);
-			}
-		}
-
-		if (FollowupTier == -1)
-		{
-			GD.PushWarning("Followup Tier not set in config, defaulting to 1.");
-			FollowupTier = 1;
-        }
+		string battleback = data["battleback"].AsString();
+		if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback))
+			BattlebackParent.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback);
+		else if (FileAccess.FileExists(CustomDataPath + "/battlebacks/" + battleback))
+			BattlebackParent.Texture = ImageTexture.CreateFromImage(Image.LoadFromFile(CustomDataPath + "/battlebacks/" + battleback));
 		else
+			GD.PrintErr("Failed to load battleback: " + battleback);
+
+		string bgm = StringExtensions.GetBaseName(data["bgm"].AsString());
+		AudioManager.Instance.PlayBGM(bgm);
+
+		foreach (var entry in actors)
 		{
-			GD.Print("Using Followup Tier " + FollowupTier);
-        }
+			if (party.Count >= 4)
+			{
+				GD.PushWarning("Party is full, skipping extra actor");
+				continue;
+			}
+
+			PackedScene followup = null;
+			// TODO: improve setting basil followup
+			int position = entry["position"].AsInt32();
+			bool followupsDisabled = entry["followupsDisabled"].AsBool();
+			if (!followupsDisabled)
+			{
+				if (UseBasilFollowups && position == 3)
+					followup = Followups[4];
+				else
+					followup = Followups[position];
+			}
+
+			PartyMemberComponent actor = SpawnPartyMember(
+				entry["name"].ToString(),
+				followup,
+				position,
+				entry["weapon"].ToString(),
+				entry["charm"].ToString(),
+				entry["skills"].AsStringArray(),
+				entry["level"].AsInt32(),
+				entry["emotion"].ToString()
+				);
+
+			if (actor == null)
+				continue;
+
+			party.Add(actor);
+		}
+
+		foreach (var entry in enemies)
+		{
+			// dumb hack to read the Vector2 since AsVector2() doesn't seem to work here
+			string positionStr = entry["position"].ToString();
+			string[] positionArr = positionStr.Substring(1, positionStr.Length - 2).Split(',');
+			Vector2 position = new(float.Parse(positionArr[0]), float.Parse(positionArr[1]));
+			EnemyComponent en = SpawnEnemy(
+					entry["name"].ToString(),
+					position,
+					entry["emotion"].ToString(),
+					entry["fallsOffScreen"].AsBool()
+				);
+			if (en == null)
+				continue;
+			enemy.Add(en);
+		}
 
 		BattleManager.Instance.Init(party, enemy, items, FollowupTier, UseBasilFollowups, UseBasilReleaseEnergy);
 	}
 
-	private EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral")
+	public void DespawnAll()
 	{
-		if (!ValidEnemies.TryGetValue(who, out Type enemy))
+		foreach (Node child in Party.GetChildren())
 		{
-			GD.PrintErr("Unknown enemy: " + who);
-			return null;
+			child.QueueFree();
 		}
 
-		object handle = Activator.CreateInstance(enemy);
+		foreach (Node child in BattlebackParent.GetChildren())
+		{
+			child.QueueFree();
+		}
+	}
+
+	private EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true)
+	{
+		Enemy instance = Database.CreateEnemy(who);
 		Node2D node = EnemyUI.Instantiate<Node2D>();
 		BattlebackParent.AddChild(node);
 		node.GlobalPosition = position;
 		EnemyComponent component = new();
 		node.AddChild(component);
-		component.SetEnemy((Enemy)handle, startingEmotion);
+		component.SetEnemy(instance, startingEmotion, fallsOffScreen);
 		return component;
 	}
 
 	private PartyMemberComponent SpawnPartyMember(string who, PackedScene followup, int position, string weapon, string charm, string[] skills, int level = 1, string startingEmotion = "neutral")
 	{
-		if (!ValidPartyMembers.TryGetValue(who, out Type member))
-		{
-			GD.PrintErr("Unknown party member: " + who);
+		PartyMember instance = Database.CreatePartyMember(who);
+		if (instance == null)
 			return null;
-		}
-		object handle = Activator.CreateInstance(member);
 		Control card = BattlecardUI.Instantiate<Control>();
-		UIParent.AddChild(card);
+		Party.AddChild(card);
 		switch (position)
 		{
-			case 1:
+			case 0:
 				card.Position = new Vector2(20, 306);
 				break;
-			case 2:
+			case 1:
 				card.Position = new Vector2(20, 5);
 				break;
-			case 3:
+			case 2:
 				card.Position = new Vector2(506, 5);
 				break;
-			case 4:
+			case 3:
 				card.Position = new Vector2(506, 306);
 				break;
 		}
 		PartyMemberComponent component = new();
 		card.AddChild(component);
-		component.SetPartyMember((PartyMember)handle, followup, position, startingEmotion, level, weapon, charm, skills);
+		component.SetPartyMember(instance, followup, position, startingEmotion, level, weapon, charm, skills);
 		return component;
 	}
 

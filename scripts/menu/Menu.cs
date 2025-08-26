@@ -7,6 +7,7 @@ public abstract partial class Menu : Sprite2D
     protected List<string> Options = [];
     protected List<Vector2I> CursorPositions = [];
     protected int CursorIndex = 0;
+    protected bool Empty = false;
 
     public void OnInput(Vector2I direction)
     {

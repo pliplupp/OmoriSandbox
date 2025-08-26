@@ -14,6 +14,6 @@ public class HeroRW : PartyMember
     public override int[] SPDTree => [10];
 
     public override int BaseLuck => 10;
-    protected override string[] InvalidStates => ["miserable", "manic", "furious", "stressed"];
+    public override string[] InvalidStates => ["miserable", "manic", "furious", "stressed"];
     public override bool IsRealWorld => true;
 }

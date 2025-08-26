@@ -10,8 +10,6 @@ public class HumphreyUvula : Enemy
         return state == "neutral" || state == "toast";
     }
 
-    public override bool FallsOffScreen => false;
-
     private string[] Text = [
         "Heh! You'll never defeat me, loser!",
         "You are nothing but meat, so please let me eat you.",

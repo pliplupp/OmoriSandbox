@@ -280,6 +280,7 @@ public abstract class Actor
 			{
 				// set the emotion background back to what it was before
 				SetState(omori.OldEmotion, true);
+				omori.OldEmotion = null;
 			}
 			return x.TurnsLeft <= 0;
 		});
@@ -345,6 +346,13 @@ public abstract class Actor
 				BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " feels " + state.ToUpper() + "!");
 			}
 			OnStateChanged?.Invoke(this, EventArgs.Empty);
+
+			// bug fix for when omori changes state during the plot armor turn
+			// this REAALLLY needs to be handled better soon...
+			if (this is Omori omori && omori.OldEmotion != null && state != "plotarmor")
+			{
+				omori.OldEmotion = state;
+			}
 		}
 		else
 		{

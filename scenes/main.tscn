@@ -1,5 +1,6 @@
-[gd_scene load_steps=29 format=3 uid="uid://dnxcj20hgcsj8"]
+[gd_scene load_steps=30 format=3 uid="uid://dnxcj20hgcsj8"]
 
+[ext_resource type="PackedScene" uid="uid://dxm1fg4428tk" path="res://scenes/main_menu.tscn" id="1_yq6so"]
 [ext_resource type="PackedScene" uid="uid://b8h6qs361gmp5" path="res://scenes/omori_followup.tscn" id="4_muem4"]
 [ext_resource type="Texture2D" uid="uid://dy720f7vg7l3t" path="res://assets/atlases/battleATLAS.png" id="4_tipki"]
 [ext_resource type="Texture2D" uid="uid://q4jxuj12jmru" path="res://assets/system/bsys_cursor.png" id="5_85g3d"]
@@ -31,21 +32,26 @@
 
 [node name="Main" type="Node2D"]
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="MainMenu" parent="." instance=ExtResource("1_yq6so")]
 
-[node name="GameManager" type="Node" parent="CanvasLayer" node_paths=PackedStringArray("UIParent", "BattlebackParent", "FPSLabel")]
+[node name="BattleCanvas" type="CanvasLayer" parent="."]
+layer = 0
+
+[node name="GameManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("BattlebackParent", "FPSLabel", "Party")]
 script = ExtResource("14_a8y0u")
 BattlecardUI = ExtResource("5_tefeu")
 EnemyUI = ExtResource("8_choun")
-UIParent = NodePath("../UI")
 BattlebackParent = NodePath("../UI/Battleback")
 FPSLabel = NodePath("../UI/HBoxContainer/FPS")
+Party = NodePath("../UI/Party")
 Followups = Array[PackedScene]([ExtResource("4_muem4"), ExtResource("5_dp3eg"), ExtResource("6_0ld40"), ExtResource("7_gqmmt"), ExtResource("8_vxglm")])
 
-[node name="BattleManager" type="Node" parent="CanvasLayer"]
+[node name="BattleManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("EnergyText", "EnergyBar")]
 script = ExtResource("9_y6deb")
+EnergyText = NodePath("../UI/Energy/EnergyAmount")
+EnergyBar = NodePath("../UI/Energy")
 
-[node name="MenuManager" type="Node" parent="CanvasLayer" node_paths=PackedStringArray("Cursor", "PartyMenu", "BattleMenu", "SkillMenu", "SnackMenu", "ToyMenu", "EnergyBar", "EnergyText")]
+[node name="MenuManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("Cursor", "PartyMenu", "BattleMenu", "SkillMenu", "SnackMenu", "ToyMenu", "EnergyBar", "EnergyText")]
 script = ExtResource("9_ya4ey")
 Cursor = NodePath("../UI/Cursor")
 PartyMenu = NodePath("../UI/PartyMenu")
@@ -56,36 +62,36 @@ ToyMenu = NodePath("../UI/ToyMenu")
 EnergyBar = NodePath("../UI/Energy")
 EnergyText = NodePath("../UI/Energy/EnergyAmount")
 
-[node name="BGM" type="AudioStreamPlayer" parent="CanvasLayer"]
+[node name="BGM" type="AudioStreamPlayer" parent="BattleCanvas"]
 volume_db = -10.0
 
-[node name="AudioManager" type="Node" parent="CanvasLayer" node_paths=PackedStringArray("BGM")]
+[node name="AudioManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("BGM")]
 script = ExtResource("11_ya4ey")
 BGM = NodePath("../BGM")
 
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="CanvasLayer/AudioManager"]
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
 
-[node name="AudioStreamPlayer2" type="AudioStreamPlayer" parent="CanvasLayer/AudioManager"]
+[node name="AudioStreamPlayer2" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
 
-[node name="AudioStreamPlayer3" type="AudioStreamPlayer" parent="CanvasLayer/AudioManager"]
+[node name="AudioStreamPlayer3" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
 
-[node name="AudioStreamPlayer4" type="AudioStreamPlayer" parent="CanvasLayer/AudioManager"]
+[node name="AudioStreamPlayer4" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
 
-[node name="AudioStreamPlayer5" type="AudioStreamPlayer" parent="CanvasLayer/AudioManager"]
+[node name="AudioStreamPlayer5" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
 
-[node name="AudioStreamPlayer6" type="AudioStreamPlayer" parent="CanvasLayer/AudioManager"]
+[node name="AudioStreamPlayer6" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
 
-[node name="AudioStreamPlayer7" type="AudioStreamPlayer" parent="CanvasLayer/AudioManager"]
+[node name="AudioStreamPlayer7" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
 
-[node name="AudioStreamPlayer8" type="AudioStreamPlayer" parent="CanvasLayer/AudioManager"]
+[node name="AudioStreamPlayer8" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
 
-[node name="AudioStreamPlayer9" type="AudioStreamPlayer" parent="CanvasLayer/AudioManager"]
+[node name="AudioStreamPlayer9" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
 
-[node name="AudioStreamPlayer10" type="AudioStreamPlayer" parent="CanvasLayer/AudioManager"]
+[node name="AudioStreamPlayer10" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
 
-[node name="AudioStreamPlayer11" type="AudioStreamPlayer" parent="CanvasLayer/AudioManager"]
+[node name="AudioStreamPlayer11" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
 
-[node name="UI" type="Control" parent="CanvasLayer"]
+[node name="UI" type="Control" parent="BattleCanvas"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -95,7 +101,7 @@ grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/UI"]
+[node name="HBoxContainer" type="HBoxContainer" parent="BattleCanvas/UI"]
 z_index = 200
 layout_mode = 1
 anchors_preset = 2
@@ -105,47 +111,47 @@ offset_top = -10.0
 offset_right = 76.0
 grow_vertical = 0
 
-[node name="FPS" type="Label" parent="CanvasLayer/UI/HBoxContainer"]
+[node name="FPS" type="Label" parent="BattleCanvas/UI/HBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 10
 text = "0"
 
-[node name="Version" type="Label" parent="CanvasLayer/UI/HBoxContainer"]
+[node name="Version" type="Label" parent="BattleCanvas/UI/HBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 10
-text = "OmoriSandbox v0.4.0"
+text = "OmoriSandbox v0.5.0"
 
-[node name="FullScreenEffects" type="Node2D" parent="CanvasLayer/UI"]
+[node name="FullScreenEffects" type="Node2D" parent="BattleCanvas/UI"]
 
-[node name="ReleaseEnergy" type="AnimatedSprite2D" parent="CanvasLayer/UI/FullScreenEffects"]
+[node name="ReleaseEnergy" type="AnimatedSprite2D" parent="BattleCanvas/UI/FullScreenEffects"]
 visible = false
 z_index = 20
 position = Vector2(320, 243.5)
 scale = Vector2(1, 1.01458)
 sprite_frames = ExtResource("11_dp3eg")
 
-[node name="RedHands" type="AnimatedSprite2D" parent="CanvasLayer/UI/FullScreenEffects"]
+[node name="RedHands" type="AnimatedSprite2D" parent="BattleCanvas/UI/FullScreenEffects"]
 visible = false
 z_index = 20
 position = Vector2(320, 243.5)
 scale = Vector2(1, 1.02937)
 sprite_frames = ExtResource("13_og1vs")
 
-[node name="FlowerCrown" type="AnimatedSprite2D" parent="CanvasLayer/UI/FullScreenEffects"]
+[node name="FlowerCrown" type="AnimatedSprite2D" parent="BattleCanvas/UI/FullScreenEffects"]
 visible = false
 position = Vector2(320, 243.5)
 sprite_frames = ExtResource("14_2wyq8")
 
-[node name="ReleaseEnergyBasil" type="AnimatedSprite2D" parent="CanvasLayer/UI/FullScreenEffects"]
+[node name="ReleaseEnergyBasil" type="AnimatedSprite2D" parent="BattleCanvas/UI/FullScreenEffects"]
 visible = false
 position = Vector2(320, 243.5)
 sprite_frames = ExtResource("15_vxglm")
 frame = 3
 frame_progress = 0.0638822
 
-[node name="Battleback" type="TextureRect" parent="CanvasLayer/UI"]
+[node name="Battleback" type="TextureRect" parent="BattleCanvas/UI"]
 z_index = -100
 texture_repeat = 3
 layout_mode = 1
@@ -155,7 +161,10 @@ offset_bottom = 480.0
 texture = ExtResource("14_og1vs")
 stretch_mode = 1
 
-[node name="BattleLog" type="TextureRect" parent="CanvasLayer/UI" node_paths=PackedStringArray("ImmediateLabel")]
+[node name="Party" type="Node" parent="BattleCanvas/UI"]
+
+[node name="BattleLog" type="TextureRect" parent="BattleCanvas/UI" node_paths=PackedStringArray("ImmediateLabel")]
+visible = false
 z_index = -1
 layout_mode = 1
 anchors_preset = 5
@@ -172,7 +181,7 @@ ImmediateLabel = NodePath("Immediate")
 Font = ExtResource("10_choun")
 metadata/_edit_use_anchors_ = true
 
-[node name="Immediate" type="Label" parent="CanvasLayer/UI/BattleLog"]
+[node name="Immediate" type="Label" parent="BattleCanvas/UI/BattleLog"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -186,14 +195,15 @@ grow_vertical = 2
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 24
 
-[node name="Energy" type="Sprite2D" parent="CanvasLayer/UI"]
+[node name="Energy" type="Sprite2D" parent="BattleCanvas/UI"]
+visible = false
 z_index = -5
 position = Vector2(320, 360)
 texture = ExtResource("4_tipki")
 region_enabled = true
 region_rect = Rect2(0, 0, 362, 49)
 
-[node name="EnergyAmount" type="Label" parent="CanvasLayer/UI/Energy"]
+[node name="EnergyAmount" type="Label" parent="BattleCanvas/UI/Energy"]
 offset_left = 145.0
 offset_top = -13.0
 offset_right = 168.0
@@ -205,7 +215,7 @@ theme_override_font_sizes/font_size = 24
 text = "00"
 horizontal_alignment = 1
 
-[node name="PartyMenu" type="Sprite2D" parent="CanvasLayer/UI" node_paths=PackedStringArray("CursorSprite")]
+[node name="PartyMenu" type="Sprite2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("CursorSprite")]
 visible = false
 z_index = -1
 position = Vector2(320, 429)
@@ -215,7 +225,7 @@ region_rect = Rect2(653, 376, 362, 82)
 script = ExtResource("17_pm3ni")
 CursorSprite = NodePath("../Cursor")
 
-[node name="BattleMenu" type="Sprite2D" parent="CanvasLayer/UI" node_paths=PackedStringArray("CursorSprite")]
+[node name="BattleMenu" type="Sprite2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("CursorSprite")]
 visible = false
 z_index = -1
 position = Vector2(320, 429)
@@ -225,7 +235,7 @@ region_rect = Rect2(653, 130, 362, 82)
 script = ExtResource("18_y6deb")
 CursorSprite = NodePath("../Cursor")
 
-[node name="SkillMenu" type="Sprite2D" parent="CanvasLayer/UI" node_paths=PackedStringArray("SkillLabels", "CostText", "CursorSprite")]
+[node name="SkillMenu" type="Sprite2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("SkillLabels", "CostText", "CursorSprite")]
 visible = false
 position = Vector2(320, 437)
 texture = ExtResource("9_85g3d")
@@ -235,13 +245,13 @@ SkillLabels = [NodePath("Skill1"), NodePath("Skill3"), NodePath("Skill2"), NodeP
 CostText = NodePath("Cost/Value")
 CursorSprite = NodePath("../Cursor")
 
-[node name="Line2D" type="Line2D" parent="CanvasLayer/UI/SkillMenu"]
+[node name="Line2D" type="Line2D" parent="BattleCanvas/UI/SkillMenu"]
 position = Vector2(-174, -13.5833)
 points = PackedVector2Array(0, 0, 350, 0)
 width = 2.0
 default_color = Color(0.870588, 0.870588, 0.870588, 1)
 
-[node name="Cost" type="Label" parent="CanvasLayer/UI/SkillMenu"]
+[node name="Cost" type="Label" parent="BattleCanvas/UI/SkillMenu"]
 offset_left = -166.0
 offset_top = -37.5833
 offset_right = -113.0
@@ -250,7 +260,7 @@ theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 18
 text = "COST:"
 
-[node name="Value" type="Label" parent="CanvasLayer/UI/SkillMenu/Cost"]
+[node name="Value" type="Label" parent="BattleCanvas/UI/SkillMenu/Cost"]
 layout_mode = 0
 offset_left = 35.0
 offset_right = 88.0
@@ -260,11 +270,11 @@ theme_override_font_sizes/font_size = 18
 text = "0"
 horizontal_alignment = 2
 
-[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/UI/SkillMenu/Cost"]
+[node name="Sprite2D" type="Sprite2D" parent="BattleCanvas/UI/SkillMenu/Cost"]
 position = Vector2(101, 9)
 texture = ExtResource("11_eb6dy")
 
-[node name="Skill1" type="Label" parent="CanvasLayer/UI/SkillMenu"]
+[node name="Skill1" type="Label" parent="BattleCanvas/UI/SkillMenu"]
 offset_left = -122.0
 offset_top = -8.58332
 offset_right = -69.0
@@ -272,7 +282,7 @@ offset_bottom = 15.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="Skill2" type="Label" parent="CanvasLayer/UI/SkillMenu"]
+[node name="Skill2" type="Label" parent="BattleCanvas/UI/SkillMenu"]
 offset_left = -122.0
 offset_top = 13.4167
 offset_right = -50.0
@@ -280,7 +290,7 @@ offset_bottom = 37.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="Skill3" type="Label" parent="CanvasLayer/UI/SkillMenu"]
+[node name="Skill3" type="Label" parent="BattleCanvas/UI/SkillMenu"]
 offset_left = 50.0
 offset_top = -8.58332
 offset_right = 127.0
@@ -288,7 +298,7 @@ offset_bottom = 15.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="Skill4" type="Label" parent="CanvasLayer/UI/SkillMenu"]
+[node name="Skill4" type="Label" parent="BattleCanvas/UI/SkillMenu"]
 offset_left = 50.0
 offset_top = 13.4167
 offset_right = 122.0
@@ -296,7 +306,7 @@ offset_bottom = 37.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="SnackMenu" type="Sprite2D" parent="CanvasLayer/UI" node_paths=PackedStringArray("ItemLabels", "CostText", "CursorSprite")]
+[node name="SnackMenu" type="Sprite2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("ItemLabels", "CostText", "CursorSprite")]
 visible = false
 position = Vector2(320, 437)
 texture = ExtResource("9_85g3d")
@@ -306,13 +316,13 @@ ItemLabels = [NodePath("Skill1"), NodePath("Skill3"), NodePath("Skill2"), NodePa
 CostText = NodePath("Cost/Value")
 CursorSprite = NodePath("../Cursor")
 
-[node name="Line2D" type="Line2D" parent="CanvasLayer/UI/SnackMenu"]
+[node name="Line2D" type="Line2D" parent="BattleCanvas/UI/SnackMenu"]
 position = Vector2(-174, -13.5833)
 points = PackedVector2Array(0, 0, 350, 0)
 width = 2.0
 default_color = Color(0.870588, 0.870588, 0.870588, 1)
 
-[node name="Cost" type="Label" parent="CanvasLayer/UI/SnackMenu"]
+[node name="Cost" type="Label" parent="BattleCanvas/UI/SnackMenu"]
 offset_left = -166.0
 offset_top = -37.5833
 offset_right = -113.0
@@ -321,7 +331,7 @@ theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 18
 text = "HOLD:"
 
-[node name="Value" type="Label" parent="CanvasLayer/UI/SnackMenu/Cost"]
+[node name="Value" type="Label" parent="BattleCanvas/UI/SnackMenu/Cost"]
 layout_mode = 0
 offset_left = 35.0
 offset_right = 88.0
@@ -331,7 +341,7 @@ theme_override_font_sizes/font_size = 18
 text = "0"
 horizontal_alignment = 2
 
-[node name="Skill1" type="Label" parent="CanvasLayer/UI/SnackMenu"]
+[node name="Skill1" type="Label" parent="BattleCanvas/UI/SnackMenu"]
 offset_left = -122.0
 offset_top = -8.58332
 offset_right = -69.0
@@ -339,7 +349,7 @@ offset_bottom = 15.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="Skill2" type="Label" parent="CanvasLayer/UI/SnackMenu"]
+[node name="Skill2" type="Label" parent="BattleCanvas/UI/SnackMenu"]
 offset_left = -122.0
 offset_top = 13.4167
 offset_right = -50.0
@@ -347,7 +357,7 @@ offset_bottom = 37.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="Skill3" type="Label" parent="CanvasLayer/UI/SnackMenu"]
+[node name="Skill3" type="Label" parent="BattleCanvas/UI/SnackMenu"]
 offset_left = 50.0
 offset_top = -8.58332
 offset_right = 127.0
@@ -355,7 +365,7 @@ offset_bottom = 15.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="Skill4" type="Label" parent="CanvasLayer/UI/SnackMenu"]
+[node name="Skill4" type="Label" parent="BattleCanvas/UI/SnackMenu"]
 offset_left = 50.0
 offset_top = 13.4167
 offset_right = 122.0
@@ -363,7 +373,7 @@ offset_bottom = 37.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="ToyMenu" type="Sprite2D" parent="CanvasLayer/UI" node_paths=PackedStringArray("ItemLabels", "CostText", "CursorSprite")]
+[node name="ToyMenu" type="Sprite2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("ItemLabels", "CostText", "CursorSprite")]
 visible = false
 position = Vector2(320, 437)
 texture = ExtResource("9_85g3d")
@@ -373,13 +383,13 @@ ItemLabels = [NodePath("Skill1"), NodePath("Skill3"), NodePath("Skill2"), NodePa
 CostText = NodePath("Cost/Value")
 CursorSprite = NodePath("../Cursor")
 
-[node name="Line2D" type="Line2D" parent="CanvasLayer/UI/ToyMenu"]
+[node name="Line2D" type="Line2D" parent="BattleCanvas/UI/ToyMenu"]
 position = Vector2(-174, -13.5833)
 points = PackedVector2Array(0, 0, 350, 0)
 width = 2.0
 default_color = Color(0.870588, 0.870588, 0.870588, 1)
 
-[node name="Cost" type="Label" parent="CanvasLayer/UI/ToyMenu"]
+[node name="Cost" type="Label" parent="BattleCanvas/UI/ToyMenu"]
 offset_left = -166.0
 offset_top = -37.5833
 offset_right = -113.0
@@ -388,7 +398,7 @@ theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 18
 text = "HOLD:"
 
-[node name="Value" type="Label" parent="CanvasLayer/UI/ToyMenu/Cost"]
+[node name="Value" type="Label" parent="BattleCanvas/UI/ToyMenu/Cost"]
 layout_mode = 0
 offset_left = 35.0
 offset_right = 88.0
@@ -398,7 +408,7 @@ theme_override_font_sizes/font_size = 18
 text = "0"
 horizontal_alignment = 2
 
-[node name="Skill1" type="Label" parent="CanvasLayer/UI/ToyMenu"]
+[node name="Skill1" type="Label" parent="BattleCanvas/UI/ToyMenu"]
 offset_left = -122.0
 offset_top = -8.58332
 offset_right = -69.0
@@ -406,7 +416,7 @@ offset_bottom = 15.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="Skill2" type="Label" parent="CanvasLayer/UI/ToyMenu"]
+[node name="Skill2" type="Label" parent="BattleCanvas/UI/ToyMenu"]
 offset_left = -122.0
 offset_top = 13.4167
 offset_right = -50.0
@@ -414,7 +424,7 @@ offset_bottom = 37.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="Skill3" type="Label" parent="CanvasLayer/UI/ToyMenu"]
+[node name="Skill3" type="Label" parent="BattleCanvas/UI/ToyMenu"]
 offset_left = 50.0
 offset_top = -8.58332
 offset_right = 127.0
@@ -422,7 +432,7 @@ offset_bottom = 15.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="Skill4" type="Label" parent="CanvasLayer/UI/ToyMenu"]
+[node name="Skill4" type="Label" parent="BattleCanvas/UI/ToyMenu"]
 offset_left = 50.0
 offset_top = 13.4167
 offset_right = 122.0
@@ -430,7 +440,8 @@ offset_bottom = 37.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="Cursor" type="Sprite2D" parent="CanvasLayer/UI"]
+[node name="Cursor" type="Sprite2D" parent="BattleCanvas/UI"]
+visible = false
 position = Vector2(250, 410)
 texture = ExtResource("5_85g3d")
 script = ExtResource("19_0ld40")

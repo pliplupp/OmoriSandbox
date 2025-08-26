@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 public partial class BattleManager : Node
 {
 	[Export] public Label EnergyText;
+	[Export] private Sprite2D EnergyBar;
 
 	private List<PartyMemberComponent> CurrentParty = [];
 	private List<EnemyComponent> Enemies = [];
@@ -19,23 +20,23 @@ public partial class BattleManager : Node
 	private int CommandIndex = -1;
 	private Timer Delay;
 	private List<Node2D> DyingEnemies = [];
-	private Dictionary<string, int> Items = [];
+	private Godot.Collections.Dictionary<string, int> Items = [];
 	private BattleAction SelectedAction;
 	public int Energy { get; private set; } = 0;
-	private bool FollowupActive = true;
+	private bool FollowupSelected = false;
 	private bool ForceHideFollowup = false;
 	private int FollowupTier = 1;
 	private bool UseBasilReleaseEnergy = false;
 	private bool UseBasilFollowups = false;
 
-    public static BattleManager Instance { get; private set; }
+	public static BattleManager Instance { get; private set; }
 
 	public override void _EnterTree()
 	{
 		Instance = this;
 	}
 
-	public void Init(List<PartyMemberComponent> party, List<EnemyComponent> enemies, Dictionary<string, int> items, int followupTier, bool useBasilFollowups, bool useBasilReleaseEnergy)
+	public void Init(List<PartyMemberComponent> party, List<EnemyComponent> enemies, Godot.Collections.Dictionary<string, int> items, int followupTier, bool useBasilFollowups, bool useBasilReleaseEnergy)
 	{
 		CurrentParty = party;
 		Enemies = enemies;
@@ -44,6 +45,10 @@ public partial class BattleManager : Node
 		FollowupTier = followupTier;
 		UseBasilFollowups = useBasilFollowups;
 		UseBasilReleaseEnergy = useBasilReleaseEnergy;
+
+		EnergyBar.Visible = CurrentParty.Any(x => x.HasFollowup);
+
+		BattleLogManager.Instance.Visible = true;
 
 		Delay = new Timer
 		{
@@ -330,6 +335,23 @@ public partial class BattleManager : Node
 		SetPhase(BattlePhase.PlayerCommand);
 	}
 
+	public void OnRunSelected()
+	{
+		GameManager.Instance.DespawnAll();
+		CurrentParty.Clear();
+		Enemies.Clear();
+		Items.Clear();
+        MenuManager.Instance.ShowMenu(MenuState.None);
+        EnergyBar.Visible = false;
+		BattleLogManager.Instance.ClearBattleLog();
+		BattleLogManager.Instance.Visible = false;
+		Delay.Timeout -= OnDelayTimeout;
+		Delay.QueueFree();
+		BattleLogManager.Instance.FinishedLogging -= OnBattleLogFinished;
+		Phase = BattlePhase.FightRun;
+		MainMenuManager.Instance.ReturnToTitle();
+	}
+
 	public void OnSelectAttack()
 	{
 		SelectedAction = CurrentParty[CurrentPartyMember].Actor.Skills.Values.First();
@@ -350,12 +372,12 @@ public partial class BattleManager : Node
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
 			return;
-        }
+		}
 		if (CurrentParty[CurrentPartyMember].Actor.CurrentState == "stressed" && skill.Name != "GUARD")
 		{
-            AudioManager.Instance.PlaySFX("sys_buzzer");
-            return;
-        }
+			AudioManager.Instance.PlaySFX("sys_buzzer");
+			return;
+		}
 		if (CurrentParty[CurrentPartyMember].Actor.CurrentJuice - skill.Cost < 0)
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
@@ -431,8 +453,8 @@ public partial class BattleManager : Node
 				GD.Print("Command Index: " + CommandIndex);
 				if (CommandIndex >= Commands.Count)
 				{
-                    EndOfTurn();
-                    SetPhase(BattlePhase.FightRun);
+					EndOfTurn();
+					SetPhase(BattlePhase.FightRun);
 				}
 				else
 				{
@@ -458,7 +480,7 @@ public partial class BattleManager : Node
 						component.FadeOutFollowups();
 					}
 				}
-				FollowupActive = false;
+				FollowupSelected = false;
 
 				foreach (EnemyComponent enemy in Enemies.ToList())
 				{
@@ -698,7 +720,6 @@ public partial class BattleManager : Node
 					if (component.HasFollowup)
 					{
 						component.FadeInFollowups(Energy);
-						FollowupActive = true;
 					}
 				}
 			}
@@ -718,10 +739,16 @@ public partial class BattleManager : Node
 		if (Energy < 3)
 			return false;
 
+		if (!EnergyBar.Visible)
+			return false;
+
+		if (FollowupSelected)
+			return false;
+
 		PartyMemberComponent current = CurrentParty.First(x => x.Actor == Commands[CommandIndex].Actor);
 		switch (current.Position)
 		{
-			case 1:
+			case 0:
 				if (direction == "up") {
 					if (Database.TryGetSkill($"AttackAgain{FollowupTier}", out Skill skill))
 						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
@@ -737,18 +764,18 @@ public partial class BattleManager : Node
 				{
 					if (Energy == 10 && CurrentParty.All(x => x.Actor.CurrentState != "toast"))
 					{
-                        if (UseBasilReleaseEnergy)
-                        {
+						if (UseBasilReleaseEnergy)
+						{
 							if (Database.TryGetSkill($"ReleaseEnergyBasil", out Skill skill))
 								ForceCommand(current.Actor, null, skill);
-                        }
-                        else if (Database.TryGetSkill($"ReleaseEnergy{FollowupTier}", out Skill skill))
-                            ForceCommand(current.Actor, null, skill);
-                        return true;
+						}
+						else if (Database.TryGetSkill($"ReleaseEnergy{FollowupTier}", out Skill skill))
+							ForceCommand(current.Actor, null, skill);
+						return true;
 					}
 				}
 				break;
-			case 2:
+			case 1:
 				if (direction == "up")
 				{
 					if (GetPartyMember(2).CurrentState == "toast")
@@ -772,7 +799,7 @@ public partial class BattleManager : Node
 					return true;
 				}
 				break;
-			case 3:
+			case 2:
 				if (direction == "up")
 				{
 					if (GetPartyMember(1).CurrentState == "toast")
@@ -805,7 +832,7 @@ public partial class BattleManager : Node
 					return true;
 				}
 				break;
-			case 4:
+			case 3:
 
 				if (UseBasilFollowups)
 				{
@@ -869,8 +896,8 @@ public partial class BattleManager : Node
 
 	private void ProcessFollowupSuccess()
 	{
+		FollowupSelected = true;
 		AudioManager.Instance.PlaySFX("Skill2", 1f, 0.8f);
-		FollowupActive = false;
 		CurrentParty.First(x => x.Actor == Commands[CommandIndex].Actor).FadeOutFollowups();
 		if (Commands[CommandIndex + 1].Action.Name.Contains("Release Energy"))
 			Energy = 0;
@@ -880,28 +907,28 @@ public partial class BattleManager : Node
 
 	private void EndOfTurn()
 	{
-        CheckBattleOver();
-        // tick down stat turn timers
-        CurrentParty.ForEach(x =>
-        {
-            x.Actor.DecreaseStatTurnCounter();
-            if (x.Actor.HasStatModifier(Modifier.ReleaseEnergyBasil))
-            {
-                int heal = (int)Math.Round(x.Actor.CurrentStats.MaxHP * 0.1f, MidpointRounding.AwayFromZero);
-                int juice = (int)Math.Round(x.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
-                x.Actor.Heal(heal);
-                x.Actor.HealJuice(juice);
-                SpawnDamageNumber(heal, x.Actor.CenterPoint, DamageType.Heal);
-                SpawnDamageNumber(juice, x.Actor.CenterPoint + new Vector2(0, 50), DamageType.JuiceGain);
-            }
-        });
-        Enemies.ForEach(x =>
-        {
+		CheckBattleOver();
+		// tick down stat turn timers
+		CurrentParty.ForEach(x =>
+		{
+			x.Actor.DecreaseStatTurnCounter();
+			if (x.Actor.HasStatModifier(Modifier.ReleaseEnergyBasil))
+			{
+				int heal = (int)Math.Round(x.Actor.CurrentStats.MaxHP * 0.1f, MidpointRounding.AwayFromZero);
+				int juice = (int)Math.Round(x.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
+				x.Actor.Heal(heal);
+				x.Actor.HealJuice(juice);
+				SpawnDamageNumber(heal, x.Actor.CenterPoint, DamageType.Heal);
+				SpawnDamageNumber(juice, x.Actor.CenterPoint + new Vector2(0, 50), DamageType.JuiceGain);
+			}
+		});
+		Enemies.ForEach(x =>
+		{
 			x.Actor.ProcessEndOfTurn();
-            x.Actor.DecreaseStatTurnCounter();
-            x.Actor.ProcessStartOfTurn();
-        });
-    }
+			x.Actor.DecreaseStatTurnCounter();
+			x.Actor.ProcessStartOfTurn();
+		});
+	}
 
 	public void OnBattleLogFinished()
 	{
@@ -987,7 +1014,7 @@ public partial class BattleManager : Node
 		if (target.HasStatModifier(Modifier.SpaceExBoyfriendLock))
 			targetState = targetState.Replace("se_", "");
 
-        finalDamage = CalculateEmotionModifiers(selfState, targetState, finalDamage, out int effectiveness);
+		finalDamage = CalculateEmotionModifiers(selfState, targetState, finalDamage, out int effectiveness);
 		if ((critical || target.HasStatModifier(Modifier.Tickle)) && !neverCrit)
 		{
 			finalDamage = (finalDamage * 1.5f) + 2;
