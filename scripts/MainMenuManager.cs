@@ -101,7 +101,10 @@ public partial class MainMenuManager : Node
 				PartyMemberEditorComponent editor = PartyMemberEditor.Instantiate<PartyMemberEditorComponent>();
 				editor.Name = "Omori";
 				ActorTabs.AddChild(editor);
-				editor.Init(card);
+				// really dumb, capturing a variable wasn't working here for some reason
+				// so we use the name of the parent to get the proper position
+				int position = (int)char.GetNumericValue(control.Name.ToString()[^1]) - 1;
+				editor.Init(card, position);
 			};
 		}
 
@@ -139,7 +142,7 @@ public partial class MainMenuManager : Node
 			BGMDropdown.AddItem(bgm);
 
 		BattlebackDropdown.Selected = BattlebackDropdown.GetItemIndex("battleback_vf_default.png");
-        BattlebackDropdown.ItemSelected += (idx) =>
+		BattlebackDropdown.ItemSelected += (idx) =>
 		{
 			string battleback = BattlebackDropdown.GetItemText((int)idx);
 			if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback))
@@ -221,8 +224,8 @@ public partial class MainMenuManager : Node
 	public void ReturnToTitle()
 	{
 		MainMenu.Visible = true;
-        AudioManager.Instance.PlayBGM("ow_cattail_fields");
-    }
+		AudioManager.Instance.PlayBGM("ow_cattail_fields");
+	}
 
 	private void PreSave()
 	{
@@ -282,15 +285,6 @@ public partial class MainMenuManager : Node
 
 		json.Add("items", items);
 
-		List<int> positions = [];
-		
-		for (int i = 0; i < AddActorControls.Length; i++)
-		{
-			if (AddActorControls[i].GetChildCount() > 1)
-				positions.Add(i);
-		}
-
-		int posIndex = 0;
 		foreach (Node child in ActorTabs.GetChildren())
 		{
 			if (child is PartyMemberEditorComponent editor)
@@ -308,10 +302,9 @@ public partial class MainMenuManager : Node
 					{ "emotion", editor.EmotionDropdown.GetItemText(editor.EmotionDropdown.Selected) },
 					{ "followupsDisabled", editor.DisableFollowups.ButtonPressed },
 					{ "skills", skills },
-					{ "position", positions[posIndex] }
+					{ "position", editor.ActorPosition }
 				};
 				actors.Add(actor);
-				posIndex++;
 			}
 		}
 
@@ -448,7 +441,7 @@ public partial class MainMenuManager : Node
 					card.Position = Vector2.Zero;
 					PartyMemberEditorComponent editor = PartyMemberEditor.Instantiate<PartyMemberEditorComponent>();
 					ActorTabs.AddChild(editor);
-					editor.Init(card, actorName, weapon, charm, level, followupsDisabled, emotion, skills);
+					editor.Init(card, actorName, weapon, charm, level, followupsDisabled, emotion, skills, position);
 				}
 				catch (KeyNotFoundException ex)
 				{

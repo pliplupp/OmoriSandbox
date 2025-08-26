@@ -14,10 +14,11 @@ public partial class SkillMenu : Menu
 	public void Populate(Actor actor)
 	{
 		Skills.Clear();
-		foreach (Label l in SkillLabels)
+        CostText.Text = "0";
+        foreach (Label l in SkillLabels)
 			l.Text = "";
 		int idx = 0;
-		foreach (Skill s in actor.Skills.Values.Where(x => !x.Hidden))
+        foreach (Skill s in actor.Skills.Values.Where(x => !x.Hidden))
 		{
 			if (idx > 3)
 				break;
@@ -33,6 +34,7 @@ public partial class SkillMenu : Menu
             Empty = true;
             return;
         }
+		Empty = false;
         CursorIndex = 0;
 		CursorPositions = Positions.GetRange(0, Skills.Count);
 		UpdateCursor();

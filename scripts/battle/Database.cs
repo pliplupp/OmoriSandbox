@@ -191,7 +191,7 @@ public class Database
 
 		Skills["Trick"] = new Skill(
 			name: "TRICK",
-			description: "Deals damage. If the foe is HAPPY, greatly\nreduce it's SPEED. Cost: 20",
+			description: "Deals damage. If the foe is HAPPY, greatly\nreduce its SPEED. Cost: 20",
 			target: SkillTarget.Enemy,
 			cost: 20,
 			effect: async (self, target) =>
@@ -257,9 +257,9 @@ public class Database
 			}
 		);
 
-		Skills["Shun"] = new Skill(
-			name: "SHUN",
-			description: "Deals damage. If the foe is SAD, greatly\nreduce it's DEFENSE. Cost: 20",
+		Skills["Mock"] = new Skill(
+			name: "MOCK",
+			description: "Deals damage. If the foe is ANGRY, greatly\nreduce it's ATTACK. Cost: 20",
 			target: SkillTarget.Enemy,
 			cost: 20,
 			effect: async (self, target) =>
@@ -276,9 +276,9 @@ public class Database
 			}
 		);
 
-		Skills["Mock"] = new Skill(
-			name: "MOCK",
-			description: "Deals damage. If the foe is ANGRY, greatly\nreduce it's ATTACK. Cost: 20",
+		Skills["Shun"] = new Skill(
+			name: "SHUN",
+			description: "Deals damage. If the foe is SAD, greatly\nreduce its DEFENSE. Cost: 20",
 			target: SkillTarget.Enemy,
 			cost: 20,
 			effect: async (self, target) =>
@@ -1959,7 +1959,7 @@ public class Database
 			   foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
 			   {
 				   BattleManager.Instance.Heal(self, member.Actor, () => { return member.Actor.CurrentStats.MaxHP * 0.4f; }, 0f);
-				   GameManager.Instance.AnimationManager.PlayAnimation(212, target, false);
+				   GameManager.Instance.AnimationManager.PlayAnimation(212, member.Actor, false);
 			   }
 		   }
 		);
