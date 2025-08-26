@@ -130,20 +130,16 @@ public partial class MainMenuManager : Node
 				BGMDropdown.AddItem(bgm);
 		}
 		
-		int index = 0;
-		string[] battlebacks = ResourceLoader.ListDirectory("res://assets/battlebacks");
-		for (int i = 0; i < battlebacks.Length; i++)
+		foreach (string battleback in ResourceLoader.ListDirectory("res://assets/battlebacks"))
 		{
-			if (battlebacks[i] == "battleback_vf_default.png")
-				index = i;
-			BattlebackDropdown.AddItem(battlebacks[i]);
+			BattlebackDropdown.AddItem(battleback);
 		}
 
 		foreach (string bgm in ResourceLoader.ListDirectory("res://audio/bgm"))
 			BGMDropdown.AddItem(bgm);
 
-		BattlebackDropdown.Selected = index;
-		BattlebackDropdown.ItemSelected += (idx) =>
+		BattlebackDropdown.Selected = BattlebackDropdown.GetItemIndex("battleback_vf_default.png");
+        BattlebackDropdown.ItemSelected += (idx) =>
 		{
 			string battleback = BattlebackDropdown.GetItemText((int)idx);
 			if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback))
