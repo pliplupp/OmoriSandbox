@@ -1,0 +1,180 @@
+[gd_scene load_steps=2 format=3 uid="uid://5jek8whi4if3"]
+
+[ext_resource type="Script" uid="uid://d352ejxpp4onk" path="res://scripts/PartyMemberEditorComponent.cs" id="1_4xkt2"]
+
+[node name="PartyMemberEditorComponent" type="MarginContainer" node_paths=PackedStringArray("ActorDropdown", "WeaponDropdown", "CharmDropdown", "EmotionDropdown", "LevelSlider", "LevelSliderValue", "DisableFollowups", "AttackSkill", "Skills", "RemoveButton")]
+offset_right = 200.0
+offset_bottom = 300.0
+mouse_filter = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 2
+script = ExtResource("1_4xkt2")
+ActorDropdown = NodePath("VBoxContainer/Actor/ActorDropdown")
+WeaponDropdown = NodePath("VBoxContainer/Weapon/WeaponDropdown")
+CharmDropdown = NodePath("VBoxContainer/Charm/CharmDropdown")
+EmotionDropdown = NodePath("VBoxContainer/Emotion/EmotionDropdown")
+LevelSlider = NodePath("VBoxContainer/Level/LevelSlider")
+LevelSliderValue = NodePath("VBoxContainer/Level/LevelSliderValue")
+DisableFollowups = NodePath("VBoxContainer/DisableFollowups")
+AttackSkill = NodePath("VBoxContainer/AttackSkill/Skill")
+Skills = [NodePath("VBoxContainer/Skills/Skill1/Skill"), NodePath("VBoxContainer/Skills/Skill2/Skill"), NodePath("VBoxContainer/Skills/Skill3/Skill"), NodePath("VBoxContainer/Skills/Skill4/Skill")]
+RemoveButton = NodePath("VBoxContainer/Remove")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Actor" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Actor"]
+layout_mode = 2
+text = "Actor"
+
+[node name="ActorDropdown" type="OptionButton" parent="VBoxContainer/Actor"]
+layout_mode = 2
+mouse_filter = 1
+allow_reselect = true
+
+[node name="Weapon" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Weapon"]
+layout_mode = 2
+text = "Weapon"
+
+[node name="WeaponDropdown" type="OptionButton" parent="VBoxContainer/Weapon"]
+layout_mode = 2
+mouse_filter = 1
+allow_reselect = true
+
+[node name="Charm" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Charm"]
+layout_mode = 2
+text = "Charm"
+
+[node name="CharmDropdown" type="OptionButton" parent="VBoxContainer/Charm"]
+layout_mode = 2
+mouse_filter = 1
+allow_reselect = true
+
+[node name="Emotion" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Emotion"]
+layout_mode = 2
+text = "Emotion"
+
+[node name="EmotionDropdown" type="OptionButton" parent="VBoxContainer/Emotion"]
+layout_mode = 2
+mouse_filter = 1
+allow_reselect = true
+
+[node name="Level" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Level"]
+layout_mode = 2
+text = "Level"
+
+[node name="LevelSlider" type="HSlider" parent="VBoxContainer/Level"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+mouse_filter = 1
+rounded = true
+
+[node name="LevelSliderValue" type="Label" parent="VBoxContainer/Level"]
+layout_mode = 2
+text = "1"
+
+[node name="DisableFollowups" type="CheckBox" parent="VBoxContainer"]
+layout_mode = 2
+text = "Disable Followups"
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Tip: Use the \"Skill Search\" tab to lookup skill names"
+
+[node name="AttackSkill" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/AttackSkill"]
+layout_mode = 2
+text = "Attack Skill"
+
+[node name="Skill" type="LineEdit" parent="VBoxContainer/AttackSkill"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+max_length = 32
+expand_to_text_length = true
+
+[node name="Skills" type="GridContainer" parent="VBoxContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="Skill1" type="HBoxContainer" parent="VBoxContainer/Skills"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Skills/Skill1"]
+layout_mode = 2
+text = "Skill 1"
+
+[node name="Skill" type="LineEdit" parent="VBoxContainer/Skills/Skill1"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+max_length = 32
+expand_to_text_length = true
+
+[node name="Skill2" type="HBoxContainer" parent="VBoxContainer/Skills"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Skills/Skill2"]
+layout_mode = 2
+text = "Skill 2"
+
+[node name="Skill" type="LineEdit" parent="VBoxContainer/Skills/Skill2"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+max_length = 32
+expand_to_text_length = true
+
+[node name="Skill3" type="HBoxContainer" parent="VBoxContainer/Skills"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Skills/Skill3"]
+layout_mode = 2
+text = "Skill 3"
+
+[node name="Skill" type="LineEdit" parent="VBoxContainer/Skills/Skill3"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+max_length = 32
+expand_to_text_length = true
+
+[node name="Skill4" type="HBoxContainer" parent="VBoxContainer/Skills"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Skills/Skill4"]
+layout_mode = 2
+text = "Skill 4"
+
+[node name="Skill" type="LineEdit" parent="VBoxContainer/Skills/Skill4"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+max_length = 32
+expand_to_text_length = true
+
+[node name="Remove" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+mouse_filter = 1
+text = "Remove"

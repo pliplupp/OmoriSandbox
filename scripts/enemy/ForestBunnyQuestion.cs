@@ -13,8 +13,6 @@ public class ForestBunnyQuestion : Enemy
 
     protected override string[] EquippedSkills => ["FBQAttack", "FBQDoNothing", "FBQBeCute", "FBQSadEyes"];
 
-    public override bool FallsOffScreen => true;
-
     public override BattleCommand ProcessAI()
     {
         int roll;

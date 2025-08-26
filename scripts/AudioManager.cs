@@ -112,7 +112,12 @@ public partial class AudioManager : Node
 		BGM.Play();
 	}
 
-	private AudioStreamOggVorbis LoadCustomBGM(string path)
+	public void StopBGM()
+	{
+		BGM.Stop();
+    }
+
+    private AudioStreamOggVorbis LoadCustomBGM(string path)
 	{
 		AudioStreamOggVorbis stream = AudioStreamOggVorbis.LoadFromFile(path);
 		return stream;

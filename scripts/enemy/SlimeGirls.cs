@@ -2,8 +2,6 @@ public class SlimeGirls : Enemy
 {
 	public override string AnimationPath => "res://animations/slimegirls.tres";
 
-	public override bool FallsOffScreen => false;
-
 	public override string Name => "SLIME GIRLS";
 
 	protected override Stats Stats => new(5700, 1750, 57, 32, 52, 10, 95);
@@ -96,25 +94,25 @@ public class SlimeGirls : Enemy
 
 	public override void ProcessBattleConditions()
 	{
-		if (Stage > 2)
+		if (Stage > 2 || CurrentHP <= 0)
 			return;
 
-		if (CurrentHP < 1425 && Stage == 2)
-		{
-			BattleManager.Instance.ForceCommand(this, null, Skills["SlimeUltimateAttack"]);
-			Stage++;
-		}
+        if (CurrentHP < 1425 && Stage <= 2)
+        {
+            BattleManager.Instance.ForceCommand(this, null, Skills["SlimeUltimateAttack"]);
+            Stage = 3;
+        }
 
-		if (CurrentHP < 2850 && Stage == 1)
-		{
-			BattleManager.Instance.ForceCommand(this, null, Skills["Swap"]);
-			Stage++;
-		}
+        if (CurrentHP < 2850 && Stage <= 1)
+        {
+            BattleManager.Instance.ForceCommand(this, null, Skills["Swap"]);
+            Stage++;
+        }
 
-		if (CurrentHP < 4275 && Stage == 0)
+        if (CurrentHP < 4275 && Stage == 0)
 		{
 			ForceState("angry");
 			Stage++;
 		}
-	}
+    }
 }

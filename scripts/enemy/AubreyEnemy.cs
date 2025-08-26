@@ -14,8 +14,6 @@ public class AubreyEnemy : Enemy
               || state == "angry" || state == "hurt" || state == "toast";
     }
 
-    public override bool FallsOffScreen => false;
-
     public override BattleCommand ProcessAI()
     {
         int roll = GameManager.Instance.Random.RandiRange(0, 100);

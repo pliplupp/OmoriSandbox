@@ -22,7 +22,6 @@ public class Sweetheart : Enemy
 	}
 
 	// TODO: handle more boss specific stuff
-	public override bool FallsOffScreen => false;
 
 	public override BattleCommand ProcessAI()
 	{
@@ -96,28 +95,29 @@ public class Sweetheart : Enemy
 
 	public override void ProcessBattleConditions()
 	{
-		if (Stage > 2)
+		if (Stage > 2 || CurrentHP <= 0)
 			return;
-		if (CurrentHP < 990 && Stage == 2)
-		{
-			EmotionLocked = false;
-			ForceState("manic");
-			EmotionLocked = true;
-			Stage++;
-		}
-		if (CurrentHP < 1650 && Stage == 1)
-		{
-			EmotionLocked = false;
-			ForceState("ecstatic");
-			EmotionLocked = true;
-			Stage++;
-		}
-		if (CurrentHP < 2640 && Stage == 0)
+
+        if (CurrentHP < 990 && Stage <= 2)
+        {
+            EmotionLocked = false;
+            ForceState("manic");
+            EmotionLocked = true;
+            Stage = 3;
+        }
+        if (CurrentHP < 1650 && Stage <= 1)
+        {
+            EmotionLocked = false;
+            ForceState("ecstatic");
+            EmotionLocked = true;
+            Stage = 2;
+        }
+        if (CurrentHP < 2640 && Stage == 0)
 		{
 			ForceState("happy");
 			EmotionLocked = true;
 			AddStatModifier(Modifier.SweetheartLock, 1, int.MaxValue);
-			Stage++;
+			Stage = 1;
 		}
-	}
+    }
 }

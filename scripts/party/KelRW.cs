@@ -14,7 +14,7 @@ public class KelRW : PartyMember
     public override int[] SPDTree => [17];
 
     public override int BaseLuck => 15;
-    protected override string[] InvalidStates => ["miserable", "manic", "furious", "stressed"];
+    public override string[] InvalidStates => ["miserable", "manic", "furious", "stressed"];
 
     public override bool IsRealWorld => true;
 }

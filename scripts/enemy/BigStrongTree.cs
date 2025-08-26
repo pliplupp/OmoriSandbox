@@ -10,8 +10,6 @@ public class BigStrongTree : Enemy
 
     protected override string[] EquippedSkills => ["BSTDoNothing"];
 
-    public override bool FallsOffScreen => false;
-
     public override BattleCommand ProcessAI()
     {
         return new BattleCommand(this, null, Skills["BSTDoNothing"]);

@@ -1,7 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 
-public partial class BattleLogManager : Node
+public partial class BattleLogManager : Control
 {
 	[Signal] public delegate void FinishedLoggingEventHandler();
 

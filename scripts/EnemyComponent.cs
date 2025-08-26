@@ -9,11 +9,11 @@ public partial class EnemyComponent : Node
 
     public Enemy Actor => Enemy;
 
-    public void SetEnemy(Enemy enemy, string initialState)
+    public void SetEnemy(Enemy enemy, string initialState, bool fallsOffScreen)
     {
         Enemy = enemy;
         AnimatedSprite2D sprite = GetNode<AnimatedSprite2D>("../Sprite");
-        Enemy.Init(sprite, initialState);
+        Enemy.Init(sprite, initialState, fallsOffScreen);
         AboveHead = GetNode<Control>("../AboveHead");
         NameLabel = GetNode<Label>("../AboveHead/Infobox/Name");
         HPBar = GetNode<TextureProgressBar>("../AboveHead/Infobox/Health");

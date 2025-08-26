@@ -9,7 +9,6 @@ public class DownloadWindow : Enemy
         return state == "neutral" || state == "happy" || state == "sad"
                || state == "angry" || state == "hurt" || state == "toast";
     }
-    public override bool FallsOffScreen => true;
 
     private int TurnCounter = 0;
     public override BattleCommand ProcessAI()

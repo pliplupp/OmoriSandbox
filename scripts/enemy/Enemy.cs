@@ -2,7 +2,7 @@ using Godot;
 
 public abstract class Enemy : Actor
 {
-    public void Init(AnimatedSprite2D sprite, string initialState)
+    public void Init(AnimatedSprite2D sprite, string initialState, bool fallsOffScreen)
     {
         SpriteFrames animation = ResourceLoader.Load<SpriteFrames>(AnimationPath);
         if (animation == null)
@@ -20,6 +20,8 @@ public abstract class Enemy : Actor
         CurrentHP = BaseStats.HP;
         CurrentJuice = BaseStats.Juice;
 
+        FallsOffScreen = fallsOffScreen;
+
         foreach (string s in EquippedSkills)
         {
             if (Database.TryGetSkill(s, out var skill))
@@ -35,7 +37,7 @@ public abstract class Enemy : Actor
     protected abstract string[] EquippedSkills { get; }
     public abstract string AnimationPath { get; }
     public abstract BattleCommand ProcessAI();
-    public abstract bool FallsOffScreen { get; }
+    public bool FallsOffScreen = true;
     public virtual void ProcessBattleConditions() { }
     public virtual void ProcessStartOfTurn() { }
     public virtual void ProcessEndOfTurn() { }

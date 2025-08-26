@@ -28,7 +28,7 @@ public abstract class PartyMember : Actor
 		}
 		Weapon = w;
 		
-		if (charm != "none")
+		if (!charm.Equals("none", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			if (!Database.TryGetCharm(charm, out Charm c))
 			{
@@ -45,6 +45,9 @@ public abstract class PartyMember : Actor
 
 		foreach (string s in EquippedSkills)
 		{
+			if (string.IsNullOrWhiteSpace(s))
+				continue;
+
 			if (Database.TryGetSkill(s, out var skill))
 			{
 				Skills.Add(s, skill);
@@ -79,6 +82,6 @@ public abstract class PartyMember : Actor
 	public Charm Charm { get; private set; }
 	public Weapon Weapon { get; private set; }
 	public string[] EquippedSkills { get; protected set; }
-	protected abstract string[] InvalidStates { get; }
+	public abstract string[] InvalidStates { get; }
 	public abstract bool IsRealWorld { get; }
 }
