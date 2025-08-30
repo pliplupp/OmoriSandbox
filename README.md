@@ -10,7 +10,7 @@ Simply download the latest release archive from the "Releases" section and extra
 Either archive should contain two executables:
 - `OmoriSandbox.console.exe`: Runs the Sandbox alongside a seperate console window. Useful for viewing debug information and any errors that may occur while using the Sandbox. (Recommended)
 - `OmoriSandbox.exe`: Runs just the Sandbox without a console.
-- 
+  
 ## Usage
 **Important Note**: As of writing, the project is currently in an "alpha" state, allowing users to try out the sandbox for themselves during active development. While battles are functional from start to finish, __many features including skills, weapons, items, enemies, etc. are missing from the current build.__ Expect bugs, glitches, or potential inaccuracies. See the [To-Dos](#To-Dos) section to see the current status of any missing features. If you happen to find a bug, please report it in the "Issues" tab.
 
