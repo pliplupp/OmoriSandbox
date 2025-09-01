@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 public partial class GameManager : Node
 {
@@ -105,7 +106,7 @@ public partial class GameManager : Node
 			// dumb hack to read the Vector2 since AsVector2() doesn't seem to work here
 			string positionStr = entry["position"].ToString();
 			string[] positionArr = positionStr.Substring(1, positionStr.Length - 2).Split(',');
-			Vector2 position = new(float.Parse(positionArr[0]), float.Parse(positionArr[1]));
+			Vector2 position = new(float.Parse(positionArr[0], CultureInfo.InvariantCulture), float.Parse(positionArr[1], CultureInfo.InvariantCulture));
 			EnemyComponent en = SpawnEnemy(
 					entry["name"].ToString(),
 					position,
