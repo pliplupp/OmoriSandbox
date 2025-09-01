@@ -121,7 +121,7 @@ text = "0"
 layout_mode = 2
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 10
-text = "OmoriSandbox v0.5.1"
+text = "OmoriSandbox v0.5.2"
 
 [node name="FullScreenEffects" type="Node2D" parent="BattleCanvas/UI"]
 

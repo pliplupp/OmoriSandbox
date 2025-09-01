@@ -232,6 +232,12 @@ public partial class MainMenuManager : Node
 		if (string.IsNullOrWhiteSpace(PresetInput.Text))
 			return;
 
+		if (ActorTabs.GetChildCount() == 0)
+		{
+			ShowWindow("Error", "Preset must have at least one actor");
+			return;
+		}
+
 		if (FileAccess.FileExists("user://presets/" + PresetInput.Text + ".json"))
 		{
 			ConfirmationDialog dialog = new()
@@ -382,9 +388,16 @@ public partial class MainMenuManager : Node
 
 			// if nothing above throws a KeyNotFoundException, begin applying the preset
 			BattlebackDropdown.Selected = BattlebackDropdown.GetItemIndex(battleback);
-			BattlebackPreview.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback);
+			if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback))
+				BattlebackPreview.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback);
+			else if (FileAccess.FileExists("user://custom/battlebacks/" + battleback))
+				BattlebackPreview.Texture = ImageTexture.CreateFromImage(Image.LoadFromFile("user://custom/battlebacks/" + battleback));
+			else
+				GD.PrintErr("Failed to load battleback: " + battleback);
 
 			BGMDropdown.Selected = BGMDropdown.GetItemIndex(bgm);
+			if (BGMDropdown.Selected == -1)
+				BGMDropdown.Selected = 0;
 
 			FollowupTierSlider.Value = followupTier;
 			BasilFollowupsCheckbox.ButtonPressed = basilFollowups;

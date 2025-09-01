@@ -38,7 +38,7 @@ public partial class BattleManager : Node
 
 	public void Init(List<PartyMemberComponent> party, List<EnemyComponent> enemies, Godot.Collections.Dictionary<string, int> items, int followupTier, bool useBasilFollowups, bool useBasilReleaseEnergy)
 	{
-		CurrentParty = party;
+		CurrentParty = party.OrderBy(x => x.Position).ToList();
 		Enemies = enemies;
 		Items = items;
 		Energy = 3;

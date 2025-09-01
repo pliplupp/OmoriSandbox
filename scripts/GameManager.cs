@@ -138,6 +138,7 @@ public partial class GameManager : Node
 		Enemy instance = Database.CreateEnemy(who);
 		Node2D node = EnemyUI.Instantiate<Node2D>();
 		BattlebackParent.AddChild(node);
+		GD.Print("Spawning enemy at: " + position);
 		node.GlobalPosition = position;
 		EnemyComponent component = new();
 		node.AddChild(component);

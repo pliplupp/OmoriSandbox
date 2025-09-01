@@ -42,6 +42,8 @@ public class Charm
         {
             return Stats;
         };
+        // empty action
+        StartOfBattle = (_) => { };
     }
 
     /// <summary>
@@ -55,6 +57,8 @@ public class Charm
         Name = name;
         Stats = new Stats();
         Apply = apply;
+        // empty action
+        StartOfBattle = (_) => { };
     }
 
     /// <summary>
