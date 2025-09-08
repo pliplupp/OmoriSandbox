@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 public partial class GameManager : Node
 {
@@ -15,6 +16,7 @@ public partial class GameManager : Node
 
 	public RandomNumberGenerator Random = new();
 	public AnimationManager AnimationManager { get; private set; }
+	public DiscordManager DiscordManager { get; private set; }
 
 	public string CustomDataPath = "user://custom/";
 
@@ -27,6 +29,8 @@ public partial class GameManager : Node
 #else
 		FPSLabel.Text = $"{Engine.GetFramesPerSecond()}";
 #endif
+
+		DiscordManager.Tick();
 	}
 
 	public override void _Ready()
@@ -36,11 +40,18 @@ public partial class GameManager : Node
 		AnimationManager = new();
 		AddChild(AnimationManager);
 
+		DiscordManager = new();
+
 		AudioManager.Instance.Init();
 
 		// Omori, Aubrey, Hero, Kel
 		// TODO: properly handle less than 4 party members
 	}
+
+    public override void _ExitTree()
+    {
+		DiscordManager.Shutdown();
+    }
 
 	public void LoadBattlePreset(Godot.Collections.Dictionary<string, Variant> data)
 	{
@@ -118,6 +129,7 @@ public partial class GameManager : Node
 			enemy.Add(en);
 		}
 
+		DiscordManager.SetBattling(enemies.Count);
 		BattleManager.Instance.Init(party, enemy, items, FollowupTier, UseBasilFollowups, UseBasilReleaseEnergy);
 	}
 
@@ -174,6 +186,4 @@ public partial class GameManager : Node
 		component.SetPartyMember(instance, followup, position, startingEmotion, level, weapon, charm, skills);
 		return component;
 	}
-
-
 }

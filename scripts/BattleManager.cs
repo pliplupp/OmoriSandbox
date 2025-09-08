@@ -29,7 +29,46 @@ public partial class BattleManager : Node
 	private bool UseBasilReleaseEnergy = false;
 	private bool UseBasilFollowups = false;
 
+	private bool IsBattling = false;
+
 	public static BattleManager Instance { get; private set; }
+
+	// table used for handling selecting a party member target
+	// has a preferred and fallback target if the preferred party member does not exist
+	private Dictionary<(int Position, InputDirection Direction), (int Preferred, int Fallback)> DirectionTable = new()
+	{
+		{ (0, InputDirection.Up),    (1, 2) },
+		{ (0, InputDirection.Right), (3, 2) },
+		{ (1, InputDirection.Down),  (0, 3) },
+		{ (1, InputDirection.Right), (2, 3) },
+		{ (2, InputDirection.Left),  (1, 0) },
+		{ (2, InputDirection.Down),  (3, 0) },
+		{ (3, InputDirection.Left),  (0, 1) },
+		{ (3, InputDirection.Up),    (2, 1) },
+	};
+
+	// table used for handling followup behavior
+	// has a followup target and followup skill to use
+	private Dictionary<(int Position, InputDirection Direction), (int Target, string SkillName)> FollowupTable = new()
+	{
+		// the skill names here will get their tier number added later
+		// Omori
+		{ (0, InputDirection.Up), (0, "AttackAgain") },
+		{ (0, InputDirection.Right), (0, "Trip") },
+		{ (0, InputDirection.Down), (0, "ReleaseEnergy") },
+
+		// Aubrey
+		{ (1, InputDirection.Up), (2, "LookAtHero") },
+		{ (1, InputDirection.Right), (3, "LookAtKel") },
+		{ (1, InputDirection.Down), (0, "LookAtOmori") },
+
+		// Hero
+		{ (2, InputDirection.Up), (1, "CallAubrey") },
+		{ (2, InputDirection.Left), (0, "CallOmori") },
+		{ (2, InputDirection.Down), (3, "CallKel") },
+
+		// Kel and Basil are added dynamically in Init()
+	};
 
 	public override void _EnterTree()
 	{
@@ -59,11 +98,27 @@ public partial class BattleManager : Node
 		Delay.Timeout += OnDelayTimeout;
 		BattleLogManager.Instance.FinishedLogging += OnBattleLogFinished;
 
+		// update the FollowupTable depending on if Basil followups are enabled
+		if (UseBasilFollowups)
+		{
+			FollowupTable[(3, InputDirection.Down)] = (0, "Comfort");
+			FollowupTable[(3, InputDirection.Left)] = (1, "Mull");
+			FollowupTable[(3, InputDirection.Up)] = (2, "Vent");
+		}
+		else
+		{
+			FollowupTable[(3, InputDirection.Down)] = (0, "PassToOmori");
+			FollowupTable[(3, InputDirection.Left)] = (1, "PassToAubrey");
+			FollowupTable[(3, InputDirection.Up)] = (2, "PassToHero");
+		}
+
 		DamageNumber.CacheTexture(ResourceLoader.Load<Texture2D>("res://assets/system/Damage.png"));
 
 		CallDeferred(MethodName.PreBattle);
 
 		SetPhase(BattlePhase.FightRun);
+
+		IsBattling = true;
 	}
 
 	private void PreBattle()
@@ -91,10 +146,13 @@ public partial class BattleManager : Node
 
 	public override void _Process(double delta)
 	{
-		for (int i = 0; i < CurrentParty.Count; i++)
+		if (!IsBattling)
+			return;
+
+		CurrentParty.ForEach(x =>
 		{
-			CurrentParty[i].SelectionBoxVisible = (i == CurrentPartyMember || i == CurrentPartyMemberTarget);
-		}
+			x.SelectionBoxVisible = x.Position == CurrentPartyMemberTarget;
+		});
 
 		for (int i = 0; i < Enemies.Count; i++)
 		{
@@ -109,7 +167,7 @@ public partial class BattleManager : Node
 		{
 			if (Phase == BattlePhase.TargetSelection)
 			{
-				SelectTarget();
+				SelectTarget(); 
 			}
 			else
 			{
@@ -162,153 +220,24 @@ public partial class BattleManager : Node
 			}
 		}
 
-		// TODO: refactor target selection
-
 		if (Input.IsActionJustPressed("MenuLeft"))
 		{
-			if (Phase == BattlePhase.CommandExecute || Phase == BattlePhase.WaitForBattleLog)
-			{
-				if (HandleFollowup("left"))
-				{
-					ProcessFollowupSuccess();
-				}
-			}
-			if (Phase == BattlePhase.TargetSelection)
-			{
-				AudioManager.Instance.PlaySFX("SYS_move");
-				if (SelectedAction.Target == SkillTarget.Enemy || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentEnemyTarget > -1) && Enemies.Count > 1)
-				{
-					CurrentEnemyTarget--;
-					if (CurrentEnemyTarget < 0)
-						CurrentEnemyTarget = Enemies.Count - 1;
-					return;
-				}
-				if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
-				{
-					switch (CurrentPartyMemberTarget)
-					{
-						case 0:
-							CurrentPartyMemberTarget = 3;
-							break;
-						case 1:
-							CurrentPartyMemberTarget = 2;
-							break;
-						case 2:
-							CurrentPartyMemberTarget = 1;
-							break;
-						case 3:
-							CurrentPartyMemberTarget = 0;
-							break;
-					}
-				}
-			}
-
+			HandleInputDirection(InputDirection.Left);
 		}
 
 		if (Input.IsActionJustPressed("MenuRight"))
 		{
-			if (Phase == BattlePhase.CommandExecute || Phase == BattlePhase.WaitForBattleLog)
-			{
-				if (HandleFollowup("right"))
-				{
-					ProcessFollowupSuccess();
-				}
-			}
-			if (Phase == BattlePhase.TargetSelection)
-			{
-				AudioManager.Instance.PlaySFX("SYS_move");
-				if (SelectedAction.Target == SkillTarget.Enemy || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentEnemyTarget > -1) && Enemies.Count > 1)
-				{
-					CurrentEnemyTarget++;
-					if (CurrentEnemyTarget >= Enemies.Count)
-						CurrentEnemyTarget = 0;
-					return;
-				}
-				if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
-				{
-					switch (CurrentPartyMemberTarget)
-					{
-						case 0:
-							CurrentPartyMemberTarget = 3;
-							break;
-						case 1:
-							CurrentPartyMemberTarget = 2;
-							break;
-						case 2:
-							CurrentPartyMemberTarget = 1;
-							break;
-						case 3:
-							CurrentPartyMemberTarget = 0;
-							break;
-					}
-				}
-			}
+			HandleInputDirection(InputDirection.Right);
 		}
 
 		if (Input.IsActionJustPressed("MenuUp"))
 		{
-			if (Phase == BattlePhase.CommandExecute || Phase == BattlePhase.WaitForBattleLog)
-			{
-				if (HandleFollowup("up"))
-				{
-					ProcessFollowupSuccess();
-				}
-			}
-			if (Phase == BattlePhase.TargetSelection)
-			{
-				if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
-				{
-					AudioManager.Instance.PlaySFX("SYS_move");
-					switch (CurrentPartyMemberTarget)
-					{
-						case 0:
-							CurrentPartyMemberTarget = 1;
-							break;
-						case 1:
-							CurrentPartyMemberTarget = 0;
-							break;
-						case 2:
-							CurrentPartyMemberTarget = 3;
-							break;
-						case 3:
-							CurrentPartyMemberTarget = 2;
-							break;
-					}
-				}
-			}
+			HandleInputDirection(InputDirection.Up);
 		}
 
 		if (Input.IsActionJustPressed("MenuDown"))
 		{
-			if (Phase == BattlePhase.CommandExecute || Phase == BattlePhase.WaitForBattleLog)
-			{
-				if (HandleFollowup("down"))
-				{
-					ProcessFollowupSuccess();
-				}
-			}
-			if (Phase == BattlePhase.TargetSelection)
-			{
-				if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
-				{
-					AudioManager.Instance.PlaySFX("SYS_move");
-					switch (CurrentPartyMemberTarget)
-					{
-						case 0:
-							CurrentPartyMemberTarget = 1;
-							break;
-						case 1:
-							CurrentPartyMemberTarget = 0;
-							break;
-						case 2:
-							CurrentPartyMemberTarget = 3;
-							break;
-						case 3:
-							CurrentPartyMemberTarget = 2;
-							break;
-					}
-				}
-			}
+			HandleInputDirection(InputDirection.Down);
 		}
 
 		if (Input.IsActionJustPressed("SwitchSides"))
@@ -322,11 +251,62 @@ public partial class BattleManager : Node
 				}
 				else
 				{
-					CurrentPartyMemberTarget = 0;
+					CurrentPartyMemberTarget = CurrentParty.First(x => x != null).Position;
 					CurrentEnemyTarget = -1;
 				}
 			}
 		}
+	}
+
+	private void HandleInputDirection(InputDirection direction)
+	{
+		if (Phase == BattlePhase.CommandExecute || Phase == BattlePhase.WaitForBattleLog)
+		{
+			if (HandleFollowup(direction))
+			{
+				ProcessFollowupSuccess();
+			}
+		}
+		if (Phase == BattlePhase.TargetSelection)
+		{
+			if (SelectedAction.Target == SkillTarget.Enemy || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentEnemyTarget > -1) && Enemies.Count > 1)
+			{
+				if (direction == InputDirection.Right)
+				{
+					CurrentEnemyTarget++;
+					if (CurrentEnemyTarget >= Enemies.Count)
+						CurrentEnemyTarget = 0;
+				}
+				else if (direction == InputDirection.Left)
+				{
+					CurrentEnemyTarget--;
+					if (CurrentEnemyTarget < 0)
+						CurrentEnemyTarget = Enemies.Count - 1;
+				}
+				return;
+			}
+			if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
+			{
+				int target = SelectPartyMember(CurrentPartyMemberTarget, direction);
+				GD.Print(target);
+				if (target > -1)
+				{
+					AudioManager.Instance.PlaySFX("SYS_move");
+					CurrentPartyMemberTarget = target;
+				}
+			}
+		}
+	}
+
+	private int SelectPartyMember(int current, InputDirection direction)
+	{
+		if (!DirectionTable.TryGetValue((current, direction), out var pair))
+			return -1;
+		if (CurrentParty.Any(x => x.Position == pair.Preferred))
+			return pair.Preferred;
+		if (CurrentParty.Any(x => x.Position == pair.Fallback))
+			return pair.Fallback;
+		return -1;
 	}
 
 	public void OnFightSelected()
@@ -350,6 +330,7 @@ public partial class BattleManager : Node
 		BattleLogManager.Instance.FinishedLogging -= OnBattleLogFinished;
 		Phase = BattlePhase.FightRun;
 		MainMenuManager.Instance.ReturnToTitle();
+		IsBattling = false;
 	}
 
 	public void OnSelectAttack()
@@ -462,44 +443,45 @@ public partial class BattleManager : Node
 				}
 				break;
 			case BattlePhase.PostCommand:
+				{
+					CurrentParty.ForEach(x =>
+					{
+						x.Actor.SetHurt(false);
+						if (x.Actor.CurrentHP == 0 && x.Actor.CurrentState != "toast")
+						{
+							x.Actor.SetState("toast", true);
+							AudioManager.Instance.PlaySFX("SYS_you died_2", 1.2f);
+						}
+					});
+					if (Commands[CommandIndex].Actor is PartyMember && Commands[CommandIndex].Action.Name.EndsWith("Attack"))
+					{
+						PartyMemberComponent component = CurrentParty.First(x => x.Actor == Commands[CommandIndex].Actor);
+						if (component.HasFollowup)
+						{
+							component.FadeOutFollowups();
+						}
+					}
+					FollowupSelected = false;
 
-				CurrentParty.ForEach(x =>
-				{
-					x.Actor.SetHurt(false);					
-					if (x.Actor.CurrentHP == 0 && x.Actor.CurrentState != "toast")
+					foreach (EnemyComponent enemy in Enemies.ToList())
 					{
-						x.Actor.SetState("toast", true);
-						AudioManager.Instance.PlaySFX("SYS_you died_2", 1.2f);
+						enemy.Actor.SetHurt(false);
+						if (enemy.Actor.CurrentHP == 0)
+						{
+							enemy.Actor.SetState("toast", true);
+							if (enemy.Actor.FallsOffScreen)
+								DyingEnemies.Add(enemy.GetParent<Node2D>());
+							Enemies.Remove(enemy);
+						}
+						enemy.Actor.ProcessBattleConditions();
 					}
-				});
-				if (Commands[CommandIndex].Actor is PartyMember && Commands[CommandIndex].Action.Name.EndsWith("Attack"))
-				{
-					PartyMemberComponent component = CurrentParty.First(x => x.Actor == Commands[CommandIndex].Actor);
-					if (component.HasFollowup)
-					{
-						component.FadeOutFollowups();
-					}
+					CommandIndex++;
+					if (DyingEnemies.Count > 0)
+						SetPhase(BattlePhase.EnemyDying);
+					else
+						SetPhase(BattlePhase.PreCommand);
+					break;
 				}
-				FollowupSelected = false;
-
-				foreach (EnemyComponent enemy in Enemies.ToList())
-				{
-					enemy.Actor.SetHurt(false);
-					if (enemy.Actor.CurrentHP == 0)
-					{
-						enemy.Actor.SetState("toast", true);
-						if (enemy.Actor.FallsOffScreen)
-							DyingEnemies.Add(enemy.GetParent<Node2D>());
-						Enemies.Remove(enemy);
-					}
-					enemy.Actor.ProcessBattleConditions();
-				}
-				CommandIndex++;
-				if (DyingEnemies.Count > 0)
-					SetPhase(BattlePhase.EnemyDying);
-				else
-					SetPhase(BattlePhase.PreCommand);
-				break;
 		}
 	}
 
@@ -569,7 +551,7 @@ public partial class BattleManager : Node
 			case SkillTarget.AllyNotSelf:
 			case SkillTarget.DeadAlly:
 				// keep selection box on current ally for ally targeting
-				CurrentPartyMemberTarget = CurrentPartyMember;
+				CurrentPartyMemberTarget = CurrentParty[CurrentPartyMember].Position;
 				BattleLogManager.Instance.ClearAndShowMessage("Use on whom?");
 				MenuManager.Instance.ShowMenu(MenuState.None);
 				return;
@@ -579,7 +561,7 @@ public partial class BattleManager : Node
 				MenuManager.Instance.ShowMenu(MenuState.None);
 				return;
 			case SkillTarget.AllyOrEnemy:
-				CurrentPartyMemberTarget = CurrentPartyMember;
+				CurrentPartyMemberTarget = CurrentParty[CurrentPartyMember].Position;
 				BattleLogManager.Instance.ClearAndShowMessage("Use on whom?\nPress SHIFT to switch sides.");
 				MenuManager.Instance.ShowMenu(MenuState.None);
 				return;
@@ -597,7 +579,7 @@ public partial class BattleManager : Node
 
 		if ((SelectedAction.Target == SkillTarget.Ally || 
 			(SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1)) 
-			&& CurrentParty[CurrentPartyMemberTarget].Actor.CurrentState == "toast")
+			&& CurrentParty.First(x => x.Position == CurrentPartyMemberTarget).Actor.CurrentState == "toast")
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
 			return;
@@ -605,13 +587,13 @@ public partial class BattleManager : Node
 
 		if ((SelectedAction.Target == SkillTarget.DeadAlly || 
 			SelectedAction.Target == SkillTarget.AllDeadAllies && CurrentPartyMemberTarget > -1)
-			&& CurrentParty[CurrentPartyMemberTarget].Actor.CurrentState != "toast")
+			&& CurrentParty.First(x => x.Position == CurrentPartyMemberTarget).Actor.CurrentState != "toast")
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
 			return;
 		}
 
-		if (SelectedAction.Target == SkillTarget.AllyNotSelf && CurrentPartyMemberTarget == CurrentPartyMember)
+		if (SelectedAction.Target == SkillTarget.AllyNotSelf && CurrentPartyMemberTarget == CurrentParty[CurrentPartyMember].Position)
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
 			return;
@@ -626,7 +608,7 @@ public partial class BattleManager : Node
 			case SkillTarget.Ally:
 			case SkillTarget.AllyNotSelf:
 			case SkillTarget.DeadAlly:
-				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, CurrentParty[CurrentPartyMemberTarget].Actor, SelectedAction));
+				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, CurrentParty.First(x => x.Position == CurrentPartyMemberTarget).Actor, SelectedAction));
 				break;
 			case SkillTarget.Enemy:
 				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, Enemies[CurrentEnemyTarget].Actor, SelectedAction));
@@ -635,7 +617,7 @@ public partial class BattleManager : Node
 				if (CurrentEnemyTarget > -1)
 					Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, Enemies[CurrentEnemyTarget].Actor, SelectedAction));
 				else
-					Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, CurrentParty[CurrentPartyMemberTarget].Actor, SelectedAction));
+					Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, CurrentParty.First(x => x.Position == CurrentPartyMemberTarget).Actor, SelectedAction));
 				break;
 			default:
 				// group skills have no "target"
@@ -742,164 +724,52 @@ public partial class BattleManager : Node
 			SetPhase(BattlePhase.PostCommand);
 	}
 
-	// TODO: refactor
-	private bool HandleFollowup(string direction)
+	private bool HandleFollowup(InputDirection direction)
 	{
-		if (Energy < 3)
-			return false;
-
-		if (!EnergyBar.Visible)
-			return false;
-
-		if (FollowupSelected)
+		if (Energy < 3 || ForceHideFollowup || !EnergyBar.Visible || FollowupSelected)
 			return false;
 
 		PartyMemberComponent current = CurrentParty.First(x => x.Actor == Commands[CommandIndex].Actor);
-		switch (current.Position)
-		{
-			case 0:
-				if (direction == "up") {
-					if (Database.TryGetSkill($"AttackAgain{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
-				}
-				if (direction == "right")
-				{
-					if (Database.TryGetSkill($"Trip{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
-				}
-				if (direction == "down")
-				{
-					if (Energy == 10 && CurrentParty.All(x => x.Actor.CurrentState != "toast"))
-					{
-						if (UseBasilReleaseEnergy)
-						{
-							if (Database.TryGetSkill($"ReleaseEnergyBasil", out Skill skill))
-								ForceCommand(current.Actor, null, skill);
-						}
-						else if (Database.TryGetSkill($"ReleaseEnergy{FollowupTier}", out Skill skill))
-							ForceCommand(current.Actor, null, skill);
-						return true;
-					}
-				}
-				break;
-			case 1:
-				if (direction == "up")
-				{
-					if (GetPartyMember(2).CurrentState == "toast")
-						return false;
-					if (Database.TryGetSkill($"LookAtHero{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
-				}
-				if (direction == "right")
-				{
-					if (GetPartyMember(3).CurrentState == "toast")
-						return false;
-					if (Database.TryGetSkill($"LookAtKel{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
-				}
-				if (direction == "down")
-				{
-					if (Database.TryGetSkill($"LookAtOmori{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
-				}
-				break;
-			case 2:
-				if (direction == "up")
-				{
-					if (GetPartyMember(1).CurrentState == "toast")
-						return false;
-					if (Database.TryGetSkill($"CallAubrey{FollowupTier}", out Skill skill))
-					{
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						ForceHideFollowup = true;
-					}
-					return true;
-				}
-				if (direction == "left")
-				{
-					if (Database.TryGetSkill($"CallOmori{FollowupTier}", out Skill skill))
-					{
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						ForceHideFollowup = true;
-					}
-					return true;
-				}
-				if (direction == "down")
-				{
-					if (GetPartyMember(3).CurrentState == "toast")
-						return false;
-					if (Database.TryGetSkill($"CallKel{FollowupTier}", out Skill skill))
-					{
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						ForceHideFollowup = true;
-					}
-					return true;
-				}
-				break;
-			case 3:
+		if (!FollowupTable.TryGetValue((current.Position, direction), out var pair))
+			return false;
 
-				if (UseBasilFollowups)
-				{
-					if (direction == "down")
-					{
-						if (Database.TryGetSkill("Comfort", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-					if (direction == "left")
-					{
-						if (GetPartyMember(1).CurrentState == "toast")
-							return false;
-						if (Database.TryGetSkill("Mull", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-					if (direction == "up")
-					{
-						if (GetPartyMember(2).CurrentState == "toast")
-							return false;
-						if (Database.TryGetSkill("Vent", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-				}
-				else
-				{
-					if (direction == "down")
-					{
-						if (Database.TryGetSkill($"PassToOmori{FollowupTier}", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-					if (direction == "left")
-					{
-						if (GetPartyMember(1).CurrentState == "toast")
-							return false;
-						if (Database.TryGetSkill($"PassToAubrey{FollowupTier}", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-					if (direction == "up")
-					{
-						if (GetPartyMember(2).CurrentState == "toast")
-							return false;
-						if (Database.TryGetSkill($"PassToHero{FollowupTier}", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-				}
-				break;
+		PartyMemberComponent target = CurrentParty.First(x => x.Position == pair.Target);
+		if (target == null || target.Actor.CurrentState == "toast")
+			return false;
+
+		string name = pair.SkillName;
+		bool basil = false;
+		if (name.StartsWith("ReleaseEnergy"))
+		{
+			if (Energy != 10 || CurrentParty.Any(x => x.Actor.CurrentState == "toast"))
+				return false;
+
+			if (UseBasilReleaseEnergy)
+				name += "Basil";
+			else
+				name += FollowupTier;
 		}
-		return false;
+		else
+		{
+			if (current.Position == 3 && UseBasilFollowups)
+				basil = true;
+
+			if (!basil)
+				name += FollowupTier;
+		}
+
+		if (!Database.TryGetSkill(name, out Skill skill))
+			return false;
+
+		ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
+		return true;
 	}
 
 	public void ForceCommand(Actor self, Actor target, Skill skill)
 	{
+		if (skill.Name.EndsWith("Attack"))
+			// if the forced skill is an attack, hide the followup bubbles
+			ForceHideFollowup = true;
 		Commands.Insert(CommandIndex + 1, new BattleCommand(self, target, skill));
 	}
 

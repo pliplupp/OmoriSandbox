@@ -56,6 +56,7 @@ public partial class MainMenuManager : Node
 			AudioManager.Instance.StopBGM();
 			MainMenu.Visible = false;
 			Editor.Visible = true;
+			GameManager.Instance.DiscordManager.SetEditingPreset();
 		};
 
 		DataFolderButton.Pressed += () =>
@@ -90,6 +91,7 @@ public partial class MainMenuManager : Node
 			AudioManager.Instance.PlayBGM("ow_cattail_fields");
 			MainMenu.Visible = true;
 			Editor.Visible = false;
+			GameManager.Instance.DiscordManager.SetMainMenu();
 		};
 
 		foreach (Control control in AddActorControls)
