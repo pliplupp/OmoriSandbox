@@ -43,9 +43,6 @@ public partial class GameManager : Node
 		DiscordManager = new();
 
 		AudioManager.Instance.Init();
-
-		// Omori, Aubrey, Hero, Kel
-		// TODO: properly handle less than 4 party members
 	}
 
     public override void _ExitTree()

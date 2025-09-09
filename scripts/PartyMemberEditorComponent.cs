@@ -41,8 +41,6 @@ public partial class PartyMemberEditorComponent : Control
 
 	private readonly string[] States = ["neutral", "happy", "sad", "angry", "ecstatic", "depressed", "furious", "manic", "miserable", "furious", "manic", "afraid", "stressed"];
 
-	// TODO: add layer property
-
 	public override void _Ready()
 	{
 		LevelSlider.ValueChanged += (value) => LevelSliderValue.Text = value.ToString();

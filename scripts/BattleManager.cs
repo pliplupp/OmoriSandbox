@@ -8,6 +8,7 @@ public partial class BattleManager : Node
 {
 	[Export] public Label EnergyText;
 	[Export] private Sprite2D EnergyBar;
+	[Export] private EnergyDots EnergyDots;
 
 	private List<PartyMemberComponent> CurrentParty = [];
 	private List<EnemyComponent> Enemies = [];
@@ -149,6 +150,8 @@ public partial class BattleManager : Node
 		if (!IsBattling)
 			return;
 
+		EnergyDots.Tick(delta);
+
 		CurrentParty.ForEach(x =>
 		{
 			x.SelectionBoxVisible = x.Position == CurrentPartyMemberTarget;
@@ -159,7 +162,6 @@ public partial class BattleManager : Node
 			Enemies[i].ShowInfoBox(i == CurrentEnemyTarget);
 		}
 
-		// TODO: energy bar dots
 		MenuManager.Instance.EnergyText.Text = $"{Energy:00}";
 		MenuManager.Instance.EnergyBar.RegionRect = new Rect2(0, (float)Math.Ceiling(Energy / 3f) * 45f, 362f, 49f);
 
