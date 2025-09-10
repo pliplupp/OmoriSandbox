@@ -916,7 +916,25 @@ public partial class BattleManager : Node
 			BattleLogManager.Instance.QueueMessage("IT HIT RIGHT IN THE HEART!");
 			AudioManager.Instance.PlaySFX("BA_CRITICAL_HIT", volume: 2f);
 		}
-		
+
+		int juiceLost = 0;
+		switch (target.CurrentState)
+		{
+			case "miserable":
+				juiceLost = (int)Math.Floor(finalDamage);
+				finalDamage = 0;
+				break;
+			case "depressed":
+				juiceLost = Math.Min((int)Math.Floor(finalDamage * 0.5f), target.CurrentJuice);
+				finalDamage -= juiceLost;
+				break;
+			case "sad":
+				juiceLost = Math.Min((int)Math.Floor(finalDamage * 0.3f), target.CurrentJuice);
+				finalDamage -= juiceLost;
+				break;
+		}
+		target.CurrentJuice -= juiceLost;
+
 		foreach (StatModifier mod in self.StatModifiers.Values)
 		{
 			if (mod is DamageStatModifier damageMod)
@@ -940,37 +958,6 @@ public partial class BattleManager : Node
 		}
 
 		int rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
-		if (rounded <= 0)
-		{
-			BattleLogManager.Instance.QueueMessage(self, target, "[target] takes 0 damage!");
-			SpawnDamageNumber(0, target.CenterPoint);
-			return true;
-		}
-		int juiceLost = 0;
-		switch (target.CurrentState)
-		{
-			case "miserable":
-				juiceLost = rounded;
-				rounded = 0;
-				break;
-			case "depressed":
-				int dmg = (int)Math.Round(rounded * 0.5f, MidpointRounding.AwayFromZero);
-				juiceLost = dmg;
-				rounded = dmg;
-				break;
-			case "sad":
-				juiceLost = (int)Math.Round(rounded * 0.3f, MidpointRounding.AwayFromZero);
-				rounded = (int)Math.Round(rounded * 0.7f, MidpointRounding.AwayFromZero);
-				break;
-		}
-		if (target.CurrentJuice - juiceLost < 0)
-		{
-			juiceLost = target.CurrentJuice;
-			rounded += Math.Abs(target.CurrentJuice - juiceLost);
-			target.CurrentJuice = 0;
-		}
-		else
-			target.CurrentJuice -= juiceLost;
 		target.Damage(rounded);
 		if (target is PartyMember)
 		{
