@@ -143,6 +143,19 @@ public partial class BattleManager : Node
 			}
 			party.Actor.Charm?.StartOfBattle(party.Actor);
 		}
+
+		// TODO: add more events for different parts of the battle
+		for (int i = 0; i < Enemies.Count; i++)
+		{
+			if (Enemies[i].Actor is MrJawsum jawsum)
+			{
+				// jawsum always starts with 2 gator guys
+				// this may be configurable in the future
+				jawsum.AddStatModifier("MrJawsumBarrier");
+				jawsum.GatorGuys.Add(SummonEnemy("GatorGuyJawsum", new Vector2(jawsum.CenterPoint.X - 145, jawsum.CenterPoint.Y + 65)));
+				jawsum.GatorGuys.Add(SummonEnemy("GatorGuyJawsum", new Vector2(jawsum.CenterPoint.X + 145, jawsum.CenterPoint.Y + 65)));
+			}
+		}
 	}
 
 	public override void _Process(double delta)
@@ -908,22 +921,29 @@ public partial class BattleManager : Node
 		{
 			if (mod is DamageStatModifier damageMod)
 			{
-				damageMod.OverrideDamage(ref finalDamage);
+				damageMod.OverrideDamage(ref finalDamage, self, target);
 			}
+		}
+
+		// this could (should) be moved out of here
+		if (self.HasStatModifier("Flex"))
+		{
+			self.RemoveStatModifier("Flex");
 		}
 
 		foreach (StatModifier mod in target.StatModifiers.Values)
 		{
 			if (mod is DamageStatModifier damageMod)
 			{
-				damageMod.OverrideDamage(ref finalDamage);
+				damageMod.OverrideDamage(ref finalDamage, self, target);
 			}
 		}
 
 		int rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
 		if (rounded <= 0)
 		{
-			BattleLogManager.Instance.QueueMessage(self, target, "[actor]'s attack did nothing.");
+			BattleLogManager.Instance.QueueMessage(self, target, "[target] takes 0 damage!");
+			SpawnDamageNumber(0, target.CenterPoint);
 			return true;
 		}
 		int juiceLost = 0;
@@ -1142,6 +1162,13 @@ public partial class BattleManager : Node
 		{
 			dmg.CallDeferred(DamageNumber.MethodName.Despawn);
 		});
+	}
+
+	public EnemyComponent SummonEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)
+	{
+		EnemyComponent enemy = GameManager.Instance.SpawnEnemy(who, position, startingEmotion, fallsOffScreen, layer);
+		Enemies.Add(enemy);
+		return enemy;
 	}
 
 	public void AddEnergy(int amount)

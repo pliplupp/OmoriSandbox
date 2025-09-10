@@ -27,6 +27,6 @@ public class StatModifier
         }
     }
 
-    public virtual void OverrideDamage(ref float damage) { }
+    public virtual void OverrideDamage(ref float damage, Actor attacker, Actor defender) { }
     public virtual string OverrideEmotion() { return "neutral"; }
 }

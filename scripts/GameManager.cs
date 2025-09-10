@@ -115,11 +115,14 @@ public partial class GameManager : Node
 			string positionStr = entry["position"].ToString();
 			string[] positionArr = positionStr.Substring(1, positionStr.Length - 2).Split(',');
 			Vector2 position = new(float.Parse(positionArr[0], CultureInfo.InvariantCulture), float.Parse(positionArr[1], CultureInfo.InvariantCulture));
-			EnemyComponent en = SpawnEnemy(
+            if (!entry.TryGetValue("layer", out Variant layer))
+                layer = 0;
+            EnemyComponent en = SpawnEnemy(
 					entry["name"].ToString(),
 					position,
 					entry["emotion"].ToString(),
-					entry["fallsOffScreen"].AsBool()
+					entry["fallsOffScreen"].AsBool(),
+					layer.AsInt32()
 				);
 			if (en == null)
 				continue;
@@ -143,7 +146,7 @@ public partial class GameManager : Node
 		}
 	}
 
-	private EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true)
+	public EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)
 	{
 		Enemy instance = Database.CreateEnemy(who);
 		Node2D node = EnemyUI.Instantiate<Node2D>();
@@ -152,6 +155,7 @@ public partial class GameManager : Node
 		node.GlobalPosition = position;
 		EnemyComponent component = new();
 		node.AddChild(component);
+		node.ZIndex -= layer;
 		component.SetEnemy(instance, startingEmotion, fallsOffScreen);
 		return component;
 	}

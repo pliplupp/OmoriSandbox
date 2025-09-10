@@ -125,6 +125,8 @@ public class Database
 		Enemies.Add("BigStrongTree", typeof(BigStrongTree));
 		Enemies.Add("DownloadWindow", typeof(DownloadWindow));
 		Enemies.Add("SpaceExBoyfriend", typeof(SpaceExBoyfriend));
+		Enemies.Add("GatorGuyJawsum", typeof(GatorGuyJawsum));
+		Enemies.Add("MrJawsum", typeof(MrJawsum));
 		#endregion
 
 		#region SKILLS
@@ -2834,10 +2836,104 @@ public class Database
 			hidden: true
 		);
 
-		#endregion
+        // Gator Guy //
 
-		#region MODIFIERS
-		Modifiers.Add("Neutral", () => new StatModifier([]));
+        Skills["GGAttack"] = new Skill(
+            name: "GGAttack",
+            description: "GGAttack",
+            target: SkillTarget.Enemy,
+            cost: 0,
+            effect: async (self, target) =>
+            {
+                await GameManager.Instance.AnimationManager.WaitForAnimation(123, target, false);
+                BattleLogManager.Instance.QueueMessage(self, target, "[actor] karate chops [target]!");
+                BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }, false, neverCrit: true);
+            },
+            hidden: true
+        );
+
+        Skills["GGDoNothing"] = new Skill(
+            name: "GGDoNothing",
+            description: "GGDoNothing",
+            target: SkillTarget.Enemy,
+            cost: 0,
+            effect: async (self, target) =>
+            {
+                BattleLogManager.Instance.QueueMessage(self, target, "[actor] cracks his knuckles.");
+                await Task.CompletedTask;
+            },
+            hidden: true
+        );
+
+        Skills["GGRoughUp"] = new Skill(
+            name: "GGRoughUp",
+            description: "GGRoughUp",
+            target: SkillTarget.Enemy,
+            cost: 0,
+            effect: async (self, target) =>
+            {
+                BattleLogManager.Instance.QueueMessage(self, target, "[actor] gets rough.");
+                await Task.Delay(100);
+                target = BattleManager.Instance.GetRandomAlivePartyMember();
+				GameManager.Instance.AnimationManager.PlayAnimation(123, target, false);
+                BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false, neverCrit: true);
+                await Task.Delay(917);
+                GameManager.Instance.AnimationManager.PlayAnimation(123, target, false);
+                BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false, neverCrit: true);
+            },
+            hidden: true
+        );
+
+		// Mr. Jawsum //
+		Skills["MJAttackOrder"] = new Skill(
+            name: "MJAttackOrder",
+            description: "MJAttackOrder",
+            target: SkillTarget.AllAllies,
+            cost: 0,
+            effect: async (self, target) =>
+            {
+                BattleLogManager.Instance.QueueMessage(self, target, "[actor] gives orders to attack!");
+				AudioManager.Instance.PlaySFX("SE_dinosaur", 0.8f, 1f);
+				await Task.Delay(250);
+				foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
+				{
+					MakeAngry(enemy);
+				}
+            },
+            hidden: true
+        );
+
+		Skills["MJSummonGator"] = new Skill(
+			name: "MJSummonGator",
+			description: "MJSummonGator",
+			target: SkillTarget.Self,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(146, true);
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] picks up the phone and\ncalls a GATOR GUY!");
+				int gatorGuys = BattleManager.Instance.GetAllEnemies().Count(x => x.Name == "GATOR GUY");
+				EnemyComponent enemy;
+				if (gatorGuys == 0)
+					enemy = BattleManager.Instance.SummonEnemy("GatorGuyJawsum", new Vector2(self.CenterPoint.X - 145, self.CenterPoint.Y + 65));
+				else if (gatorGuys == 1)
+					enemy = BattleManager.Instance.SummonEnemy("GatorGuyJawsum", new Vector2(self.CenterPoint.X + 145, self.CenterPoint.Y + 65));
+				else
+				{
+					GD.PushWarning("Tried to summon more than 2 gator guys!");
+					return;
+				}
+				if (self is MrJawsum jawsum)
+				{
+					jawsum.GatorGuys.Add(enemy);
+				}
+            },
+			hidden: true
+		);
+        #endregion
+
+        #region MODIFIERS
+        Modifiers.Add("Neutral", () => new StatModifier([]));
         Modifiers.Add("Happy", () => new StatModifier([new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)]));
         Modifiers.Add("Ecstatic", () => new StatModifier([new StatBonus(StatType.LCK, 3f), new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.HIT, -20)]));
         Modifiers.Add("Manic", () => new StatModifier([new StatBonus(StatType.LCK, 4f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.HIT, -30)]));
@@ -2867,7 +2963,8 @@ public class Database
         Modifiers.Add("SpaceExAngry", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 0.9f)]));
         Modifiers.Add("SpaceExEnraged", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.5f)]));
         Modifiers.Add("SpaceExFurious", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.3f)]));
-        #endregion
+		Modifiers.Add("MrJawsumBarrier", () => new MrJawsumStatModifier(0f));
+		#endregion
 
         #region SNACKS
 

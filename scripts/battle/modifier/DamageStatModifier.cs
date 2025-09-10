@@ -3,7 +3,7 @@
 /// </summary>
 public class DamageStatModifier : StatModifier
 {
-    private readonly float DamageMultiplier;
+    protected readonly float DamageMultiplier;
     /// <summary>
     /// Represents a modifier that modifies damage before it is dealt, and optionally applying additional stats
     /// </summary>
@@ -14,9 +14,8 @@ public class DamageStatModifier : StatModifier
         DamageMultiplier = damageMultiplier;
     }
 
-    public override void OverrideDamage(ref float damage)
+    public override void OverrideDamage(ref float damage, Actor attacker, Actor defender)
     {
         damage *= DamageMultiplier;
-        // TODO: remove flex after use
     }
 }
