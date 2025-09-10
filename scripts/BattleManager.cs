@@ -793,7 +793,7 @@ public partial class BattleManager : Node
 		CurrentParty.ForEach(x =>
 		{
 			x.Actor.DecreaseStatTurnCounter();
-			if (x.Actor.HasStatModifier(Modifier.ReleaseEnergyBasil))
+			if (x.Actor.HasStatModifier("ReleaseEnergyBasil"))
 			{
 				int heal = (int)Math.Round(x.Actor.CurrentStats.MaxHP * 0.1f, MidpointRounding.AwayFromZero);
 				int juice = (int)Math.Round(x.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
@@ -847,11 +847,13 @@ public partial class BattleManager : Node
 			});
 			AudioManager.Instance.PlayBGM("xx_victory");
 			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was victorious!");
+			return;
 		}
 		if (CurrentParty.All(x => x.Actor.CurrentHP == 0))
 		{
 			SetPhase(BattlePhase.BattleOver);
 			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was defeated...");
+			return;
 		}
 		PartyMemberComponent omori = CurrentParty.FirstOrDefault(x => x.Actor is Omori omori && omori.CurrentState == "toast");
 		// if any omori is toast, the battle is over
@@ -884,44 +886,41 @@ public partial class BattleManager : Node
 		string selfState = self.CurrentState;
 		string targetState = target.CurrentState;
 
-		// TODO: handle these better
-		// like this is actually terrible please improve at some point
-		if (self.HasStatModifier(Modifier.SweetheartLock))
-			selfState = "happy";
-		if (target.HasStatModifier(Modifier.SweetheartLock))
-			targetState = "happy";
-		if (self.HasStatModifier(Modifier.SpaceExBoyfriendLock))
-			selfState = selfState.Replace("se_", "");
-		if (target.HasStatModifier(Modifier.SpaceExBoyfriendLock))
-			targetState = targetState.Replace("se_", "");
+		if (self.HasLockedEmotion())
+		{
+			selfState = (self.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
+		}
+
+		if (target.HasLockedEmotion())
+		{
+			targetState = (target.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
+		}
 
 		finalDamage = CalculateEmotionModifiers(selfState, targetState, finalDamage, out int effectiveness);
-		if ((critical || target.HasStatModifier(Modifier.Tickle)) && !neverCrit)
+		if ((critical || target.HasStatModifier("Tickle")) && !neverCrit)
 		{
 			finalDamage = (finalDamage * 1.5f) + 2;
 			BattleLogManager.Instance.QueueMessage("IT HIT RIGHT IN THE HEART!");
 			AudioManager.Instance.PlaySFX("BA_CRITICAL_HIT", volume: 2f);
 		}
-		// flex currently works with items
-		// not sure if that is intentional or not
-		if (self.HasStatModifier(Modifier.Flex))
+		
+		foreach (StatModifier mod in self.StatModifiers.Values)
 		{
-			finalDamage *= 2.5f;
-			self.RemoveStatModifier(Modifier.Flex);
+			if (mod is DamageStatModifier damageMod)
+			{
+				damageMod.OverrideDamage(ref finalDamage);
+			}
 		}
-		int rounded;
-		if (target.HasStatModifier(Modifier.Guard))
+
+		foreach (StatModifier mod in target.StatModifiers.Values)
 		{
-			rounded = (int)Math.Round(finalDamage / 0.5f, MidpointRounding.AwayFromZero);
+			if (mod is DamageStatModifier damageMod)
+			{
+				damageMod.OverrideDamage(ref finalDamage);
+			}
 		}
-		else
-		{
-			rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
-		}
-		if (target.HasStatModifier(Modifier.PlotArmor))
-		{
-			rounded = 0;
-		}
+
+		int rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
 		if (rounded <= 0)
 		{
 			BattleLogManager.Instance.QueueMessage(self, target, "[actor]'s attack did nothing.");

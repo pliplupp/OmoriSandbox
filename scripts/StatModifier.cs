@@ -1,4 +1,4 @@
-public class StatModifier
+/*public class StatModifier
 {
     public Modifier Modifier { get; private set; }
     public int Tier { get; private set; }
@@ -43,4 +43,4 @@ public enum Modifier
     Guard,
     Tickle,
     SnoCone,
-}
+}*/

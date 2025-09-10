@@ -111,7 +111,7 @@ public class SpaceExBoyfriend : Enemy
         if (CurrentHP < 338 && Stage <= 2)
         {
             EmotionLocked = false;
-            ForceState("se_furious");
+            ForceState("SpaceExFurious");
             EmotionLocked = true;
             Stage = 3;
         }
@@ -119,16 +119,15 @@ public class SpaceExBoyfriend : Enemy
         if (CurrentHP < 675 && Stage <= 1)
         {
             EmotionLocked = false;
-            ForceState("se_enraged");
+            ForceState("SpaceExEnraged");
             EmotionLocked = true;
             Stage = 2;
         }
 
         if (CurrentHP < 1013 && Stage == 0)
         {
-            ForceState("se_angry");
+            ForceState("SpaceExAngry");
             EmotionLocked = true;
-            AddStatModifier(Modifier.SpaceExBoyfriendLock, 1, int.MaxValue);
             Stage = 1;
         }
     }
