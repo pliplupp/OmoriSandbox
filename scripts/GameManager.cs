@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 public partial class GameManager : Node
 {
@@ -15,6 +16,7 @@ public partial class GameManager : Node
 
 	public RandomNumberGenerator Random = new();
 	public AnimationManager AnimationManager { get; private set; }
+	public DiscordManager DiscordManager { get; private set; }
 
 	public string CustomDataPath = "user://custom/";
 
@@ -27,6 +29,8 @@ public partial class GameManager : Node
 #else
 		FPSLabel.Text = $"{Engine.GetFramesPerSecond()}";
 #endif
+
+		DiscordManager.Tick();
 	}
 
 	public override void _Ready()
@@ -36,11 +40,15 @@ public partial class GameManager : Node
 		AnimationManager = new();
 		AddChild(AnimationManager);
 
-		AudioManager.Instance.Init();
+		DiscordManager = new();
 
-		// Omori, Aubrey, Hero, Kel
-		// TODO: properly handle less than 4 party members
+		AudioManager.Instance.Init();
 	}
+
+    public override void _ExitTree()
+    {
+		DiscordManager.Shutdown();
+    }
 
 	public void LoadBattlePreset(Godot.Collections.Dictionary<string, Variant> data)
 	{
@@ -107,17 +115,21 @@ public partial class GameManager : Node
 			string positionStr = entry["position"].ToString();
 			string[] positionArr = positionStr.Substring(1, positionStr.Length - 2).Split(',');
 			Vector2 position = new(float.Parse(positionArr[0], CultureInfo.InvariantCulture), float.Parse(positionArr[1], CultureInfo.InvariantCulture));
-			EnemyComponent en = SpawnEnemy(
+            if (!entry.TryGetValue("layer", out Variant layer))
+                layer = 0;
+            EnemyComponent en = SpawnEnemy(
 					entry["name"].ToString(),
 					position,
 					entry["emotion"].ToString(),
-					entry["fallsOffScreen"].AsBool()
+					entry["fallsOffScreen"].AsBool(),
+					layer.AsInt32()
 				);
 			if (en == null)
 				continue;
 			enemy.Add(en);
 		}
 
+		DiscordManager.SetBattling(enemies.Count);
 		BattleManager.Instance.Init(party, enemy, items, FollowupTier, UseBasilFollowups, UseBasilReleaseEnergy);
 	}
 
@@ -134,7 +146,7 @@ public partial class GameManager : Node
 		}
 	}
 
-	private EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true)
+	public EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)
 	{
 		Enemy instance = Database.CreateEnemy(who);
 		Node2D node = EnemyUI.Instantiate<Node2D>();
@@ -143,6 +155,7 @@ public partial class GameManager : Node
 		node.GlobalPosition = position;
 		EnemyComponent component = new();
 		node.AddChild(component);
+		node.ZIndex -= layer;
 		component.SetEnemy(instance, startingEmotion, fallsOffScreen);
 		return component;
 	}
@@ -174,6 +187,4 @@ public partial class GameManager : Node
 		component.SetPartyMember(instance, followup, position, startingEmotion, level, weapon, charm, skills);
 		return component;
 	}
-
-
 }

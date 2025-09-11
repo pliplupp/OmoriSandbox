@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 public class Database
 {
+	// TODO: abstract these into different registries
 	private static readonly Dictionary<string, Type> PartyMembers = [];
 	private static readonly Dictionary<string, Type> Enemies = [];
 	private static readonly Dictionary<string, Skill> Skills = [];
 	private static readonly Dictionary<string, Item> Items = [];
 	private static readonly Dictionary<string, Weapon> Weapons = [];
 	private static readonly Dictionary<string, Charm> Charms = [];
+	private static readonly Dictionary<string, Func<StatModifier>> Modifiers = [];
 
 	static Database()
 	{
@@ -56,6 +58,15 @@ public class Database
 			return null;
 		}
 		return (Enemy)Activator.CreateInstance(member);
+	}
+
+	public static StatModifier CreateModifier(string what)
+	{
+		if (!Modifiers.TryGetValue(what, out Func<StatModifier> modifier))
+		{
+			return null;
+		}
+		return modifier();
 	}
 
 	public static IEnumerable<string> GetAllWeaponNames()
@@ -113,6 +124,9 @@ public class Database
 		Enemies.Add("BigStrongTree", typeof(BigStrongTree));
 		Enemies.Add("DownloadWindow", typeof(DownloadWindow));
 		Enemies.Add("SpaceExBoyfriend", typeof(SpaceExBoyfriend));
+		Enemies.Add("GatorGuyJawsum", typeof(GatorGuyJawsum));
+		Enemies.Add("MrJawsum", typeof(MrJawsum));
+		Enemies.Add("FearOfSpiders", typeof(FearOfSpiders));
 		#endregion
 
 		#region SKILLS
@@ -125,7 +139,7 @@ public class Database
 			{
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] guards.");
 				await GameManager.Instance.AnimationManager.WaitForAnimation(115, self, false);
-				self.AddStatModifier(Modifier.Guard, 1, 1);
+				self.AddTierStatModifier("Guard", turns: 1);
 			},
 			goesFirst: true
 		);
@@ -201,7 +215,7 @@ public class Database
 				if (target.CurrentState == "happy" || target.CurrentState == "ecstatic" || target.CurrentState == "manic")
 				{
 					GameManager.Instance.AnimationManager.PlayAnimation(219, target);
-					target.AddStatModifier(Modifier.SpeedDown, 3);
+					target.AddTierStatModifier("SpeedDown", 3);
 				}
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 3f - target.CurrentStats.DEF; }, true);
 				await Task.Delay(334);
@@ -269,7 +283,7 @@ public class Database
 				if (target.CurrentState == "angry" || target.CurrentState == "enraged" || target.CurrentState == "furious")
 				{
 					GameManager.Instance.AnimationManager.PlayAnimation(219, target);
-					target.AddStatModifier(Modifier.AttackDown, 3);
+					target.AddTierStatModifier("AttackDown", 3);
 				}
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 3f - target.CurrentStats.DEF; }, false);
 				await Task.Delay(334);
@@ -288,7 +302,7 @@ public class Database
 				if (target.CurrentState == "sad" || target.CurrentState == "depressed" || target.CurrentState == "miserable")
 				{
 					GameManager.Instance.AnimationManager.PlayAnimation(219, target);
-					target.AddStatModifier(Modifier.DefenseDown, 3);
+					target.AddTierStatModifier("DefenseDown", 3);
 				}
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 3f - target.CurrentStats.DEF; }, false);
 				await Task.Delay(334);
@@ -307,9 +321,9 @@ public class Database
 				GameManager.Instance.AnimationManager.PlayAnimation(219, target);
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] stares at [target].");
 				BattleLogManager.Instance.QueueMessage(self, target, "[target] feels uncomfortable.");
-				target.AddStatModifier(Modifier.AttackDown, 1);
-				target.AddStatModifier(Modifier.DefenseDown, 1);
-				target.AddStatModifier(Modifier.SpeedDown, 1);
+				target.AddStatModifier("AttackDown");
+				target.AddStatModifier("DefenseDown");
+				target.AddStatModifier("SpeedDown");
 				await Task.Delay(334);
 			}
 		);
@@ -403,7 +417,7 @@ public class Database
 				BattleLogManager.Instance.QueueMessage("All foes' ATTACK fell!");
 				foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
 				{
-					enemy.AddStatModifier(Modifier.AttackDown, 3, silent: true);
+					enemy.AddTierStatModifier("AttackDown", 3, silent: true);
 					GameManager.Instance.AnimationManager.PlayAnimation(219, enemy);
 					BattleManager.Instance.Damage(self, enemy, () => { return self.CurrentStats.SPD * 3f - enemy.CurrentStats.DEF; }, false);
 				}
@@ -426,7 +440,7 @@ public class Database
 				BattleLogManager.Instance.QueueMessage("All foes' SPEED fell!");
 				foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
 				{
-					enemy.AddStatModifier(Modifier.SpeedDown, 3, silent: true);
+					enemy.AddTierStatModifier("SpeedDown", 3, silent: true);
 					GameManager.Instance.AnimationManager.PlayAnimation(219, enemy);
 					BattleManager.Instance.Damage(self, enemy, () => { return self.CurrentStats.ATK * 3.5f - enemy.CurrentStats.DEF; }, false);
 				}
@@ -452,7 +466,7 @@ public class Database
 			   {
 				   GameManager.Instance.AnimationManager.PlayAnimation(219, enemy);
 				   BattleManager.Instance.Damage(self, enemy, () => { return 400; }, false, 0f);
-				   enemy.AddStatModifier(Modifier.DefenseDown, 3, silent: true);
+				   enemy.AddTierStatModifier("DefenseDown", 3, silent: true);
 			   }
 		   }
 		);
@@ -523,7 +537,7 @@ public class Database
 				await GameManager.Instance.AnimationManager.WaitForAnimation(14, target);
 				GameManager.Instance.AnimationManager.PlayAnimation(219, target);
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] trips [target]!");
-				target.AddStatModifier(Modifier.SpeedDown, 1);
+				target.AddStatModifier("SpeedDown");
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK + self.CurrentStats.LCK - target.CurrentStats.DEF; }, false);
 			},
 			hidden: true
@@ -542,7 +556,7 @@ public class Database
 				await GameManager.Instance.AnimationManager.WaitForAnimation(14, target);
 				GameManager.Instance.AnimationManager.PlayAnimation(219, target);
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] trips [target]!");
-				target.AddStatModifier(Modifier.SpeedDown, 2);
+				target.AddTierStatModifier("SpeedDown", 2);
 				target.SetState("sad");
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK + self.CurrentStats.LCK - target.CurrentStats.DEF; }, false);
 			},
@@ -562,7 +576,7 @@ public class Database
 				await GameManager.Instance.AnimationManager.WaitForAnimation(14, target);
 				GameManager.Instance.AnimationManager.PlayAnimation(219, target);
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] trips [target]!");
-				target.AddStatModifier(Modifier.SpeedDown, 3);
+				target.AddTierStatModifier("SpeedDown", 3);
 				target.SetState("sad");
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK + self.CurrentStats.LCK - target.CurrentStats.DEF; }, false);
 			},
@@ -590,7 +604,7 @@ public class Database
 				}
 				foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
 				{
-					member.Actor.AddStatModifier(Modifier.ReleaseEnergy, 1, 9999);
+					member.Actor.AddStatModifier("ReleaseEnergy");
 				}
 			},
 			hidden: true
@@ -617,7 +631,7 @@ public class Database
 				}
 				foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
 				{
-					member.Actor.AddStatModifier(Modifier.ReleaseEnergy, 1, 9999);
+					member.Actor.AddStatModifier("ReleaseEnergy");
 				}
 			},
 			hidden: true
@@ -644,7 +658,7 @@ public class Database
 				}
 				foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
 				{
-					member.Actor.AddStatModifier(Modifier.ReleaseEnergy, 1, 9999);
+					member.Actor.AddStatModifier("ReleaseEnergy");
 				}
 			},
 			hidden: true
@@ -727,16 +741,16 @@ public class Database
 				foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
 				{
 					BattleManager.Instance.HealJuice(self, member.Actor, () => { return member.Actor.CurrentStats.MaxJuice * 0.2f; });
-					Modifier? modifier = member.Actor.CurrentState switch
+					string modifier = member.Actor.CurrentState switch
 					{
-						"happy" or "ecstatic" or "manic" => Modifier.SpeedUp,
-						"sad" or "depressed" or "miserable" => Modifier.DefenseUp,
-						"angry" or "enraged" or "furious" => Modifier.AttackUp,
+						"happy" or "ecstatic" or "manic" => "SpeedUp",
+						"sad" or "depressed" or "miserable" => "DefenseUp",
+						"angry" or "enraged" or "furious" => "AttackUp",
 						_ => null
 					};
-					if (modifier.HasValue)
+					if (modifier != null)
 					{
-						member.Actor.AddStatModifier(modifier.Value, 3);
+						member.Actor.AddTierStatModifier(modifier, 3);
 						GameManager.Instance.AnimationManager.PlayAnimation(214, member.Actor, false);
 					}
 				}
@@ -829,7 +843,7 @@ public class Database
 				foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
 				{
 					GameManager.Instance.AnimationManager.PlayAnimation(219, enemy);
-					enemy.AddStatModifier(Modifier.AttackDown, silent: true);
+					enemy.AddStatModifier("AttackDown", silent: true);
 				}
 			}
 		);
@@ -937,7 +951,7 @@ public class Database
 				foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
 				{
 					GameManager.Instance.AnimationManager.PlayAnimation(214, member.Actor, false);
-					member.Actor.AddStatModifier(Modifier.ReleaseEnergyBasil, 1, 9999, true);
+					member.Actor.AddStatModifier("ReleaseEnergyBasil", silent: true);
 				}
 				foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
 				{
@@ -1012,7 +1026,7 @@ public class Database
 				await Task.Delay(1000);
 				await GameManager.Instance.AnimationManager.WaitForAnimation(219, target);
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] smashes [target]!");
-				target.AddStatModifier(Modifier.DefenseDown);
+				target.AddStatModifier("DefenseDown");
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2f; }, false);
 			}
 		);
@@ -1240,7 +1254,7 @@ public class Database
 			   GameManager.Instance.AnimationManager.PlayScreenAnimation(39, false);
 			   await Task.Delay(2000);
 			   BattleLogManager.Instance.QueueMessage(self, other, "[target] eggs [actor] on!");
-			   self.AddStatModifier(Modifier.AttackUp, silent: true);
+			   self.AddStatModifier("AttackUp", silent: true);
 			   BattleLogManager.Instance.QueueMessage(self, other, "[target] and [actor]'s ATTACK ROSE!");
 			   GameManager.Instance.AnimationManager.PlayAnimation(214, self, false);
 			   GameManager.Instance.AnimationManager.PlayAnimation(214, other, false);
@@ -1263,7 +1277,7 @@ public class Database
 			  GameManager.Instance.AnimationManager.PlayScreenAnimation(40, false);
 			  await Task.Delay(2000);
 			  BattleLogManager.Instance.QueueMessage(self, other, "[target] eggs [actor] on!");
-			  self.AddStatModifier(Modifier.AttackUp, tier:3, silent: true);
+			  self.AddTierStatModifier("AttackUp", 3, silent: true);
 			  BattleLogManager.Instance.QueueMessage(self, other, "[target] and [actor]'s ATTACK ROSE!");
 			  GameManager.Instance.AnimationManager.PlayAnimation(214, self, false);
 			  GameManager.Instance.AnimationManager.PlayAnimation(214, other, false);
@@ -1288,7 +1302,7 @@ public class Database
 				GameManager.Instance.AnimationManager.PlayAnimation(214, self, false);
 				await Task.Delay(1000);
 				BattleLogManager.Instance.QueueMessage(self, other, "[target] tells [actor] to focus!");
-				self.AddStatModifier(Modifier.DefenseUp);
+				self.AddStatModifier("DefenseUp");
 				MakeHappy(self);
 			},
 			hidden: true
@@ -1312,7 +1326,7 @@ public class Database
 				int heal = (int)Math.Round(self.CurrentStats.MaxHP * 0.25f, MidpointRounding.AwayFromZero);
 				BattleLogManager.Instance.QueueMessage(self, other, "[target] cheers [actor]!");
 				self.Heal(heal);
-				self.AddStatModifier(Modifier.DefenseUp, 2);
+				self.AddTierStatModifier("DefenseUp", 2);
 				MakeHappy(self);
 			},
 			hidden: true
@@ -1338,7 +1352,7 @@ public class Database
 				BattleLogManager.Instance.QueueMessage(self, other, "[target] cheers [actor]!");
 				self.Heal(heal);
 				self.HealJuice(juice);
-				self.AddStatModifier(Modifier.DefenseUp, 3);
+				self.AddTierStatModifier("DefenseUp", 3);
 				self.SetState("ecstatic");
 			},
 			hidden: true
@@ -1528,7 +1542,7 @@ public class Database
 				{
 					GameManager.Instance.AnimationManager.PlayAnimation(76, self, false);
 					await Task.Delay(1000);
-					self.AddStatModifier(Modifier.Flex, turns: int.MaxValue);
+					self.AddStatModifier("Flex");
 					GameManager.Instance.AnimationManager.PlayAnimation(214, self, false);
 				}
 				else
@@ -1548,7 +1562,7 @@ public class Database
 			{
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] tickles [target]!");
 				BattleLogManager.Instance.QueueMessage(self, target, "[target] let their guard down!");
-				target.AddStatModifier(Modifier.Tickle, turns: 1);
+				target.AddTierStatModifier("Tickle", turns: 1);
 				await Task.CompletedTask;
 			}
 		);
@@ -1603,7 +1617,7 @@ public class Database
 				GameManager.Instance.AnimationManager.PlayScreenAnimation(57, true);
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] flexes and feels his best!");
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor]'s HIT RATE rose!");
-				self.AddStatModifier(Modifier.Flex, turns: int.MaxValue);
+				self.AddStatModifier("Flex");
 				await Task.CompletedTask;
 			}
 		);
@@ -1632,7 +1646,7 @@ public class Database
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] gives some encouragement!");
 				GameManager.Instance.AnimationManager.PlayAnimation(214, target, false);
 				await Task.Delay(1000);
-				target.AddStatModifier(Modifier.AttackUp);
+				target.AddStatModifier("AttackUp");
 			}
 		);
 		Skills["PassToOmori1"] = new Skill(
@@ -1806,7 +1820,7 @@ public class Database
 				   // VANILLA BUG: uses Aubrey's attack instead of Hero's
 				   BattleManager.Instance.Damage(self, enemy, () => { return (second.CurrentStats.ATK * 1.5f) + (self.CurrentStats.ATK * 1.5f) - enemy.CurrentStats.DEF; }, false);
 				   GameManager.Instance.AnimationManager.PlayAnimation(219, enemy, false);
-				   enemy.AddStatModifier(Modifier.AttackDown);
+				   enemy.AddStatModifier("AttackDown");
 			   }
 		   },
 		   hidden: true
@@ -1865,7 +1879,7 @@ public class Database
 				await Task.Delay(332);
 				GameManager.Instance.AnimationManager.PlayAnimation(124, target);
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] intensely massages\n[target]!");
-				target.AddStatModifier(Modifier.DefenseDown);
+				target.AddStatModifier("DefenseDown");
 				GameManager.Instance.AnimationManager.PlayAnimation(219, target);
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 4f - target.CurrentStats.DEF; }, false);
 			}
@@ -1881,7 +1895,7 @@ public class Database
 			   BattleLogManager.Instance.QueueMessage(self, target, "[actor] smiles.");
 			   await GameManager.Instance.AnimationManager.WaitForScreenAnimation(87, false);
 			   await Task.Delay(332);
-			   target.AddStatModifier(Modifier.AttackDown);
+			   target.AddStatModifier("AttackDown");
 			   await GameManager.Instance.AnimationManager.WaitForAnimation(219, target);
 		   }
 		);
@@ -1899,7 +1913,7 @@ public class Database
 			   {
 				   BattleLogManager.Instance.QueueMessage(self, enemy, "[actor] smiles at [target]!");
 				   GameManager.Instance.AnimationManager.PlayAnimation(276, enemy);
-				   enemy.AddStatModifier(Modifier.AttackDown);
+				   enemy.AddStatModifier("AttackDown");
 				   MakeHappy(enemy);
 				   GameManager.Instance.AnimationManager.PlayAnimation(219, enemy);
 			   }
@@ -1975,7 +1989,7 @@ public class Database
 			   BattleLogManager.Instance.QueueMessage("Everyone's DEFENSE rose!");
 			   foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
 			   {
-					member.Actor.AddStatModifier(Modifier.DefenseUp, silent: true);
+					member.Actor.AddStatModifier("DefenseUp", silent: true);
 					GameManager.Instance.AnimationManager.PlayAnimation(214, member.Actor, false);
 			   }
 		   }
@@ -2381,7 +2395,7 @@ public class Database
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] winks at [target]?");
 				await GameManager.Instance.AnimationManager.WaitForAnimation(148, self);
 				await GameManager.Instance.AnimationManager.WaitForAnimation(215, target, false);
-				target.AddStatModifier(Modifier.AttackDown);
+				target.AddStatModifier("AttackDown");
 			},
 			hidden: true
 		);
@@ -2538,7 +2552,7 @@ public class Database
 				await GameManager.Instance.AnimationManager.WaitForAnimation(193, target, false);
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2; }, false, neverCrit: true);
 				GameManager.Instance.AnimationManager.PlayAnimation(215, target, false);
-				target.AddStatModifier(Modifier.SpeedDown, 3);
+				target.AddTierStatModifier("SpeedDown", 3);
 			},
 			hidden: true
 		);
@@ -2605,9 +2619,9 @@ public class Database
 				await Task.Delay(664);
 				foreach (PartyMemberComponent partyMember in BattleManager.Instance.GetAlivePartyMembers())
 				{
-					partyMember.Actor.AddStatModifier(Modifier.AttackDown, 3, silent: true);
-					partyMember.Actor.AddStatModifier(Modifier.DefenseDown, 3, silent: true);
-					partyMember.Actor.AddStatModifier(Modifier.SpeedDown, 3, silent: true);
+					partyMember.Actor.AddTierStatModifier("AttackDown", 3, silent: true);
+					partyMember.Actor.AddTierStatModifier("DefenseDown", 3, silent: true);
+					partyMember.Actor.AddTierStatModifier("SpeedDown", 3, silent: true);
 					GameManager.Instance.AnimationManager.PlayAnimation(215, partyMember.Actor, false);
 				}
 				BattleLogManager.Instance.QueueMessage("Everyone's ATTACK fell.");
@@ -2822,6 +2836,196 @@ public class Database
 			hidden: true
 		);
 
+		// Gator Guy //
+
+		Skills["GGAttack"] = new Skill(
+			name: "GGAttack",
+			description: "GGAttack",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				await GameManager.Instance.AnimationManager.WaitForAnimation(123, target, false);
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] karate chops [target]!");
+				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }, false, neverCrit: true);
+			},
+			hidden: true
+		);
+
+		Skills["GGDoNothing"] = new Skill(
+			name: "GGDoNothing",
+			description: "GGDoNothing",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] cracks his knuckles.");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+
+		Skills["GGRoughUp"] = new Skill(
+			name: "GGRoughUp",
+			description: "GGRoughUp",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] gets rough.");
+				await Task.Delay(100);
+				target = BattleManager.Instance.GetRandomAlivePartyMember();
+				GameManager.Instance.AnimationManager.PlayAnimation(123, target, false);
+				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false, neverCrit: true);
+				await Task.Delay(917);
+				GameManager.Instance.AnimationManager.PlayAnimation(123, target, false);
+				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false, neverCrit: true);
+			},
+			hidden: true
+		);
+
+		// Mr. Jawsum //
+		Skills["MJAttackOrder"] = new Skill(
+			name: "MJAttackOrder",
+			description: "MJAttackOrder",
+			target: SkillTarget.AllAllies,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] gives orders to attack!");
+				AudioManager.Instance.PlaySFX("SE_dinosaur", 0.8f, 1f);
+				await Task.Delay(250);
+				foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
+				{
+					MakeAngry(enemy);
+				}
+			},
+			hidden: true
+		);
+
+		Skills["MJSummonGator"] = new Skill(
+			name: "MJSummonGator",
+			description: "MJSummonGator",
+			target: SkillTarget.Self,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(146, true);
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] picks up the phone and\ncalls a GATOR GUY!");
+				int gatorGuys = BattleManager.Instance.GetAllEnemies().Count(x => x.Name == "GATOR GUY");
+				EnemyComponent enemy;
+				if (gatorGuys == 0)
+					enemy = BattleManager.Instance.SummonEnemy("GatorGuyJawsum", new Vector2(self.CenterPoint.X - 145, self.CenterPoint.Y + 65));
+				else if (gatorGuys == 1)
+					enemy = BattleManager.Instance.SummonEnemy("GatorGuyJawsum", new Vector2(self.CenterPoint.X + 145, self.CenterPoint.Y + 65));
+				else
+				{
+					GD.PushWarning("Tried to summon more than 2 gator guys!");
+					return;
+				}
+				if (self is MrJawsum jawsum)
+				{
+					jawsum.GatorGuys.Add(enemy);
+				}
+			},
+			hidden: true
+		);
+
+		// Fear of Spiders //
+		Skills["FOSAttack"] = new Skill(
+		   name: "FOSAttack",
+		   description: "FOSAttack",
+		   target: SkillTarget.Enemy,
+		   cost: 0,
+		   effect: async (self, target) =>
+		   {
+			   await GameManager.Instance.AnimationManager.WaitForAnimation(287, target, false);
+			   BattleLogManager.Instance.QueueMessage(self, target, "[actor] wraps up and eats [target].");
+			   BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }, false);
+		   },
+		   hidden: true
+		);
+
+		Skills["FOSDoNothing"] = new Skill(
+		   name: "FOSDoNothing",
+		   description: "FOSDoNothing",
+		   target: SkillTarget.Self,
+		   cost: 0,
+		   effect: async (self, target) =>
+		   {
+			   BattleLogManager.Instance.QueueMessage(self, target, "[actor] is trying to talk to you...");
+			   await Task.CompletedTask;
+		   },
+		   hidden: true
+		);
+
+		Skills["FOSSpinWeb"] = new Skill(
+		   name: "FOSSpinWeb",
+		   description: "FOSSpinWeb",
+		   target: SkillTarget.Enemy,
+		   cost: 0,
+		   effect: async (self, target) =>
+		   {
+			   GameManager.Instance.AnimationManager.PlayScreenAnimation(176, false);
+			   BattleLogManager.Instance.QueueMessage(self, target, "[actor] entangles [target]\nin sticky webs.");
+			   target.AddStatModifier("SpeedDown");
+			   await Task.CompletedTask;
+		   },
+		   hidden: true
+		);
+
+		Skills["FOSAttackAll"] = new Skill(
+		   name: "FOSAttackAll",
+		   description: "FOSAttackAll",
+		   target: SkillTarget.AllEnemies,
+		   cost: 0,
+		   effect: async (self, target) =>
+		   {
+			   BattleLogManager.Instance.QueueMessage(self, target, "[actor] catches everyone!");
+			   GameManager.Instance.AnimationManager.PlayScreenAnimation(176, false);
+			   await Task.Delay(1000);
+			   foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
+			   {
+				   BattleManager.Instance.Damage(self, member.Actor, () => { return self.CurrentStats.ATK * 2f - member.Actor.CurrentStats.DEF; }, false);
+				   GameManager.Instance.AnimationManager.PlayAnimation(287, member.Actor, false);
+			   }
+		   },
+		   hidden: true
+		);
+		#endregion
+
+		#region MODIFIERS
+		Modifiers.Add("Neutral", () => new StatModifier([]));
+		Modifiers.Add("Happy", () => new StatModifier([new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)]));
+		Modifiers.Add("Ecstatic", () => new StatModifier([new StatBonus(StatType.LCK, 3f), new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.HIT, -20)]));
+		Modifiers.Add("Manic", () => new StatModifier([new StatBonus(StatType.LCK, 4f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.HIT, -30)]));
+		Modifiers.Add("Angry", () => new StatModifier([new StatBonus(StatType.ATK, 1.3f), new StatBonus(StatType.DEF, 0.5f)]));
+		Modifiers.Add("Enraged", () => new StatModifier([new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.3f)]));
+		Modifiers.Add("Furious", () => new StatModifier([new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.15f)]));
+		Modifiers.Add("Sad", () => new StatModifier([new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.SPD, 0.8f)]));
+		Modifiers.Add("Depressed", () => new StatModifier([new StatBonus(StatType.DEF, 1.35f), new StatBonus(StatType.SPD, 0.65f)]));
+		Modifiers.Add("Miserable", () => new StatModifier([new StatBonus(StatType.DEF, 1.5f), new StatBonus(StatType.SPD, 0.5f)]));
+		Modifiers.Add("Stressed", () => new StatModifier([new StatBonus(StatType.ATK, 1.2f), new StatBonus(StatType.DEF, 0.9f)]));
+		Modifiers.Add("AttackUp", () => new TierStatModifier([new StatBonus(StatType.ATK, 1.1f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.ATK, 1.5f)]).WithMessages("ATTACK rose!", "ATTACK cannot go any higher!"));
+		Modifiers.Add("AttackDown", () => new TierStatModifier([new StatBonus(StatType.ATK, 0.9f), new StatBonus(StatType.ATK, 0.8f), new StatBonus(StatType.ATK, 0.7f)]).WithMessages("ATTACK fell!", "ATTACK cannot go any lower!"));
+		Modifiers.Add("DefenseUp", () => new TierStatModifier([new StatBonus(StatType.DEF, 1.15f), new StatBonus(StatType.DEF, 1.3f), new StatBonus(StatType.DEF, 1.5f)]).WithMessages("DEFENSE rose!", "DEFENSE cannot go any higher!"));
+		Modifiers.Add("DefenseDown", () => new TierStatModifier([new StatBonus(StatType.DEF, 0.75f), new StatBonus(StatType.DEF, 0.5f), new StatBonus(StatType.DEF, 0.25f)]).WithMessages("DEFENSE fell!", "DEFENSE cannot go any lower!"));
+		Modifiers.Add("SpeedUp", () => new TierStatModifier([new StatBonus(StatType.SPD, 1.15f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.SPD, 5f)]).WithMessages("SPEED rose!", "SPEED cannot go any higher!"));
+		Modifiers.Add("SpeedDown", () => new TierStatModifier([new StatBonus(StatType.SPD, 0.8f), new StatBonus(StatType.SPD, 0.5f), new StatBonus(StatType.SPD, 0.25f)]).WithMessages("SPEED fell!", "SPEED cannot go any lower!"));
+		Modifiers.Add("ReleaseEnergy", () => new StatModifier([new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.LCK, 1.25f)]));
+		Modifiers.Add("ReleaseEnergyBasil", () => new StatModifier([new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.LCK, 1.25f)]));
+		Modifiers.Add("SnoCone", () => new StatModifier([new StatBonus(StatType.SPD, 1.2f), new StatBonus(StatType.ATK, 1.2f), new StatBonus(StatType.DEF, 1.2f), new StatBonus(StatType.LCK, 1.2f)]));
+		Modifiers.Add("Flex", () => new DamageStatModifier(2.5f, [new StatBonus(StatType.HIT, 1000)]));
+		Modifiers.Add("Guard", () => new DamageStatModifier(0.5f));
+		Modifiers.Add("PlotArmor", () => new DamageStatModifier(0f));
+		Modifiers.Add("Tickle", () => new TierStatModifier([]));
+		Modifiers.Add("SweetheartHappy", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)]));
+		Modifiers.Add("SweetheartEcstatic", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 3f), new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.HIT, -20)]));
+		Modifiers.Add("SweetheartManic", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 4f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.HIT, -30)]));
+		Modifiers.Add("SpaceExAngry", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 0.9f)]));
+		Modifiers.Add("SpaceExEnraged", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.5f)]));
+		Modifiers.Add("SpaceExFurious", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.3f)]));
+		Modifiers.Add("MrJawsumBarrier", () => new MrJawsumStatModifier(0f));
 		#endregion
 
 		#region SNACKS
@@ -2907,7 +3111,7 @@ public class Database
 				GameManager.Instance.AnimationManager.PlayAnimation(214, target, false);
 				// coffee heals, uses emotion, and has a variance due to an oversight
 				BattleManager.Instance.Heal(self, target, () => { return target.CurrentStats.MaxJuice * 0.1f; }, 0.2f);
-				target.AddStatModifier(Modifier.SpeedUp, 3);
+				target.AddTierStatModifier("SpeedUp", 3);
 				await Task.CompletedTask;
 			}
 		);
@@ -2988,7 +3192,7 @@ public class Database
 				target.HealJuice(total);
 				BattleManager.Instance.SpawnDamageNumber(total, target.CenterPoint, DamageType.JuiceGain);
 				BattleLogManager.Instance.QueueMessage(self, target, $"[target] recovered {total} JUICE!");
-				target.AddStatModifier(Modifier.DefenseUp);
+				target.AddStatModifier("DefenseUp");
 				await Task.CompletedTask;
 			}
 		);
@@ -3003,7 +3207,7 @@ public class Database
 				await GameManager.Instance.AnimationManager.WaitForAnimation(214, target, false);
 				target.Heal(target.CurrentStats.MaxHP);
 				target.HealJuice(target.CurrentStats.MaxJuice);
-				target.AddStatModifier(Modifier.SnoCone, turns: int.MaxValue);
+				target.AddStatModifier("SnoCone");
 				BattleLogManager.Instance.QueueMessage(self, target, $"[actor]'s ATTACK rose!");
 				BattleLogManager.Instance.QueueMessage(self, target, $"[actor]'s DEFENSE rose!");
 				BattleLogManager.Instance.QueueMessage(self, target, $"[actor]'s SPEED rose!");
@@ -3098,7 +3302,7 @@ public class Database
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] uses RUBBER BAND!");
 				BattleManager.Instance.Damage(self, target, () => { return 50; }, true, 0, neverCrit: true);
 				await GameManager.Instance.AnimationManager.WaitForAnimation(219, target);
-				target.AddStatModifier(Modifier.DefenseDown);
+				target.AddStatModifier("DefenseDown");
 			},
 			isToy: true
 		);
@@ -3112,7 +3316,7 @@ public class Database
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] uses BIG RUBBER BAND!");
 				BattleManager.Instance.Damage(self, target, () => { return 150; }, true, 0, neverCrit: true);
 				await GameManager.Instance.AnimationManager.WaitForAnimation(219, target);
-				target.AddStatModifier(Modifier.DefenseDown);
+				target.AddStatModifier("DefenseDown");
 			},
 			isToy: true
 		);
@@ -3133,7 +3337,7 @@ public class Database
 				{
 					BattleManager.Instance.Damage(self, enemy, () => { return 25; }, true, 0, neverCrit: true);
 					GameManager.Instance.AnimationManager.PlayAnimation(219, enemy);
-					enemy.AddStatModifier(Modifier.SpeedDown, silent: true);
+					enemy.AddStatModifier("SpeedDown", silent: true);
 				}
 				BattleLogManager.Instance.QueueMessage("All foes' SPEED fell.");
 				await Task.Delay(500);
@@ -3259,7 +3463,7 @@ public class Database
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] uses DANDELION!");
 				AudioManager.Instance.PlaySFX("BA_calm_down", 1, 0.9f);
 				// this should be changed once boss specific/special states are improved
-				if (target.CurrentState == "neutral" || target.HasStatModifier(Modifier.SweetheartLock))
+				if (target.CurrentState == "neutral" || target.HasLockedEmotion())
 				{
 					BattleLogManager.Instance.QueueMessage("It had no effect.");
 				}

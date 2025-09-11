@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://o23hbcl14151" path="res://scripts/EnemyEditorComponent.cs" id="1_hxvew"]
 
-[node name="EnemyEditorComponent" type="MarginContainer" node_paths=PackedStringArray("EnemyDropdown", "EmotionDropdown", "XPosBox", "YPosBox", "FallsOffScreenCheckbox", "VisibleCheckbox", "RemoveButton")]
+[node name="EnemyEditorComponent" type="MarginContainer" node_paths=PackedStringArray("EnemyDropdown", "EmotionDropdown", "XPosBox", "YPosBox", "LayerBox", "FallsOffScreenCheckbox", "VisibleCheckbox", "RemoveButton")]
 offset_right = 200.0
 offset_bottom = 300.0
 mouse_filter = 2
@@ -15,6 +15,7 @@ EnemyDropdown = NodePath("VBoxContainer/Enemy/EnemyDropdown")
 EmotionDropdown = NodePath("VBoxContainer/Emotion/EmotionDropdown")
 XPosBox = NodePath("VBoxContainer/XPos/XPosInput")
 YPosBox = NodePath("VBoxContainer/YPos/YPosInput")
+LayerBox = NodePath("VBoxContainer/Layer/LayerInput")
 FallsOffScreenCheckbox = NodePath("VBoxContainer/FallsOffScreen")
 VisibleCheckbox = NodePath("VBoxContainer/Visible")
 RemoveButton = NodePath("VBoxContainer/Remove")
@@ -74,6 +75,24 @@ text = "Y Pos"
 layout_mode = 2
 max_value = 480.0
 value = 240.0
+
+[node name="Layer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Layer"]
+layout_mode = 2
+text = "Layer"
+
+[node name="LayerInput" type="SpinBox" parent="VBoxContainer/Layer"]
+layout_mode = 2
+max_value = 50.0
+rounded = true
+
+[node name="LayerNote" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Note: Layer 0 is the top layer"
 
 [node name="FallsOffScreen" type="CheckBox" parent="VBoxContainer"]
 layout_mode = 2

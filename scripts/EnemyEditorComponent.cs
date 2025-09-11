@@ -1,5 +1,4 @@
 using Godot;
-using System.Xml.Linq;
 
 public partial class EnemyEditorComponent : Control
 {
@@ -14,6 +13,9 @@ public partial class EnemyEditorComponent : Control
 
 	[Export]
 	public SpinBox YPosBox { get; private set; }
+
+	[Export]
+	public SpinBox LayerBox { get; private set; }
 
 	[Export]
 	public CheckBox FallsOffScreenCheckbox { get; private set; }
@@ -40,6 +42,8 @@ public partial class EnemyEditorComponent : Control
 
 		XPosBox.ValueChanged += (value) => Animator.GlobalPosition = new Vector2((float)value, Animator.GlobalPosition.Y);
 		YPosBox.ValueChanged += (value) => Animator.GlobalPosition = new Vector2(Animator.GlobalPosition.X, (float)value);
+
+		LayerBox.ValueChanged += (value) => Animator.ZIndex = -5 - (int)LayerBox.Value;
 	}
 
 	public void Init(AnimatedSprite2D animator)
@@ -61,11 +65,11 @@ public partial class EnemyEditorComponent : Control
 		Populate("LostSproutMole");
 	}
 
-	public void Init(AnimatedSprite2D animator, string name, Vector2 position, string emotion, bool fallsOffScreen)
+	public void Init(AnimatedSprite2D animator, string name, Vector2 position, string emotion, int layer, bool fallsOffScreen)
 	{
 		Animator = animator;
 		Animator.Centered = true;
-		Animator.ZIndex = -5;
+		Animator.ZIndex = -5 - layer;
 
 		RemoveButton.Pressed += () =>
 		{

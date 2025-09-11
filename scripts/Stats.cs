@@ -1,3 +1,5 @@
+using System;
+
 public struct Stats
 {
     public int HP;
@@ -28,5 +30,39 @@ public struct Stats
         result.MaxHP = a.HP + b.HP;
         result.MaxJuice = a.Juice + b.Juice;
         return result;
+    }
+
+    public int GetStat(StatType stat)
+    {
+        return stat switch
+        {
+            StatType.HP => HP,
+            StatType.MaxHP => MaxHP,
+            StatType.Juice => Juice,
+            StatType.MaxJuice => MaxJuice,
+            StatType.ATK => ATK,
+            StatType.DEF => DEF,
+            StatType.SPD => SPD,
+            StatType.LCK => LCK,
+            StatType.HIT => HIT,
+            _ => throw new ArgumentOutOfRangeException(nameof(stat), stat, null)
+        };
+    }
+
+    public void SetStat(StatType stat, int value)
+    {
+        switch (stat)
+        {
+            case StatType.HP: HP = value; break;
+            case StatType.MaxHP: MaxHP = value; break;
+            case StatType.Juice: Juice = value; break;
+            case StatType.MaxJuice: MaxJuice = value; break;
+            case StatType.ATK: ATK = value; break;
+            case StatType.DEF: DEF = value; break;
+            case StatType.SPD: SPD = value; break;
+            case StatType.LCK: LCK = value; break;
+            case StatType.HIT: HIT = value; break;
+            default: throw new ArgumentOutOfRangeException(nameof(stat), stat, null);
+        }
     }
 }

@@ -25,7 +25,8 @@ public partial class PartyMenu : Menu
         }
         else
         {
-            BattleManager.Instance.OnRunSelected();
+            BattleManager.Instance.Reset();
+            MainMenuManager.Instance.ReturnToTitle();
             AudioManager.Instance.PlaySFX("SYS_select");
         }
     }

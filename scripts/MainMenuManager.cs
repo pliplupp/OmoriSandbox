@@ -46,7 +46,7 @@ public partial class MainMenuManager : Node
 				GD.PrintErr("Failed to parse preset " + presetName);
 				return;
 			}
-
+			LastLoadedPreset = presetName;
 			GameManager.Instance.LoadBattlePreset(json.AsGodotDictionary<string, Variant>());
 			MainMenu.Visible = false;
 		};
@@ -56,6 +56,7 @@ public partial class MainMenuManager : Node
 			AudioManager.Instance.StopBGM();
 			MainMenu.Visible = false;
 			Editor.Visible = true;
+			GameManager.Instance.DiscordManager.SetEditingPreset();
 		};
 
 		DataFolderButton.Pressed += () =>
@@ -90,6 +91,7 @@ public partial class MainMenuManager : Node
 			AudioManager.Instance.PlayBGM("ow_cattail_fields");
 			MainMenu.Visible = true;
 			Editor.Visible = false;
+			GameManager.Instance.DiscordManager.SetMainMenu();
 		};
 
 		foreach (Control control in AddActorControls)
@@ -141,6 +143,7 @@ public partial class MainMenuManager : Node
 
 		foreach (string bgm in ResourceLoader.ListDirectory("res://audio/bgm"))
 			BGMDropdown.AddItem(bgm);
+		BGMDropdown.Selected = BGMDropdown.GetItemIndex("battle_vf.ogg");
 
 		BattlebackDropdown.Selected = BattlebackDropdown.GetItemIndex("battleback_vf_default.png");
 		BattlebackDropdown.ItemSelected += (idx) =>
@@ -326,6 +329,7 @@ public partial class MainMenuManager : Node
 					{ "name", editor.EnemyDropdown.GetItemText(editor.EnemyDropdown.Selected) },
 					{ "position", new Vector2((float)editor.XPosBox.Value, (float)editor.YPosBox.Value) },
 					{ "emotion", editor.EmotionDropdown.GetItemText(editor.EmotionDropdown.Selected) },
+					{ "layer", editor.LayerBox.Value },
 					{ "fallsOffScreen", editor.FallsOffScreenCheckbox.ButtonPressed },
 				};
 				enemies.Add(enemy);
@@ -480,11 +484,13 @@ public partial class MainMenuManager : Node
 					Vector2 position = new(float.Parse(positionArr[0], CultureInfo.InvariantCulture), float.Parse(positionArr[1], CultureInfo.InvariantCulture));
 					string emotion = entry["emotion"].ToString();
 					bool fallsOffScreen = entry["fallsOffScreen"].AsBool();
+					if (!entry.TryGetValue("layer", out Variant layer))
+						layer = 0;
 					AnimatedSprite2D enemySprite = new();
 					AddEnemyControl.AddChild(enemySprite);
 					EnemyEditorComponent editor = EnemyEditor.Instantiate<EnemyEditorComponent>();
 					EnemyTabs.AddChild(editor);
-					editor.Init(enemySprite, enemyName, position, emotion, fallsOffScreen);
+					editor.Init(enemySprite, enemyName, position, emotion, layer.AsInt32(), fallsOffScreen);
 				}
 				catch (KeyNotFoundException ex)
 				{
@@ -498,6 +504,7 @@ public partial class MainMenuManager : Node
 				}
 			}
 
+			PresetInput.Text = presetName;
 		}
 		catch (KeyNotFoundException ex)
 		{
@@ -507,7 +514,7 @@ public partial class MainMenuManager : Node
 		catch (Exception e)
 		{
 			ShowWindow("Error", "Failed to load! See the console/logs for more information.");
-			GD.PrintErr("Preset laod failed due to an unknown error:\n" + e);
+			GD.PrintErr("Preset load failed due to an unknown error:\n" + e);
 		}
 	}
 
@@ -671,6 +678,7 @@ public partial class MainMenuManager : Node
 	}
 
 	public static MainMenuManager Instance;
+	public string LastLoadedPreset { get; private set; } = "";
 
 	[Export]
 	private Control[] AddActorControls;

@@ -8,6 +8,8 @@ public partial class BattleManager : Node
 {
 	[Export] public Label EnergyText;
 	[Export] private Sprite2D EnergyBar;
+	[Export] private EnergyDots EnergyDots;
+	[Export] private HBoxContainer MenuButtonContainer;
 
 	private List<PartyMemberComponent> CurrentParty = [];
 	private List<EnemyComponent> Enemies = [];
@@ -29,10 +31,76 @@ public partial class BattleManager : Node
 	private bool UseBasilReleaseEnergy = false;
 	private bool UseBasilFollowups = false;
 
+	private bool IsBattling = false;
+
 	public static BattleManager Instance { get; private set; }
+
+	// table used for handling selecting a party member target
+	// has a preferred and fallback target if the preferred party member does not exist
+	private Dictionary<(int Position, InputDirection Direction), (int Preferred, int Fallback)> DirectionTable = new()
+	{
+		{ (0, InputDirection.Up),    (1, 2) },
+		{ (0, InputDirection.Right), (3, 2) },
+		{ (1, InputDirection.Down),  (0, 3) },
+		{ (1, InputDirection.Right), (2, 3) },
+		{ (2, InputDirection.Left),  (1, 0) },
+		{ (2, InputDirection.Down),  (3, 0) },
+		{ (3, InputDirection.Left),  (0, 1) },
+		{ (3, InputDirection.Up),    (2, 1) },
+	};
+
+	// table used for handling followup behavior
+	// has a followup target and followup skill to use
+	private Dictionary<(int Position, InputDirection Direction), (int Target, string SkillName)> FollowupTable = new()
+	{
+		// the skill names here will get their tier number added later
+		// Omori
+		{ (0, InputDirection.Up), (0, "AttackAgain") },
+		{ (0, InputDirection.Right), (0, "Trip") },
+		{ (0, InputDirection.Down), (0, "ReleaseEnergy") },
+
+		// Aubrey
+		{ (1, InputDirection.Up), (2, "LookAtHero") },
+		{ (1, InputDirection.Right), (3, "LookAtKel") },
+		{ (1, InputDirection.Down), (0, "LookAtOmori") },
+
+		// Hero
+		{ (2, InputDirection.Up), (1, "CallAubrey") },
+		{ (2, InputDirection.Left), (0, "CallOmori") },
+		{ (2, InputDirection.Down), (3, "CallKel") },
+
+		// Kel and Basil are added dynamically in Init()
+	};
 
 	public override void _EnterTree()
 	{
+		MenuButtonContainer.GetChild<Button>(0).Pressed += () =>
+		{
+			Reset();
+			string presetName = MainMenuManager.Instance.LastLoadedPreset;
+			string path = "user://presets/" + MainMenuManager.Instance.LastLoadedPreset + ".json";
+			if (!FileAccess.FileExists(path))
+			{
+				GD.PrintErr("Preset file not found at: " + path);
+				return;
+			}
+
+			using FileAccess file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+			Variant json = Json.ParseString(file.GetAsText());
+
+			if (json.VariantType == Variant.Type.Nil)
+			{
+				GD.PrintErr("Failed to parse preset " + presetName);
+				return;
+			}
+			GameManager.Instance.LoadBattlePreset(json.AsGodotDictionary<string, Variant>());
+		};
+
+		MenuButtonContainer.GetChild<Button>(1).Pressed += () =>
+		{
+			Reset();
+			MainMenuManager.Instance.ReturnToTitle();
+		};
 		Instance = this;
 	}
 
@@ -45,6 +113,7 @@ public partial class BattleManager : Node
 		FollowupTier = followupTier;
 		UseBasilFollowups = useBasilFollowups;
 		UseBasilReleaseEnergy = useBasilReleaseEnergy;
+		MenuButtonContainer.Visible = false;
 
 		EnergyBar.Visible = CurrentParty.Any(x => x.HasFollowup);
 
@@ -59,11 +128,27 @@ public partial class BattleManager : Node
 		Delay.Timeout += OnDelayTimeout;
 		BattleLogManager.Instance.FinishedLogging += OnBattleLogFinished;
 
+		// update the FollowupTable depending on if Basil followups are enabled
+		if (UseBasilFollowups)
+		{
+			FollowupTable[(3, InputDirection.Down)] = (0, "Comfort");
+			FollowupTable[(3, InputDirection.Left)] = (1, "Mull");
+			FollowupTable[(3, InputDirection.Up)] = (2, "Vent");
+		}
+		else
+		{
+			FollowupTable[(3, InputDirection.Down)] = (0, "PassToOmori");
+			FollowupTable[(3, InputDirection.Left)] = (1, "PassToAubrey");
+			FollowupTable[(3, InputDirection.Up)] = (2, "PassToHero");
+		}
+
 		DamageNumber.CacheTexture(ResourceLoader.Load<Texture2D>("res://assets/system/Damage.png"));
 
 		CallDeferred(MethodName.PreBattle);
 
 		SetPhase(BattlePhase.FightRun);
+
+		IsBattling = true;
 	}
 
 	private void PreBattle()
@@ -87,21 +172,38 @@ public partial class BattleManager : Node
 			}
 			party.Actor.Charm?.StartOfBattle(party.Actor);
 		}
+
+		// TODO: add more events for different parts of the battle
+		for (int i = 0; i < Enemies.Count; i++)
+		{
+			if (Enemies[i].Actor is MrJawsum jawsum)
+			{
+				// jawsum always starts with 2 gator guys
+				// this may be configurable in the future
+				jawsum.AddStatModifier("MrJawsumBarrier");
+				jawsum.GatorGuys.Add(SummonEnemy("GatorGuyJawsum", new Vector2(jawsum.CenterPoint.X - 145, jawsum.CenterPoint.Y + 65)));
+				jawsum.GatorGuys.Add(SummonEnemy("GatorGuyJawsum", new Vector2(jawsum.CenterPoint.X + 145, jawsum.CenterPoint.Y + 65)));
+			}
+		}
 	}
 
 	public override void _Process(double delta)
 	{
-		for (int i = 0; i < CurrentParty.Count; i++)
+		if (!IsBattling)
+			return;
+
+		EnergyDots.Tick(delta);
+
+		CurrentParty.ForEach(x =>
 		{
-			CurrentParty[i].SelectionBoxVisible = (i == CurrentPartyMember || i == CurrentPartyMemberTarget);
-		}
+			x.SelectionBoxVisible = x.Position == CurrentPartyMemberTarget;
+		});
 
 		for (int i = 0; i < Enemies.Count; i++)
 		{
 			Enemies[i].ShowInfoBox(i == CurrentEnemyTarget);
 		}
 
-		// TODO: energy bar dots
 		MenuManager.Instance.EnergyText.Text = $"{Energy:00}";
 		MenuManager.Instance.EnergyBar.RegionRect = new Rect2(0, (float)Math.Ceiling(Energy / 3f) * 45f, 362f, 49f);
 
@@ -109,7 +211,7 @@ public partial class BattleManager : Node
 		{
 			if (Phase == BattlePhase.TargetSelection)
 			{
-				SelectTarget();
+				SelectTarget(); 
 			}
 			else
 			{
@@ -162,153 +264,24 @@ public partial class BattleManager : Node
 			}
 		}
 
-		// TODO: refactor target selection
-
 		if (Input.IsActionJustPressed("MenuLeft"))
 		{
-			if (Phase == BattlePhase.CommandExecute || Phase == BattlePhase.WaitForBattleLog)
-			{
-				if (HandleFollowup("left"))
-				{
-					ProcessFollowupSuccess();
-				}
-			}
-			if (Phase == BattlePhase.TargetSelection)
-			{
-				AudioManager.Instance.PlaySFX("SYS_move");
-				if (SelectedAction.Target == SkillTarget.Enemy || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentEnemyTarget > -1) && Enemies.Count > 1)
-				{
-					CurrentEnemyTarget--;
-					if (CurrentEnemyTarget < 0)
-						CurrentEnemyTarget = Enemies.Count - 1;
-					return;
-				}
-				if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
-				{
-					switch (CurrentPartyMemberTarget)
-					{
-						case 0:
-							CurrentPartyMemberTarget = 3;
-							break;
-						case 1:
-							CurrentPartyMemberTarget = 2;
-							break;
-						case 2:
-							CurrentPartyMemberTarget = 1;
-							break;
-						case 3:
-							CurrentPartyMemberTarget = 0;
-							break;
-					}
-				}
-			}
-
+			HandleInputDirection(InputDirection.Left);
 		}
 
 		if (Input.IsActionJustPressed("MenuRight"))
 		{
-			if (Phase == BattlePhase.CommandExecute || Phase == BattlePhase.WaitForBattleLog)
-			{
-				if (HandleFollowup("right"))
-				{
-					ProcessFollowupSuccess();
-				}
-			}
-			if (Phase == BattlePhase.TargetSelection)
-			{
-				AudioManager.Instance.PlaySFX("SYS_move");
-				if (SelectedAction.Target == SkillTarget.Enemy || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentEnemyTarget > -1) && Enemies.Count > 1)
-				{
-					CurrentEnemyTarget++;
-					if (CurrentEnemyTarget >= Enemies.Count)
-						CurrentEnemyTarget = 0;
-					return;
-				}
-				if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
-				{
-					switch (CurrentPartyMemberTarget)
-					{
-						case 0:
-							CurrentPartyMemberTarget = 3;
-							break;
-						case 1:
-							CurrentPartyMemberTarget = 2;
-							break;
-						case 2:
-							CurrentPartyMemberTarget = 1;
-							break;
-						case 3:
-							CurrentPartyMemberTarget = 0;
-							break;
-					}
-				}
-			}
+			HandleInputDirection(InputDirection.Right);
 		}
 
 		if (Input.IsActionJustPressed("MenuUp"))
 		{
-			if (Phase == BattlePhase.CommandExecute || Phase == BattlePhase.WaitForBattleLog)
-			{
-				if (HandleFollowup("up"))
-				{
-					ProcessFollowupSuccess();
-				}
-			}
-			if (Phase == BattlePhase.TargetSelection)
-			{
-				if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
-				{
-					AudioManager.Instance.PlaySFX("SYS_move");
-					switch (CurrentPartyMemberTarget)
-					{
-						case 0:
-							CurrentPartyMemberTarget = 1;
-							break;
-						case 1:
-							CurrentPartyMemberTarget = 0;
-							break;
-						case 2:
-							CurrentPartyMemberTarget = 3;
-							break;
-						case 3:
-							CurrentPartyMemberTarget = 2;
-							break;
-					}
-				}
-			}
+			HandleInputDirection(InputDirection.Up);
 		}
 
 		if (Input.IsActionJustPressed("MenuDown"))
 		{
-			if (Phase == BattlePhase.CommandExecute || Phase == BattlePhase.WaitForBattleLog)
-			{
-				if (HandleFollowup("down"))
-				{
-					ProcessFollowupSuccess();
-				}
-			}
-			if (Phase == BattlePhase.TargetSelection)
-			{
-				if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
-				{
-					AudioManager.Instance.PlaySFX("SYS_move");
-					switch (CurrentPartyMemberTarget)
-					{
-						case 0:
-							CurrentPartyMemberTarget = 1;
-							break;
-						case 1:
-							CurrentPartyMemberTarget = 0;
-							break;
-						case 2:
-							CurrentPartyMemberTarget = 3;
-							break;
-						case 3:
-							CurrentPartyMemberTarget = 2;
-							break;
-					}
-				}
-			}
+			HandleInputDirection(InputDirection.Down);
 		}
 
 		if (Input.IsActionJustPressed("SwitchSides"))
@@ -322,11 +295,62 @@ public partial class BattleManager : Node
 				}
 				else
 				{
-					CurrentPartyMemberTarget = 0;
+					CurrentPartyMemberTarget = CurrentParty.First(x => x != null).Position;
 					CurrentEnemyTarget = -1;
 				}
 			}
 		}
+	}
+
+	private void HandleInputDirection(InputDirection direction)
+	{
+		if (Phase == BattlePhase.CommandExecute || Phase == BattlePhase.WaitForBattleLog)
+		{
+			if (HandleFollowup(direction))
+			{
+				ProcessFollowupSuccess();
+			}
+		}
+		if (Phase == BattlePhase.TargetSelection)
+		{
+			if (SelectedAction.Target == SkillTarget.Enemy || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentEnemyTarget > -1) && Enemies.Count > 1)
+			{
+				if (direction == InputDirection.Right)
+				{
+					CurrentEnemyTarget++;
+					if (CurrentEnemyTarget >= Enemies.Count)
+						CurrentEnemyTarget = 0;
+				}
+				else if (direction == InputDirection.Left)
+				{
+					CurrentEnemyTarget--;
+					if (CurrentEnemyTarget < 0)
+						CurrentEnemyTarget = Enemies.Count - 1;
+				}
+				return;
+			}
+			if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
+			{
+				int target = SelectPartyMember(CurrentPartyMemberTarget, direction);
+				GD.Print(target);
+				if (target > -1)
+				{
+					AudioManager.Instance.PlaySFX("SYS_move");
+					CurrentPartyMemberTarget = target;
+				}
+			}
+		}
+	}
+
+	private int SelectPartyMember(int current, InputDirection direction)
+	{
+		if (!DirectionTable.TryGetValue((current, direction), out var pair))
+			return -1;
+		if (CurrentParty.Any(x => x.Position == pair.Preferred))
+			return pair.Preferred;
+		if (CurrentParty.Any(x => x.Position == pair.Fallback))
+			return pair.Fallback;
+		return -1;
 	}
 
 	public void OnFightSelected()
@@ -335,7 +359,7 @@ public partial class BattleManager : Node
 		SetPhase(BattlePhase.PlayerCommand);
 	}
 
-	public void OnRunSelected()
+	public void Reset()
 	{
 		GameManager.Instance.DespawnAll();
 		CurrentParty.Clear();
@@ -349,7 +373,7 @@ public partial class BattleManager : Node
 		Delay.QueueFree();
 		BattleLogManager.Instance.FinishedLogging -= OnBattleLogFinished;
 		Phase = BattlePhase.FightRun;
-		MainMenuManager.Instance.ReturnToTitle();
+		IsBattling = false;
 	}
 
 	public void OnSelectAttack()
@@ -462,44 +486,45 @@ public partial class BattleManager : Node
 				}
 				break;
 			case BattlePhase.PostCommand:
+				{
+					CurrentParty.ForEach(x =>
+					{
+						x.Actor.SetHurt(false);
+						if (x.Actor.CurrentHP == 0 && x.Actor.CurrentState != "toast")
+						{
+							x.Actor.SetState("toast", true);
+							AudioManager.Instance.PlaySFX("SYS_you died_2", 1.2f);
+						}
+					});
+					if (Commands[CommandIndex].Actor is PartyMember && Commands[CommandIndex].Action.Name.EndsWith("Attack"))
+					{
+						PartyMemberComponent component = CurrentParty.First(x => x.Actor == Commands[CommandIndex].Actor);
+						if (component.HasFollowup)
+						{
+							component.FadeOutFollowups();
+						}
+					}
+					FollowupSelected = false;
 
-				CurrentParty.ForEach(x =>
-				{
-					x.Actor.SetHurt(false);					
-					if (x.Actor.CurrentHP == 0 && x.Actor.CurrentState != "toast")
+					foreach (EnemyComponent enemy in Enemies.ToList())
 					{
-						x.Actor.SetState("toast", true);
-						AudioManager.Instance.PlaySFX("SYS_you died_2", 1.2f);
+						enemy.Actor.SetHurt(false);
+						if (enemy.Actor.CurrentHP == 0)
+						{
+							enemy.Actor.SetState("toast", true);
+							if (enemy.Actor.FallsOffScreen)
+								DyingEnemies.Add(enemy.GetParent<Node2D>());
+							Enemies.Remove(enemy);
+						}
+						enemy.Actor.ProcessBattleConditions();
 					}
-				});
-				if (Commands[CommandIndex].Actor is PartyMember && Commands[CommandIndex].Action.Name.EndsWith("Attack"))
-				{
-					PartyMemberComponent component = CurrentParty.First(x => x.Actor == Commands[CommandIndex].Actor);
-					if (component.HasFollowup)
-					{
-						component.FadeOutFollowups();
-					}
+					CommandIndex++;
+					if (DyingEnemies.Count > 0)
+						SetPhase(BattlePhase.EnemyDying);
+					else
+						SetPhase(BattlePhase.PreCommand);
+					break;
 				}
-				FollowupSelected = false;
-
-				foreach (EnemyComponent enemy in Enemies.ToList())
-				{
-					enemy.Actor.SetHurt(false);
-					if (enemy.Actor.CurrentHP == 0)
-					{
-						enemy.Actor.SetState("toast", true);
-						if (enemy.Actor.FallsOffScreen)
-							DyingEnemies.Add(enemy.GetParent<Node2D>());
-						Enemies.Remove(enemy);
-					}
-					enemy.Actor.ProcessBattleConditions();
-				}
-				CommandIndex++;
-				if (DyingEnemies.Count > 0)
-					SetPhase(BattlePhase.EnemyDying);
-				else
-					SetPhase(BattlePhase.PreCommand);
-				break;
 		}
 	}
 
@@ -569,7 +594,7 @@ public partial class BattleManager : Node
 			case SkillTarget.AllyNotSelf:
 			case SkillTarget.DeadAlly:
 				// keep selection box on current ally for ally targeting
-				CurrentPartyMemberTarget = CurrentPartyMember;
+				CurrentPartyMemberTarget = CurrentParty[CurrentPartyMember].Position;
 				BattleLogManager.Instance.ClearAndShowMessage("Use on whom?");
 				MenuManager.Instance.ShowMenu(MenuState.None);
 				return;
@@ -579,7 +604,7 @@ public partial class BattleManager : Node
 				MenuManager.Instance.ShowMenu(MenuState.None);
 				return;
 			case SkillTarget.AllyOrEnemy:
-				CurrentPartyMemberTarget = CurrentPartyMember;
+				CurrentPartyMemberTarget = CurrentParty[CurrentPartyMember].Position;
 				BattleLogManager.Instance.ClearAndShowMessage("Use on whom?\nPress SHIFT to switch sides.");
 				MenuManager.Instance.ShowMenu(MenuState.None);
 				return;
@@ -597,7 +622,7 @@ public partial class BattleManager : Node
 
 		if ((SelectedAction.Target == SkillTarget.Ally || 
 			(SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1)) 
-			&& CurrentParty[CurrentPartyMemberTarget].Actor.CurrentState == "toast")
+			&& CurrentParty.First(x => x.Position == CurrentPartyMemberTarget).Actor.CurrentState == "toast")
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
 			return;
@@ -605,13 +630,13 @@ public partial class BattleManager : Node
 
 		if ((SelectedAction.Target == SkillTarget.DeadAlly || 
 			SelectedAction.Target == SkillTarget.AllDeadAllies && CurrentPartyMemberTarget > -1)
-			&& CurrentParty[CurrentPartyMemberTarget].Actor.CurrentState != "toast")
+			&& CurrentParty.First(x => x.Position == CurrentPartyMemberTarget).Actor.CurrentState != "toast")
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
 			return;
 		}
 
-		if (SelectedAction.Target == SkillTarget.AllyNotSelf && CurrentPartyMemberTarget == CurrentPartyMember)
+		if (SelectedAction.Target == SkillTarget.AllyNotSelf && CurrentPartyMemberTarget == CurrentParty[CurrentPartyMember].Position)
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
 			return;
@@ -626,7 +651,7 @@ public partial class BattleManager : Node
 			case SkillTarget.Ally:
 			case SkillTarget.AllyNotSelf:
 			case SkillTarget.DeadAlly:
-				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, CurrentParty[CurrentPartyMemberTarget].Actor, SelectedAction));
+				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, CurrentParty.First(x => x.Position == CurrentPartyMemberTarget).Actor, SelectedAction));
 				break;
 			case SkillTarget.Enemy:
 				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, Enemies[CurrentEnemyTarget].Actor, SelectedAction));
@@ -635,7 +660,7 @@ public partial class BattleManager : Node
 				if (CurrentEnemyTarget > -1)
 					Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, Enemies[CurrentEnemyTarget].Actor, SelectedAction));
 				else
-					Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, CurrentParty[CurrentPartyMemberTarget].Actor, SelectedAction));
+					Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, CurrentParty.First(x => x.Position == CurrentPartyMemberTarget).Actor, SelectedAction));
 				break;
 			default:
 				// group skills have no "target"
@@ -742,164 +767,52 @@ public partial class BattleManager : Node
 			SetPhase(BattlePhase.PostCommand);
 	}
 
-	// TODO: refactor
-	private bool HandleFollowup(string direction)
+	private bool HandleFollowup(InputDirection direction)
 	{
-		if (Energy < 3)
-			return false;
-
-		if (!EnergyBar.Visible)
-			return false;
-
-		if (FollowupSelected)
+		if (Energy < 3 || ForceHideFollowup || !EnergyBar.Visible || FollowupSelected)
 			return false;
 
 		PartyMemberComponent current = CurrentParty.First(x => x.Actor == Commands[CommandIndex].Actor);
-		switch (current.Position)
-		{
-			case 0:
-				if (direction == "up") {
-					if (Database.TryGetSkill($"AttackAgain{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
-				}
-				if (direction == "right")
-				{
-					if (Database.TryGetSkill($"Trip{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
-				}
-				if (direction == "down")
-				{
-					if (Energy == 10 && CurrentParty.All(x => x.Actor.CurrentState != "toast"))
-					{
-						if (UseBasilReleaseEnergy)
-						{
-							if (Database.TryGetSkill($"ReleaseEnergyBasil", out Skill skill))
-								ForceCommand(current.Actor, null, skill);
-						}
-						else if (Database.TryGetSkill($"ReleaseEnergy{FollowupTier}", out Skill skill))
-							ForceCommand(current.Actor, null, skill);
-						return true;
-					}
-				}
-				break;
-			case 1:
-				if (direction == "up")
-				{
-					if (GetPartyMember(2).CurrentState == "toast")
-						return false;
-					if (Database.TryGetSkill($"LookAtHero{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
-				}
-				if (direction == "right")
-				{
-					if (GetPartyMember(3).CurrentState == "toast")
-						return false;
-					if (Database.TryGetSkill($"LookAtKel{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
-				}
-				if (direction == "down")
-				{
-					if (Database.TryGetSkill($"LookAtOmori{FollowupTier}", out Skill skill))
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-					return true;
-				}
-				break;
-			case 2:
-				if (direction == "up")
-				{
-					if (GetPartyMember(1).CurrentState == "toast")
-						return false;
-					if (Database.TryGetSkill($"CallAubrey{FollowupTier}", out Skill skill))
-					{
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						ForceHideFollowup = true;
-					}
-					return true;
-				}
-				if (direction == "left")
-				{
-					if (Database.TryGetSkill($"CallOmori{FollowupTier}", out Skill skill))
-					{
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						ForceHideFollowup = true;
-					}
-					return true;
-				}
-				if (direction == "down")
-				{
-					if (GetPartyMember(3).CurrentState == "toast")
-						return false;
-					if (Database.TryGetSkill($"CallKel{FollowupTier}", out Skill skill))
-					{
-						ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						ForceHideFollowup = true;
-					}
-					return true;
-				}
-				break;
-			case 3:
+		if (!FollowupTable.TryGetValue((current.Position, direction), out var pair))
+			return false;
 
-				if (UseBasilFollowups)
-				{
-					if (direction == "down")
-					{
-						if (Database.TryGetSkill("Comfort", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-					if (direction == "left")
-					{
-						if (GetPartyMember(1).CurrentState == "toast")
-							return false;
-						if (Database.TryGetSkill("Mull", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-					if (direction == "up")
-					{
-						if (GetPartyMember(2).CurrentState == "toast")
-							return false;
-						if (Database.TryGetSkill("Vent", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-				}
-				else
-				{
-					if (direction == "down")
-					{
-						if (Database.TryGetSkill($"PassToOmori{FollowupTier}", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-					if (direction == "left")
-					{
-						if (GetPartyMember(1).CurrentState == "toast")
-							return false;
-						if (Database.TryGetSkill($"PassToAubrey{FollowupTier}", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-					if (direction == "up")
-					{
-						if (GetPartyMember(2).CurrentState == "toast")
-							return false;
-						if (Database.TryGetSkill($"PassToHero{FollowupTier}", out Skill skill))
-							ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
-						return true;
-					}
-				}
-				break;
+		PartyMemberComponent target = CurrentParty.First(x => x.Position == pair.Target);
+		if (target == null || target.Actor.CurrentState == "toast")
+			return false;
+
+		string name = pair.SkillName;
+		bool basil = false;
+		if (name.StartsWith("ReleaseEnergy"))
+		{
+			if (Energy != 10 || CurrentParty.Any(x => x.Actor.CurrentState == "toast"))
+				return false;
+
+			if (UseBasilReleaseEnergy)
+				name += "Basil";
+			else
+				name += FollowupTier;
 		}
-		return false;
+		else
+		{
+			if (current.Position == 3 && UseBasilFollowups)
+				basil = true;
+
+			if (!basil)
+				name += FollowupTier;
+		}
+
+		if (!Database.TryGetSkill(name, out Skill skill))
+			return false;
+
+		ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
+		return true;
 	}
 
 	public void ForceCommand(Actor self, Actor target, Skill skill)
 	{
+		if (skill.Name.EndsWith("Attack"))
+			// if the forced skill is an attack, hide the followup bubbles
+			ForceHideFollowup = true;
 		Commands.Insert(CommandIndex + 1, new BattleCommand(self, target, skill));
 	}
 
@@ -921,7 +834,7 @@ public partial class BattleManager : Node
 		CurrentParty.ForEach(x =>
 		{
 			x.Actor.DecreaseStatTurnCounter();
-			if (x.Actor.HasStatModifier(Modifier.ReleaseEnergyBasil))
+			if (x.Actor.HasStatModifier("ReleaseEnergyBasil"))
 			{
 				int heal = (int)Math.Round(x.Actor.CurrentStats.MaxHP * 0.1f, MidpointRounding.AwayFromZero);
 				int juice = (int)Math.Round(x.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
@@ -975,11 +888,15 @@ public partial class BattleManager : Node
 			});
 			AudioManager.Instance.PlayBGM("xx_victory");
 			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was victorious!");
+			MenuButtonContainer.Visible = true;
+			return;
 		}
 		if (CurrentParty.All(x => x.Actor.CurrentHP == 0))
 		{
 			SetPhase(BattlePhase.BattleOver);
 			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was defeated...");
+			MenuButtonContainer.Visible = true;
+			return;
 		}
 		PartyMemberComponent omori = CurrentParty.FirstOrDefault(x => x.Actor is Omori omori && omori.CurrentState == "toast");
 		// if any omori is toast, the battle is over
@@ -988,6 +905,7 @@ public partial class BattleManager : Node
 		{
 			SetPhase(BattlePhase.BattleOver);
 			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was defeated...");
+			MenuButtonContainer.Visible = true;
 		}
 	}
 
@@ -1012,74 +930,69 @@ public partial class BattleManager : Node
 		string selfState = self.CurrentState;
 		string targetState = target.CurrentState;
 
-		// TODO: handle these better
-		// like this is actually terrible please improve at some point
-		if (self.HasStatModifier(Modifier.SweetheartLock))
-			selfState = "happy";
-		if (target.HasStatModifier(Modifier.SweetheartLock))
-			targetState = "happy";
-		if (self.HasStatModifier(Modifier.SpaceExBoyfriendLock))
-			selfState = selfState.Replace("se_", "");
-		if (target.HasStatModifier(Modifier.SpaceExBoyfriendLock))
-			targetState = targetState.Replace("se_", "");
+		if (self.HasLockedEmotion())
+		{
+			selfState = (self.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
+		}
+
+		if (target.HasLockedEmotion())
+		{
+			targetState = (target.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
+		}
 
 		finalDamage = CalculateEmotionModifiers(selfState, targetState, finalDamage, out int effectiveness);
-		if ((critical || target.HasStatModifier(Modifier.Tickle)) && !neverCrit)
+		if ((critical || target.HasStatModifier("Tickle")) && !neverCrit)
 		{
 			finalDamage = (finalDamage * 1.5f) + 2;
 			BattleLogManager.Instance.QueueMessage("IT HIT RIGHT IN THE HEART!");
 			AudioManager.Instance.PlaySFX("BA_CRITICAL_HIT", volume: 2f);
 		}
-		// flex currently works with items
-		// not sure if that is intentional or not
-		if (self.HasStatModifier(Modifier.Flex))
-		{
-			finalDamage *= 2.5f;
-			self.RemoveStatModifier(Modifier.Flex);
-		}
-		int rounded;
-		if (target.HasStatModifier(Modifier.Guard))
-		{
-			rounded = (int)Math.Round(finalDamage / 0.5f, MidpointRounding.AwayFromZero);
-		}
-		else
-		{
-			rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
-		}
-		if (target.HasStatModifier(Modifier.PlotArmor))
-		{
-			rounded = 0;
-		}
-		if (rounded <= 0)
-		{
-			BattleLogManager.Instance.QueueMessage(self, target, "[actor]'s attack did nothing.");
-			return true;
-		}
+
 		int juiceLost = 0;
 		switch (target.CurrentState)
 		{
 			case "miserable":
-				juiceLost = rounded;
-				rounded = 0;
+				juiceLost = Math.Min((int)Math.Floor(finalDamage), 0);
+				finalDamage -= juiceLost;
 				break;
 			case "depressed":
-				int dmg = (int)Math.Round(rounded * 0.5f, MidpointRounding.AwayFromZero);
-				juiceLost = dmg;
-				rounded = dmg;
+				juiceLost = Math.Min((int)Math.Floor(finalDamage * 0.5f), target.CurrentJuice);
+				finalDamage -= juiceLost;
 				break;
 			case "sad":
-				juiceLost = (int)Math.Round(rounded * 0.3f, MidpointRounding.AwayFromZero);
-				rounded = (int)Math.Round(rounded * 0.7f, MidpointRounding.AwayFromZero);
+				juiceLost = Math.Min((int)Math.Floor(finalDamage * 0.3f), target.CurrentJuice);
+				finalDamage -= juiceLost;
 				break;
 		}
-		if (target.CurrentJuice - juiceLost < 0)
+		target.CurrentJuice -= juiceLost;
+
+		foreach (StatModifier mod in self.StatModifiers.Values)
 		{
-			juiceLost = target.CurrentJuice;
-			rounded += Math.Abs(target.CurrentJuice - juiceLost);
-			target.CurrentJuice = 0;
+			if (mod is DamageStatModifier damageMod)
+			{
+				damageMod.OverrideDamage(ref finalDamage, self, target);
+			}
 		}
-		else
-			target.CurrentJuice -= juiceLost;
+
+		// this could (should) be moved out of here
+		if (self.HasStatModifier("Flex"))
+		{
+			self.RemoveStatModifier("Flex");
+		}
+
+		foreach (StatModifier mod in target.StatModifiers.Values)
+		{
+			if (mod is DamageStatModifier damageMod)
+			{
+				damageMod.OverrideDamage(ref finalDamage, self, target);
+			}
+		}
+
+		int rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
+		if (rounded < 0)
+			rounded = 0;
+		if (rounded > 9999)
+			rounded = 9999;
 		target.Damage(rounded);
 		if (target is PartyMember)
 		{
@@ -1271,6 +1184,13 @@ public partial class BattleManager : Node
 		{
 			dmg.CallDeferred(DamageNumber.MethodName.Despawn);
 		});
+	}
+
+	public EnemyComponent SummonEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)
+	{
+		EnemyComponent enemy = GameManager.Instance.SpawnEnemy(who, position, startingEmotion, fallsOffScreen, layer);
+		Enemies.Add(enemy);
+		return enemy;
 	}
 
 	public void AddEnergy(int amount)
