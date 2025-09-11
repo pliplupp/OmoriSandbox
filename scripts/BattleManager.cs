@@ -993,7 +993,7 @@ public partial class BattleManager : Node
 			rounded = 0;
 		if (rounded > 9999)
 			rounded = 9999;
-        target.Damage(rounded);
+		target.Damage(rounded);
 		if (target is PartyMember)
 		{
 			Energy++;

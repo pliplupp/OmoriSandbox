@@ -72,15 +72,20 @@ public abstract class Actor
 			GD.PrintErr("Unknown stat modifier: " + modifier);
 			return;
 		}
-		if (mod is TierStatModifier && StatModifiers.TryGetValue(modifier, out StatModifier m))
+		if (mod is TierStatModifier tier)
 		{
-			TierStatModifier existing = m as TierStatModifier;
-			bool success = existing.IncreaseTier();
-			if (!silent)
+			if (StatModifiers.TryGetValue(modifier, out StatModifier m))
 			{
-				ShowStatMessage(modifier, success ? existing.SuccessMessage : existing.FailureMessage);
+				tier = m as TierStatModifier;
+				bool success = tier.IncreaseTier();
+				if (!silent)
+					ShowStatMessage(success ? tier.SuccessMessage : tier.FailureMessage);
+				return;
 			}
-			return;
+			else
+			{
+				ShowStatMessage(tier.SuccessMessage);
+			}
 		}
 		StatModifiers.Add(modifier, mod);
 	}
@@ -100,13 +105,14 @@ public abstract class Actor
 			bool success = existing.IncreaseTier();
 			if (!silent)
 			{
-				ShowStatMessage(modifier, success ? existing.SuccessMessage : existing.FailureMessage);
+				ShowStatMessage(success ? existing.SuccessMessage : existing.FailureMessage);
 			}
 			return;
 		}
 		t.SetTier(tier);
 		t.SetTurnsLeft(turns);
 		StatModifiers.Add(modifier, t);
+		ShowStatMessage(t.SuccessMessage);
 	}
 
 	public void RemoveStatModifier(string modifier)
@@ -114,9 +120,9 @@ public abstract class Actor
 		StatModifiers.Remove(modifier);
 	}
 
-	private void ShowStatMessage(string modifier, string message)
+	private void ShowStatMessage(string message)
 	{
-		BattleLogManager.Instance.QueueMessage($"{Name.ToUpper()}'s {modifier} {message}");
+		BattleLogManager.Instance.QueueMessage($"{Name.ToUpper()}'s {message}");
 	}
 
 	public void DecreaseStatTurnCounter()
@@ -128,6 +134,7 @@ public abstract class Actor
 				// set the emotion background back to what it was before
 				SetState(omori.OldEmotion, true);
 				omori.OldEmotion = null;
+				StatModifiers.Remove(mod.Key);
 			}
 			if (mod.Value is TierStatModifier tier)
 			{
@@ -167,7 +174,7 @@ public abstract class Actor
 			// keep track of omori's old emotion for when plot armor expires
 			omori.OldEmotion = omori.CurrentState;
 			SetState("plotarmor", true);
-			AddTierStatModifier("PlotArmor", 1, 1);
+			AddStatModifier("PlotArmor");
 			omori.HasUsedPlotArmor = true;
 		}
 	}

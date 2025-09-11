@@ -127,10 +127,10 @@ public class Database
 		Enemies.Add("GatorGuyJawsum", typeof(GatorGuyJawsum));
 		Enemies.Add("MrJawsum", typeof(MrJawsum));
 		Enemies.Add("FearOfSpiders", typeof(FearOfSpiders));
-        #endregion
+		#endregion
 
-        #region SKILLS
-        Skills["Guard"] = new Skill(
+		#region SKILLS
+		Skills["Guard"] = new Skill(
 			name: "GUARD",
 			description: "Acts first, reducing damage taken for 1 turn.\nCost: 0",
 			target: SkillTarget.Self,
@@ -2836,72 +2836,72 @@ public class Database
 			hidden: true
 		);
 
-        // Gator Guy //
+		// Gator Guy //
 
-        Skills["GGAttack"] = new Skill(
-            name: "GGAttack",
-            description: "GGAttack",
-            target: SkillTarget.Enemy,
-            cost: 0,
-            effect: async (self, target) =>
-            {
-                await GameManager.Instance.AnimationManager.WaitForAnimation(123, target, false);
-                BattleLogManager.Instance.QueueMessage(self, target, "[actor] karate chops [target]!");
-                BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }, false, neverCrit: true);
-            },
-            hidden: true
-        );
+		Skills["GGAttack"] = new Skill(
+			name: "GGAttack",
+			description: "GGAttack",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				await GameManager.Instance.AnimationManager.WaitForAnimation(123, target, false);
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] karate chops [target]!");
+				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }, false, neverCrit: true);
+			},
+			hidden: true
+		);
 
-        Skills["GGDoNothing"] = new Skill(
-            name: "GGDoNothing",
-            description: "GGDoNothing",
-            target: SkillTarget.Enemy,
-            cost: 0,
-            effect: async (self, target) =>
-            {
-                BattleLogManager.Instance.QueueMessage(self, target, "[actor] cracks his knuckles.");
-                await Task.CompletedTask;
-            },
-            hidden: true
-        );
+		Skills["GGDoNothing"] = new Skill(
+			name: "GGDoNothing",
+			description: "GGDoNothing",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] cracks his knuckles.");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
 
-        Skills["GGRoughUp"] = new Skill(
-            name: "GGRoughUp",
-            description: "GGRoughUp",
-            target: SkillTarget.Enemy,
-            cost: 0,
-            effect: async (self, target) =>
-            {
-                BattleLogManager.Instance.QueueMessage(self, target, "[actor] gets rough.");
-                await Task.Delay(100);
-                target = BattleManager.Instance.GetRandomAlivePartyMember();
+		Skills["GGRoughUp"] = new Skill(
+			name: "GGRoughUp",
+			description: "GGRoughUp",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] gets rough.");
+				await Task.Delay(100);
+				target = BattleManager.Instance.GetRandomAlivePartyMember();
 				GameManager.Instance.AnimationManager.PlayAnimation(123, target, false);
-                BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false, neverCrit: true);
-                await Task.Delay(917);
-                GameManager.Instance.AnimationManager.PlayAnimation(123, target, false);
-                BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false, neverCrit: true);
-            },
-            hidden: true
-        );
+				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false, neverCrit: true);
+				await Task.Delay(917);
+				GameManager.Instance.AnimationManager.PlayAnimation(123, target, false);
+				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false, neverCrit: true);
+			},
+			hidden: true
+		);
 
 		// Mr. Jawsum //
 		Skills["MJAttackOrder"] = new Skill(
-            name: "MJAttackOrder",
-            description: "MJAttackOrder",
-            target: SkillTarget.AllAllies,
-            cost: 0,
-            effect: async (self, target) =>
-            {
-                BattleLogManager.Instance.QueueMessage(self, target, "[actor] gives orders to attack!");
+			name: "MJAttackOrder",
+			description: "MJAttackOrder",
+			target: SkillTarget.AllAllies,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] gives orders to attack!");
 				AudioManager.Instance.PlaySFX("SE_dinosaur", 0.8f, 1f);
 				await Task.Delay(250);
 				foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
 				{
 					MakeAngry(enemy);
 				}
-            },
-            hidden: true
-        );
+			},
+			hidden: true
+		);
 
 		Skills["MJSummonGator"] = new Skill(
 			name: "MJSummonGator",
@@ -2927,24 +2927,24 @@ public class Database
 				{
 					jawsum.GatorGuys.Add(enemy);
 				}
-            },
+			},
 			hidden: true
 		);
 
-        // Fear of Spiders //
-        Skills["FOSAttack"] = new Skill(
-           name: "FOSAttack",
-           description: "FOSAttack",
-           target: SkillTarget.Enemy,
-           cost: 0,
-           effect: async (self, target) =>
-           {
-               await GameManager.Instance.AnimationManager.WaitForAnimation(287, target, false);
-               BattleLogManager.Instance.QueueMessage(self, target, "[actor] wraps up and eats [target].");
-               BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }, false);
-           },
-           hidden: true
-        );
+		// Fear of Spiders //
+		Skills["FOSAttack"] = new Skill(
+		   name: "FOSAttack",
+		   description: "FOSAttack",
+		   target: SkillTarget.Enemy,
+		   cost: 0,
+		   effect: async (self, target) =>
+		   {
+			   await GameManager.Instance.AnimationManager.WaitForAnimation(287, target, false);
+			   BattleLogManager.Instance.QueueMessage(self, target, "[actor] wraps up and eats [target].");
+			   BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }, false);
+		   },
+		   hidden: true
+		);
 
 		Skills["FOSDoNothing"] = new Skill(
 		   name: "FOSDoNothing",
@@ -2959,80 +2959,80 @@ public class Database
 		   hidden: true
 		);
 
-        Skills["FOSSpinWeb"] = new Skill(
-           name: "FOSSpinWeb",
-           description: "FOSSpinWeb",
-           target: SkillTarget.Enemy,
-           cost: 0,
-           effect: async (self, target) =>
-           {
+		Skills["FOSSpinWeb"] = new Skill(
+		   name: "FOSSpinWeb",
+		   description: "FOSSpinWeb",
+		   target: SkillTarget.Enemy,
+		   cost: 0,
+		   effect: async (self, target) =>
+		   {
 			   GameManager.Instance.AnimationManager.PlayScreenAnimation(176, false);
-               BattleLogManager.Instance.QueueMessage(self, target, "[actor] entangles [target] in sticky webs.");
+			   BattleLogManager.Instance.QueueMessage(self, target, "[actor] entangles [target]\nin sticky webs.");
 			   target.AddStatModifier("SpeedDown");
 			   await Task.CompletedTask;
-           },
-           hidden: true
-        );
+		   },
+		   hidden: true
+		);
 
-        Skills["FOSAttackAll"] = new Skill(
-           name: "FOSAttackAll",
-           description: "FOSAttackAll",
-           target: SkillTarget.AllEnemies,
-           cost: 0,
-           effect: async (self, target) =>
-           {
-               BattleLogManager.Instance.QueueMessage(self, target, "[actor] catches everyone!");
-               GameManager.Instance.AnimationManager.PlayScreenAnimation(176, false);
+		Skills["FOSAttackAll"] = new Skill(
+		   name: "FOSAttackAll",
+		   description: "FOSAttackAll",
+		   target: SkillTarget.AllEnemies,
+		   cost: 0,
+		   effect: async (self, target) =>
+		   {
+			   BattleLogManager.Instance.QueueMessage(self, target, "[actor] catches everyone!");
+			   GameManager.Instance.AnimationManager.PlayScreenAnimation(176, false);
 			   await Task.Delay(1000);
-               foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
+			   foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
 			   {
 				   BattleManager.Instance.Damage(self, member.Actor, () => { return self.CurrentStats.ATK * 2f - member.Actor.CurrentStats.DEF; }, false);
 				   GameManager.Instance.AnimationManager.PlayAnimation(287, member.Actor, false);
-               }
-           },
-           hidden: true
-        );
-        #endregion
+			   }
+		   },
+		   hidden: true
+		);
+		#endregion
 
-        #region MODIFIERS
-        Modifiers.Add("Neutral", () => new StatModifier([]));
-        Modifiers.Add("Happy", () => new StatModifier([new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)]));
-        Modifiers.Add("Ecstatic", () => new StatModifier([new StatBonus(StatType.LCK, 3f), new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.HIT, -20)]));
-        Modifiers.Add("Manic", () => new StatModifier([new StatBonus(StatType.LCK, 4f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.HIT, -30)]));
-        Modifiers.Add("Angry", () => new StatModifier([new StatBonus(StatType.ATK, 1.3f), new StatBonus(StatType.DEF, 0.5f)]));
-        Modifiers.Add("Enraged", () => new StatModifier([new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.3f)]));
-        Modifiers.Add("Furious", () => new StatModifier([new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.15f)]));
-        Modifiers.Add("Sad", () => new StatModifier([new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.SPD, 0.8f)]));
-        Modifiers.Add("Depressed", () => new StatModifier([new StatBonus(StatType.DEF, 1.35f), new StatBonus(StatType.SPD, 0.65f)]));
-        Modifiers.Add("Miserable", () => new StatModifier([new StatBonus(StatType.DEF, 1.5f), new StatBonus(StatType.SPD, 0.5f)]));
-        Modifiers.Add("Stressed", () => new StatModifier([new StatBonus(StatType.ATK, 1.2f), new StatBonus(StatType.DEF, 0.9f)]));
-        Modifiers.Add("AttackUp", () => new TierStatModifier([new StatBonus(StatType.ATK, 1.1f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.ATK, 1.5f)]).WithMessages("rose!", "cannot go any higher!"));
-        Modifiers.Add("AttackDown", () => new TierStatModifier([new StatBonus(StatType.ATK, 0.9f), new StatBonus(StatType.ATK, 0.8f), new StatBonus(StatType.ATK, 0.7f)]).WithMessages("fell!", "cannot go any lower!"));
-        Modifiers.Add("DefenseUp", () => new TierStatModifier([new StatBonus(StatType.DEF, 1.15f), new StatBonus(StatType.DEF, 1.3f), new StatBonus(StatType.DEF, 1.5f)]).WithMessages("rose!", "cannot go any higher!"));
-        Modifiers.Add("DefenseDown", () => new TierStatModifier([new StatBonus(StatType.DEF, 0.75f), new StatBonus(StatType.DEF, 0.5f), new StatBonus(StatType.DEF, 0.25f)]).WithMessages("fell!", "cannot go any lower!"));
-        Modifiers.Add("SpeedUp", () => new TierStatModifier([new StatBonus(StatType.SPD, 1.15f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.SPD, 5f)]).WithMessages("rose!", "cannot go any higher!"));
-        Modifiers.Add("SpeedDown", () => new TierStatModifier([new StatBonus(StatType.SPD, 0.8f), new StatBonus(StatType.SPD, 0.5f), new StatBonus(StatType.SPD, 0.25f)]).WithMessages("fell!", "cannot go any lower!"));
+		#region MODIFIERS
+		Modifiers.Add("Neutral", () => new StatModifier([]));
+		Modifiers.Add("Happy", () => new StatModifier([new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)]));
+		Modifiers.Add("Ecstatic", () => new StatModifier([new StatBonus(StatType.LCK, 3f), new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.HIT, -20)]));
+		Modifiers.Add("Manic", () => new StatModifier([new StatBonus(StatType.LCK, 4f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.HIT, -30)]));
+		Modifiers.Add("Angry", () => new StatModifier([new StatBonus(StatType.ATK, 1.3f), new StatBonus(StatType.DEF, 0.5f)]));
+		Modifiers.Add("Enraged", () => new StatModifier([new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.3f)]));
+		Modifiers.Add("Furious", () => new StatModifier([new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.15f)]));
+		Modifiers.Add("Sad", () => new StatModifier([new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.SPD, 0.8f)]));
+		Modifiers.Add("Depressed", () => new StatModifier([new StatBonus(StatType.DEF, 1.35f), new StatBonus(StatType.SPD, 0.65f)]));
+		Modifiers.Add("Miserable", () => new StatModifier([new StatBonus(StatType.DEF, 1.5f), new StatBonus(StatType.SPD, 0.5f)]));
+		Modifiers.Add("Stressed", () => new StatModifier([new StatBonus(StatType.ATK, 1.2f), new StatBonus(StatType.DEF, 0.9f)]));
+		Modifiers.Add("AttackUp", () => new TierStatModifier([new StatBonus(StatType.ATK, 1.1f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.ATK, 1.5f)]).WithMessages("ATTACK rose!", "ATTACK cannot go any higher!"));
+		Modifiers.Add("AttackDown", () => new TierStatModifier([new StatBonus(StatType.ATK, 0.9f), new StatBonus(StatType.ATK, 0.8f), new StatBonus(StatType.ATK, 0.7f)]).WithMessages("ATTACK fell!", "ATTACK cannot go any lower!"));
+		Modifiers.Add("DefenseUp", () => new TierStatModifier([new StatBonus(StatType.DEF, 1.15f), new StatBonus(StatType.DEF, 1.3f), new StatBonus(StatType.DEF, 1.5f)]).WithMessages("DEFENSE rose!", "DEFENSE cannot go any higher!"));
+		Modifiers.Add("DefenseDown", () => new TierStatModifier([new StatBonus(StatType.DEF, 0.75f), new StatBonus(StatType.DEF, 0.5f), new StatBonus(StatType.DEF, 0.25f)]).WithMessages("DEFENSE fell!", "DEFENSE cannot go any lower!"));
+		Modifiers.Add("SpeedUp", () => new TierStatModifier([new StatBonus(StatType.SPD, 1.15f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.SPD, 5f)]).WithMessages("SPEED rose!", "SPEED cannot go any higher!"));
+		Modifiers.Add("SpeedDown", () => new TierStatModifier([new StatBonus(StatType.SPD, 0.8f), new StatBonus(StatType.SPD, 0.5f), new StatBonus(StatType.SPD, 0.25f)]).WithMessages("SPEED fell!", "SPEED cannot go any lower!"));
 		Modifiers.Add("ReleaseEnergy", () => new StatModifier([new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.LCK, 1.25f)]));
-        Modifiers.Add("ReleaseEnergyBasil", () => new StatModifier([new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.LCK, 1.25f)]));
-        Modifiers.Add("SnoCone", () => new StatModifier([new StatBonus(StatType.SPD, 1.2f), new StatBonus(StatType.ATK, 1.2f), new StatBonus(StatType.DEF, 1.2f), new StatBonus(StatType.LCK, 1.2f)]));
+		Modifiers.Add("ReleaseEnergyBasil", () => new StatModifier([new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.LCK, 1.25f)]));
+		Modifiers.Add("SnoCone", () => new StatModifier([new StatBonus(StatType.SPD, 1.2f), new StatBonus(StatType.ATK, 1.2f), new StatBonus(StatType.DEF, 1.2f), new StatBonus(StatType.LCK, 1.2f)]));
 		Modifiers.Add("Flex", () => new DamageStatModifier(2.5f, [new StatBonus(StatType.HIT, 1000)]));
 		Modifiers.Add("Guard", () => new DamageStatModifier(0.5f));
 		Modifiers.Add("PlotArmor", () => new DamageStatModifier(0f));
 		Modifiers.Add("Tickle", () => new TierStatModifier([]));
-        Modifiers.Add("SweetheartHappy", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)]));
-        Modifiers.Add("SweetheartEcstatic", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 3f), new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.HIT, -20)]));
-        Modifiers.Add("SweetheartManic", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 4f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.HIT, -30)]));
-        Modifiers.Add("SpaceExAngry", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 0.9f)]));
-        Modifiers.Add("SpaceExEnraged", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.5f)]));
-        Modifiers.Add("SpaceExFurious", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.3f)]));
+		Modifiers.Add("SweetheartHappy", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)]));
+		Modifiers.Add("SweetheartEcstatic", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 3f), new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.HIT, -20)]));
+		Modifiers.Add("SweetheartManic", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 4f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.HIT, -30)]));
+		Modifiers.Add("SpaceExAngry", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 0.9f)]));
+		Modifiers.Add("SpaceExEnraged", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.5f)]));
+		Modifiers.Add("SpaceExFurious", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.3f)]));
 		Modifiers.Add("MrJawsumBarrier", () => new MrJawsumStatModifier(0f));
 		#endregion
 
-        #region SNACKS
+		#region SNACKS
 
-        // will most likely be file driven in the future
+		// will most likely be file driven in the future
 
-        AddSnack("Tofu", "Soft cardboard, basically.\nHeals 5 HEART.", 5);
+		AddSnack("Tofu", "Soft cardboard, basically.\nHeals 5 HEART.", 5);
 		AddSnack("Candy", "A child's favorite food. Sweet!\nHeals 30 HEART.", 30);
 		AddSnack("Smores", "S'more smores, please!\nHeals 50 HEART.", 50);
 		AddSnack("Granola Bar", "A healthy stick of grain.\nHeals 60 HEART.", 60);
