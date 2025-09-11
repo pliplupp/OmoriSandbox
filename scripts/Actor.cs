@@ -238,17 +238,31 @@ public abstract class Actor
 
 	// forces a state without any validity checks
 	// mainly used for bosses like Sweetheart
-	public void ForceState(string state, bool silent = false)
+	public void ForceState(string state, string fakeState = null, bool silent = false)
 	{
-		Sprite.Animation = state;
-		CurrentState = state;
-		StatModifier mod = Database.CreateModifier(Capitalize(CurrentState));
+		// TODO: attach emotion/animation info to non-emotion modifiers, like boss specific emotions
+		if (fakeState != null)
+		{
+			Sprite.Animation = fakeState;
+			CurrentState = fakeState;
+		}
+		else
+		{
+			Sprite.Animation = state;
+			CurrentState = state;
+		}
+		StatModifier mod = Database.CreateModifier(Capitalize(state));
 		if (mod != null)
 		{
 			StateStatModifier = mod;
 		}
 		if (!silent)
-			BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " became " + state.Replace("se_", "").ToUpper() + "!");
+		{
+			if (fakeState != null)
+				BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " became " + fakeState.ToUpper() + "!");
+			else
+				BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " became " + state.ToUpper() + "!");
+		}
 	}
 
 	private string Capitalize(string s)

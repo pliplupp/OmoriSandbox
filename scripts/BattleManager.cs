@@ -196,7 +196,12 @@ public partial class BattleManager : Node
 
 		CurrentParty.ForEach(x =>
 		{
-			x.SelectionBoxVisible = x.Position == CurrentPartyMemberTarget;
+			if (Phase == BattlePhase.TargetSelection)
+				x.SelectionBoxVisible = x.Position == CurrentPartyMemberTarget;
+			else if (Phase == BattlePhase.PlayerCommand)
+				x.SelectionBoxVisible = x.Position == CurrentPartyMember;
+			else
+				x.SelectionBoxVisible = false;
 		});
 
 		for (int i = 0; i < Enemies.Count; i++)
@@ -712,6 +717,16 @@ public partial class BattleManager : Node
 
 		BattleLogManager.Instance.ClearBattleLog();
 		Actor target = currentAction.Target;
+		// if the enemy we're trying to target is null for whatever reason, pick a new one
+		if (target == null && (currentAction.Action.Target == SkillTarget.Enemy || currentAction.Action.Target == SkillTarget.AllyOrEnemy))
+		{
+			target = GetRandomAliveEnemy();
+			if (target == null)
+			{
+				GD.PrintErr("Unable to find enemy target!");
+				return;
+			}
+		}
 		if (target != null)
 		{
 			if (target.CurrentHP == 0 && currentAction.Action.Target != SkillTarget.DeadAlly && currentAction.Action.Target != SkillTarget.AllDeadAllies)

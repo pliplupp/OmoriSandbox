@@ -101,20 +101,20 @@ public class Sweetheart : Enemy
         if (CurrentHP < 990 && Stage <= 2)
         {
             EmotionLocked = false;
-            ForceState("SweetheartManic");
+            ForceState("SweetheartManic", "manic");
             EmotionLocked = true;
             Stage = 3;
         }
         if (CurrentHP < 1650 && Stage <= 1)
         {
             EmotionLocked = false;
-            ForceState("SweetheartEcstatic");
+            ForceState("SweetheartEcstatic", "ecstatic");
             EmotionLocked = true;
             Stage = 2;
         }
         if (CurrentHP < 2640 && Stage == 0)
 		{
-			ForceState("SweetheartHappy");
+			ForceState("SweetheartHappy", "happy");
 			EmotionLocked = true;
 			Stage = 1;
 		}
