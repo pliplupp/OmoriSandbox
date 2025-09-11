@@ -126,10 +126,11 @@ public class Database
 		Enemies.Add("SpaceExBoyfriend", typeof(SpaceExBoyfriend));
 		Enemies.Add("GatorGuyJawsum", typeof(GatorGuyJawsum));
 		Enemies.Add("MrJawsum", typeof(MrJawsum));
-		#endregion
+		Enemies.Add("FearOfSpiders", typeof(FearOfSpiders));
+        #endregion
 
-		#region SKILLS
-		Skills["Guard"] = new Skill(
+        #region SKILLS
+        Skills["Guard"] = new Skill(
 			name: "GUARD",
 			description: "Acts first, reducing damage taken for 1 turn.\nCost: 0",
 			target: SkillTarget.Self,
@@ -2929,6 +2930,68 @@ public class Database
             },
 			hidden: true
 		);
+
+        // Fear of Spiders //
+        Skills["FOSAttack"] = new Skill(
+           name: "FOSAttack",
+           description: "FOSAttack",
+           target: SkillTarget.Enemy,
+           cost: 0,
+           effect: async (self, target) =>
+           {
+               await GameManager.Instance.AnimationManager.WaitForAnimation(287, target, false);
+               BattleLogManager.Instance.QueueMessage(self, target, "[actor] wraps up and eats [target].");
+               BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }, false);
+           },
+           hidden: true
+        );
+
+		Skills["FOSDoNothing"] = new Skill(
+		   name: "FOSDoNothing",
+		   description: "FOSDoNothing",
+		   target: SkillTarget.Self,
+		   cost: 0,
+		   effect: async (self, target) =>
+		   {
+			   BattleLogManager.Instance.QueueMessage(self, target, "[actor] is trying to talk to you...");
+			   await Task.CompletedTask;
+		   },
+		   hidden: true
+		);
+
+        Skills["FOSSpinWeb"] = new Skill(
+           name: "FOSSpinWeb",
+           description: "FOSSpinWeb",
+           target: SkillTarget.Enemy,
+           cost: 0,
+           effect: async (self, target) =>
+           {
+			   GameManager.Instance.AnimationManager.PlayScreenAnimation(176, false);
+               BattleLogManager.Instance.QueueMessage(self, target, "[actor] entangles [target] in sticky webs.");
+			   target.AddStatModifier("SpeedDown");
+			   await Task.CompletedTask;
+           },
+           hidden: true
+        );
+
+        Skills["FOSAttackAll"] = new Skill(
+           name: "FOSAttackAll",
+           description: "FOSAttackAll",
+           target: SkillTarget.AllEnemies,
+           cost: 0,
+           effect: async (self, target) =>
+           {
+               BattleLogManager.Instance.QueueMessage(self, target, "[actor] catches everyone!");
+               GameManager.Instance.AnimationManager.PlayScreenAnimation(176, false);
+			   await Task.Delay(1000);
+               foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
+			   {
+				   BattleManager.Instance.Damage(self, member.Actor, () => { return self.CurrentStats.ATK * 2f - member.Actor.CurrentStats.DEF; }, false);
+				   GameManager.Instance.AnimationManager.PlayAnimation(287, member.Actor, false);
+               }
+           },
+           hidden: true
+        );
         #endregion
 
         #region MODIFIERS

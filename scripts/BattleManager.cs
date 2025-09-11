@@ -952,8 +952,8 @@ public partial class BattleManager : Node
 		switch (target.CurrentState)
 		{
 			case "miserable":
-				juiceLost = (int)Math.Floor(finalDamage);
-				finalDamage = 0;
+				juiceLost = Math.Min((int)Math.Floor(finalDamage), 0);
+				finalDamage -= juiceLost;
 				break;
 			case "depressed":
 				juiceLost = Math.Min((int)Math.Floor(finalDamage * 0.5f), target.CurrentJuice);
@@ -989,7 +989,11 @@ public partial class BattleManager : Node
 		}
 
 		int rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
-		target.Damage(rounded);
+		if (rounded < 0)
+			rounded = 0;
+		if (rounded > 9999)
+			rounded = 9999;
+        target.Damage(rounded);
 		if (target is PartyMember)
 		{
 			Energy++;
