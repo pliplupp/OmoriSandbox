@@ -4,13 +4,20 @@
 A battle simulator/sandbox for Omori, written in C# for the Godot engine. It aims to recreate the battle system in the game as accurately as possible, allowing users to create any kind of battle scenario they desire. I started this project in my attempt to learn the Godot engine through recreating a game that I thorougly enjoy.
 ## Installation
 Simply download the latest release archive from the "Releases" section and extract the contents to any folder. There are two versions to choose from:
+### For Windows Users:
 - `OmoriSandbox.zip` uses the Vulkan renderer and works best on newer systems. Recommended for most users.
 - `OmoriSandbox_Compat.zip` uses the OpenGL renderer and works best on older systems. Use this if you're having issues with the Vulkan version.
 
 Either archive should contain two executables:
 - `OmoriSandbox.console.exe`: Runs the Sandbox alongside a seperate console window. Useful for viewing debug information and any errors that may occur while using the Sandbox. (Recommended)
 - `OmoriSandbox.exe`: Runs just the Sandbox without a console.
-  
+
+### For Linux Users
+- `OmoriSandbox_Linux.zip` uses the Vulkan renderer and works best on newer systems. Recommended for most users.
+- `OmoriSandbox_Linux_Compat.zip` uses the OpenGL renderer and works best on older systems. Use this if you're having issues with the Vulkan version.
+
+To run the Sandbox, you can either use the provided `OmoriSandbox.sh` script, or run the `OmoriSandbox.x86_64` executable directly.
+
 ## Usage
 **Important Note**: As of writing, the project is currently in an "alpha" state, allowing users to try out the sandbox for themselves during active development. While battles are functional from start to finish, __many features including skills, weapons, items, enemies, etc. are missing from the current build.__ Expect bugs, glitches, or potential inaccuracies. See the [To-Dos](#To-Dos) section to see the current status of any missing features. If you happen to find a bug, please report it in the "Issues" tab.
 
@@ -74,7 +81,7 @@ As of writing, any other customization, such as custom party members, enemies, i
 ## To-Dos
 The following features are currently missing and/or not fully functional in the Sandbox, and will be periodically added through updates. This list may shrink or grow at any time depending on updates and bug reports:
 ### Missing
-- [ ] Dots animation on the Energy Bar
+- [X] Dots animation on the Energy Bar
 - [x] Tier 2 and 3 Followups
 - [x] Omori's special skills (Vertigo, Cripple, Suffocate)
 - [ ] Some Screen Tint/Wave Effects
@@ -84,14 +91,14 @@ The following features are currently missing and/or not fully functional in the 
 - [ ] Any skills that perform a Taunt
 ### Partially Functional
 - [x] Afraid and Stressed Out
-- [ ] Party sizes below 4
+- [X] Party sizes below 4
 - [x] Skills that use the `<Not User>` tag
 - [ ] Boss-Specific Behavior
 - [ ] Game Over
 - [ ] Skill/Item descriptions that use character names
+- [ ] General Refactoring and Code Improvements
 ### Planned Changes/Additions
 - [ ] Official Mod Support/Modding API + Documentation
-- [ ] General Refactoring and Code Improvements
 - [ ] Porting more enemies and boss fights
 - [X] Title Screen
 - [X] A GUI driven config system
