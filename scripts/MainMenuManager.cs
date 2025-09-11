@@ -46,7 +46,7 @@ public partial class MainMenuManager : Node
 				GD.PrintErr("Failed to parse preset " + presetName);
 				return;
 			}
-
+			LastLoadedPreset = presetName;
 			GameManager.Instance.LoadBattlePreset(json.AsGodotDictionary<string, Variant>());
 			MainMenu.Visible = false;
 		};
@@ -678,6 +678,7 @@ public partial class MainMenuManager : Node
 	}
 
 	public static MainMenuManager Instance;
+	public string LastLoadedPreset { get; private set; } = "";
 
 	[Export]
 	private Control[] AddActorControls;

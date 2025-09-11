@@ -64,7 +64,6 @@ public class Database
 	{
 		if (!Modifiers.TryGetValue(what, out Func<StatModifier> modifier))
 		{
-			GD.PrintErr("Unknown modifier: " + what);
 			return null;
 		}
 		return modifier();

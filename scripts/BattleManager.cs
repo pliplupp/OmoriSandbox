@@ -9,6 +9,7 @@ public partial class BattleManager : Node
 	[Export] public Label EnergyText;
 	[Export] private Sprite2D EnergyBar;
 	[Export] private EnergyDots EnergyDots;
+	[Export] private HBoxContainer MenuButtonContainer;
 
 	private List<PartyMemberComponent> CurrentParty = [];
 	private List<EnemyComponent> Enemies = [];
@@ -73,6 +74,33 @@ public partial class BattleManager : Node
 
 	public override void _EnterTree()
 	{
+		MenuButtonContainer.GetChild<Button>(0).Pressed += () =>
+		{
+			Reset();
+			string presetName = MainMenuManager.Instance.LastLoadedPreset;
+			string path = "user://presets/" + MainMenuManager.Instance.LastLoadedPreset + ".json";
+			if (!FileAccess.FileExists(path))
+			{
+				GD.PrintErr("Preset file not found at: " + path);
+				return;
+			}
+
+			using FileAccess file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+			Variant json = Json.ParseString(file.GetAsText());
+
+			if (json.VariantType == Variant.Type.Nil)
+			{
+				GD.PrintErr("Failed to parse preset " + presetName);
+				return;
+			}
+			GameManager.Instance.LoadBattlePreset(json.AsGodotDictionary<string, Variant>());
+		};
+
+		MenuButtonContainer.GetChild<Button>(1).Pressed += () =>
+		{
+			Reset();
+			MainMenuManager.Instance.ReturnToTitle();
+		};
 		Instance = this;
 	}
 
@@ -85,6 +113,7 @@ public partial class BattleManager : Node
 		FollowupTier = followupTier;
 		UseBasilFollowups = useBasilFollowups;
 		UseBasilReleaseEnergy = useBasilReleaseEnergy;
+		MenuButtonContainer.Visible = false;
 
 		EnergyBar.Visible = CurrentParty.Any(x => x.HasFollowup);
 
@@ -330,7 +359,7 @@ public partial class BattleManager : Node
 		SetPhase(BattlePhase.PlayerCommand);
 	}
 
-	public void OnRunSelected()
+	public void Reset()
 	{
 		GameManager.Instance.DespawnAll();
 		CurrentParty.Clear();
@@ -344,7 +373,6 @@ public partial class BattleManager : Node
 		Delay.QueueFree();
 		BattleLogManager.Instance.FinishedLogging -= OnBattleLogFinished;
 		Phase = BattlePhase.FightRun;
-		MainMenuManager.Instance.ReturnToTitle();
 		IsBattling = false;
 	}
 
@@ -860,12 +888,14 @@ public partial class BattleManager : Node
 			});
 			AudioManager.Instance.PlayBGM("xx_victory");
 			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was victorious!");
+			MenuButtonContainer.Visible = true;
 			return;
 		}
 		if (CurrentParty.All(x => x.Actor.CurrentHP == 0))
 		{
 			SetPhase(BattlePhase.BattleOver);
 			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was defeated...");
+			MenuButtonContainer.Visible = true;
 			return;
 		}
 		PartyMemberComponent omori = CurrentParty.FirstOrDefault(x => x.Actor is Omori omori && omori.CurrentState == "toast");
@@ -875,6 +905,7 @@ public partial class BattleManager : Node
 		{
 			SetPhase(BattlePhase.BattleOver);
 			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was defeated...");
+			MenuButtonContainer.Visible = true;
 		}
 	}
 

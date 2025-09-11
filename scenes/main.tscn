@@ -48,11 +48,12 @@ FPSLabel = NodePath("../UI/HBoxContainer/FPS")
 Party = NodePath("../UI/Party")
 Followups = Array[PackedScene]([ExtResource("4_muem4"), ExtResource("5_dp3eg"), ExtResource("6_0ld40"), ExtResource("7_gqmmt"), ExtResource("8_vxglm")])
 
-[node name="BattleManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("EnergyText", "EnergyBar", "EnergyDots")]
+[node name="BattleManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("EnergyText", "EnergyBar", "EnergyDots", "MenuButtonContainer")]
 script = ExtResource("9_y6deb")
 EnergyText = NodePath("../UI/Energy/EnergyAmount")
 EnergyBar = NodePath("../UI/Energy")
 EnergyDots = NodePath("../UI/Energy/EnergyDots")
+MenuButtonContainer = NodePath("../UI/MenuButtons")
 
 [node name="MenuManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("Cursor", "PartyMenu", "BattleMenu", "SkillMenu", "SnackMenu", "ToyMenu", "EnergyBar", "EnergyText")]
 script = ExtResource("9_ya4ey")
@@ -456,3 +457,29 @@ visible = false
 position = Vector2(250, 410)
 texture = ExtResource("5_85g3d")
 script = ExtResource("19_0ld40")
+
+[node name="MenuButtons" type="HBoxContainer" parent="BattleCanvas/UI"]
+visible = false
+z_index = 10
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -129.5
+offset_top = -130.0
+offset_right = 129.5
+offset_bottom = -90.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+
+[node name="Retry" type="Button" parent="BattleCanvas/UI/MenuButtons"]
+custom_minimum_size = Vector2(125, 0)
+layout_mode = 2
+text = "Retry"
+
+[node name="Return" type="Button" parent="BattleCanvas/UI/MenuButtons"]
+layout_mode = 2
+text = "Return to Menu"
