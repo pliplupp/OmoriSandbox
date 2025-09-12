@@ -3760,8 +3760,8 @@ public class Database
 				   GameManager.Instance.AnimationManager.PlayAnimation(212, member.Actor, false);
 				   member.Actor.Heal(heal);
 				   BattleManager.Instance.SpawnDamageNumber(heal, member.Actor.CenterPoint, DamageType.Heal);
-			   }
-			   BattleLogManager.Instance.QueueMessage($"Everyone recovered {heal} HEART!");
+                   BattleLogManager.Instance.QueueMessage(self, member.Actor, $"[target] recovered {heal} HEART!");
+               }
 			   await Task.CompletedTask;
 		   }
 	   );
@@ -3787,8 +3787,8 @@ public class Database
 				   GameManager.Instance.AnimationManager.PlayAnimation(213, member.Actor, false);
 				   member.Actor.HealJuice(total);
 				   BattleManager.Instance.SpawnDamageNumber(total, member.Actor.CenterPoint, DamageType.JuiceGain);
-			   }
-			   BattleLogManager.Instance.QueueMessage($"Everyone recovered {total} JUICE!");
+                   BattleLogManager.Instance.QueueMessage(self, member.Actor, $"[target] recovered {total} JUICE!");
+               }
 			   await Task.CompletedTask;
 		   }
 	   );
