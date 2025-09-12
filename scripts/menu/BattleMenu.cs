@@ -23,6 +23,7 @@ public partial class BattleMenu : Menu
 
     protected override void OnSelect()
     {
+        BattleCommand previous = BattleManager.Instance.LastSelectedCommand;
         switch (Options[CursorIndex])
         {
             case "Attack":
@@ -31,17 +32,26 @@ public partial class BattleMenu : Menu
                 break;
             case "Skill":
                 BattleManager.Instance.OnSelectNotAttack();
-                MenuManager.Instance.ShowMenu(MenuState.Skill);
+                MenuManager.Instance.ShowMenu(MenuState.Skill, previous);
                 break;
             case "Snack":
                 BattleManager.Instance.OnSelectNotAttack();
-                MenuManager.Instance.ShowMenu(MenuState.Snack);
+                MenuManager.Instance.ShowMenu(MenuState.Snack, previous);
                 break;
             case "Toy":
                 BattleManager.Instance.OnSelectNotAttack();
-                MenuManager.Instance.ShowMenu(MenuState.Toy);
+                MenuManager.Instance.ShowMenu(MenuState.Toy, previous);
                 break;
         }
         AudioManager.Instance.PlaySFX("SYS_select");
+    }
+
+    public override void RememberCursor(BattleCommand previous)
+    {
+        if (previous.Action is Skill skill)
+            CursorIndex = skill.Name.EndsWith("Attack") ? 0 : 1;
+        else if (previous.Action is Item item)
+            CursorIndex = item.IsToy ? 3 : 2;
+        UpdateCursor();
     }
 }

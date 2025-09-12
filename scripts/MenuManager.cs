@@ -51,7 +51,7 @@ public partial class MenuManager : Node
 		}
 	}
 
-	public void ShowMenu(MenuState state)
+	public void ShowMenu(MenuState state, BattleCommand previous = null)
 	{
 		if (CurrentState != MenuState.None)
 		{
@@ -82,7 +82,10 @@ public partial class MenuManager : Node
 		{
 			item.Populate(CurrentState == MenuState.Toy);
 		}
-	}
+
+		if (previous != null)
+			CurrentMenu.RememberCursor(previous);
+    }
 
 	public override void _Process(double delta)
 	{

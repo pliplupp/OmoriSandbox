@@ -70,4 +70,17 @@ public partial class SkillMenu : Menu
         Skill selected = Skills[CursorIndex];
 		BattleManager.Instance.OnSelectSkill(selected);
 	}
+
+	public override void RememberCursor(BattleCommand previous)
+	{
+		if (Empty) return;
+		if (previous.Action is Skill skill)
+		{
+			int idx = Skills.FindIndex(x => x.Name == skill.Name);
+			if (idx != -1)
+				CursorIndex = idx;
+			UpdateCursor();
+			ShowSkillInfo();
+		}
+    }
 }
