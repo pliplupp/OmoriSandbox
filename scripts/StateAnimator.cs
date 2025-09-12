@@ -23,7 +23,7 @@ public partial class StateAnimator : Node
 				break;
 			case "toast":
 				StateSprite.RegionRect = StateAtlas(1);
-				target = FaceStateAtlas();
+				target = FaceStateAtlas(1);
 				break;
 			case "stressed":
 				StateSprite.RegionRect = StateAtlas(2);

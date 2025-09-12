@@ -139,7 +139,7 @@ public class Database
 			{
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] guards.");
 				await GameManager.Instance.AnimationManager.WaitForAnimation(115, self, false);
-				self.AddTierStatModifier("Guard", turns: 1);
+				self.AddStatModifier("Guard");
 			},
 			goesFirst: true
 		);
@@ -1230,7 +1230,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember other = BattleManager.Instance.GetPartyMember(3);
+				PartyMember other = BattleManager.Instance.GetPartyMember(2);
 				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				GameManager.Instance.AnimationManager.PlayScreenAnimation(38, false);
@@ -1248,7 +1248,7 @@ public class Database
 		   cost: 0,
 		   effect: async (self, target) =>
 		   {
-			   PartyMember other = BattleManager.Instance.GetPartyMember(3);
+			   PartyMember other = BattleManager.Instance.GetPartyMember(2);
 			   BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 			   await Task.Delay(1000);
 			   GameManager.Instance.AnimationManager.PlayScreenAnimation(39, false);
@@ -1271,7 +1271,7 @@ public class Database
 		  cost: 0,
 		  effect: async (self, target) =>
 		  {
-			  PartyMember other = BattleManager.Instance.GetPartyMember(3);
+			  PartyMember other = BattleManager.Instance.GetPartyMember(2);
 			  BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 			  await Task.Delay(1000);
 			  GameManager.Instance.AnimationManager.PlayScreenAnimation(40, false);
@@ -1294,7 +1294,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember other = BattleManager.Instance.GetPartyMember(2);
+				PartyMember other = BattleManager.Instance.GetPartyMember(3);
 				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				GameManager.Instance.AnimationManager.PlayScreenAnimation(41, false);
@@ -1315,7 +1315,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember other = BattleManager.Instance.GetPartyMember(2);
+				PartyMember other = BattleManager.Instance.GetPartyMember(3);
 				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				GameManager.Instance.AnimationManager.PlayScreenAnimation(42, false);
@@ -1339,7 +1339,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember other = BattleManager.Instance.GetPartyMember(2);
+				PartyMember other = BattleManager.Instance.GetPartyMember(3);
 				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				GameManager.Instance.AnimationManager.PlayScreenAnimation(43, false);
@@ -1562,7 +1562,7 @@ public class Database
 			{
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] tickles [target]!");
 				BattleLogManager.Instance.QueueMessage(self, target, "[target] let their guard down!");
-				target.AddTierStatModifier("Tickle", turns: 1);
+				target.AddStatModifier("Tickle");
 				await Task.CompletedTask;
 			}
 		);
@@ -1768,7 +1768,7 @@ public class Database
 			effect: async (self, target) =>
 			{
 				PartyMember second = BattleManager.Instance.GetPartyMember(1);
-				PartyMember third = BattleManager.Instance.GetPartyMember(2);
+				PartyMember third = BattleManager.Instance.GetPartyMember(3);
 				BattleLogManager.Instance.QueueMessage(self, third, "[actor] passes to [target].");
 				await Task.Delay(1000);
 				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(69, true);
@@ -1789,7 +1789,7 @@ public class Database
 			effect: async (self, target) =>
 			{
 				PartyMember second = BattleManager.Instance.GetPartyMember(1);
-				PartyMember third = BattleManager.Instance.GetPartyMember(2);
+				PartyMember third = BattleManager.Instance.GetPartyMember(3);
 				BattleLogManager.Instance.QueueMessage(self, third, "[actor] passes to [target].");
 				await Task.Delay(1000);
 				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(70, true);
@@ -1810,7 +1810,7 @@ public class Database
 		   effect: async (self, target) =>
 		   {
 			   PartyMember second = BattleManager.Instance.GetPartyMember(1);
-			   PartyMember third = BattleManager.Instance.GetPartyMember(2);
+			   PartyMember third = BattleManager.Instance.GetPartyMember(3);
 			   BattleLogManager.Instance.QueueMessage(self, third, "[actor] passes to [target].");
 			   await Task.Delay(1000);
 			   await GameManager.Instance.AnimationManager.WaitForScreenAnimation(71, true);
@@ -2213,7 +2213,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember fourth = BattleManager.Instance.GetPartyMember(3);
+				PartyMember fourth = BattleManager.Instance.GetPartyMember(2);
 				BattleLogManager.Instance.QueueMessage(self, fourth, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(95, false);
@@ -2234,7 +2234,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember fourth = BattleManager.Instance.GetPartyMember(3);
+				PartyMember fourth = BattleManager.Instance.GetPartyMember(2);
 				BattleLogManager.Instance.QueueMessage(self, fourth, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(95, false);
@@ -2258,7 +2258,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember fourth = BattleManager.Instance.GetPartyMember(3);
+				PartyMember fourth = BattleManager.Instance.GetPartyMember(2);
 				BattleLogManager.Instance.QueueMessage(self, fourth, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(95, false);
@@ -2995,37 +2995,38 @@ public class Database
 		#endregion
 
 		#region MODIFIERS
-		Modifiers.Add("Neutral", () => new StatModifier([]));
-		Modifiers.Add("Happy", () => new StatModifier([new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)]));
-		Modifiers.Add("Ecstatic", () => new StatModifier([new StatBonus(StatType.LCK, 3f), new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.HIT, -20)]));
-		Modifiers.Add("Manic", () => new StatModifier([new StatBonus(StatType.LCK, 4f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.HIT, -30)]));
-		Modifiers.Add("Angry", () => new StatModifier([new StatBonus(StatType.ATK, 1.3f), new StatBonus(StatType.DEF, 0.5f)]));
-		Modifiers.Add("Enraged", () => new StatModifier([new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.3f)]));
-		Modifiers.Add("Furious", () => new StatModifier([new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.15f)]));
-		Modifiers.Add("Sad", () => new StatModifier([new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.SPD, 0.8f)]));
-		Modifiers.Add("Depressed", () => new StatModifier([new StatBonus(StatType.DEF, 1.35f), new StatBonus(StatType.SPD, 0.65f)]));
-		Modifiers.Add("Miserable", () => new StatModifier([new StatBonus(StatType.DEF, 1.5f), new StatBonus(StatType.SPD, 0.5f)]));
-		Modifiers.Add("Stressed", () => new StatModifier([new StatBonus(StatType.ATK, 1.2f), new StatBonus(StatType.DEF, 0.9f)]));
-		Modifiers.Add("AttackUp", () => new TierStatModifier([new StatBonus(StatType.ATK, 1.1f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.ATK, 1.5f)]).WithMessages("ATTACK rose!", "ATTACK cannot go any higher!"));
-		Modifiers.Add("AttackDown", () => new TierStatModifier([new StatBonus(StatType.ATK, 0.9f), new StatBonus(StatType.ATK, 0.8f), new StatBonus(StatType.ATK, 0.7f)]).WithMessages("ATTACK fell!", "ATTACK cannot go any lower!"));
-		Modifiers.Add("DefenseUp", () => new TierStatModifier([new StatBonus(StatType.DEF, 1.15f), new StatBonus(StatType.DEF, 1.3f), new StatBonus(StatType.DEF, 1.5f)]).WithMessages("DEFENSE rose!", "DEFENSE cannot go any higher!"));
-		Modifiers.Add("DefenseDown", () => new TierStatModifier([new StatBonus(StatType.DEF, 0.75f), new StatBonus(StatType.DEF, 0.5f), new StatBonus(StatType.DEF, 0.25f)]).WithMessages("DEFENSE fell!", "DEFENSE cannot go any lower!"));
-		Modifiers.Add("SpeedUp", () => new TierStatModifier([new StatBonus(StatType.SPD, 1.15f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.SPD, 5f)]).WithMessages("SPEED rose!", "SPEED cannot go any higher!"));
-		Modifiers.Add("SpeedDown", () => new TierStatModifier([new StatBonus(StatType.SPD, 0.8f), new StatBonus(StatType.SPD, 0.5f), new StatBonus(StatType.SPD, 0.25f)]).WithMessages("SPEED fell!", "SPEED cannot go any lower!"));
-		Modifiers.Add("ReleaseEnergy", () => new StatModifier([new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.LCK, 1.25f)]));
-		Modifiers.Add("ReleaseEnergyBasil", () => new StatModifier([new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.LCK, 1.25f)]));
-		Modifiers.Add("SnoCone", () => new StatModifier([new StatBonus(StatType.SPD, 1.2f), new StatBonus(StatType.ATK, 1.2f), new StatBonus(StatType.DEF, 1.2f), new StatBonus(StatType.LCK, 1.2f)]));
-		Modifiers.Add("Flex", () => new DamageStatModifier(2.5f, [new StatBonus(StatType.HIT, 1000)]));
-		Modifiers.Add("Guard", () => new DamageStatModifier(0.5f));
-		Modifiers.Add("PlotArmor", () => new DamageStatModifier(0f));
-		Modifiers.Add("Tickle", () => new TierStatModifier([]));
-		Modifiers.Add("SweetheartHappy", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)]));
-		Modifiers.Add("SweetheartEcstatic", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 3f), new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.HIT, -20)]));
-		Modifiers.Add("SweetheartManic", () => new EmotionLockStatModifier("happy", [new StatBonus(StatType.LCK, 4f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.HIT, -30)]));
-		Modifiers.Add("SpaceExAngry", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 0.9f)]));
-		Modifiers.Add("SpaceExEnraged", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.5f)]));
-		Modifiers.Add("SpaceExFurious", () => new EmotionLockStatModifier("angry", [new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.3f)]));
-		Modifiers.Add("MrJawsumBarrier", () => new MrJawsumStatModifier(0f));
+		Modifiers.Add("Neutral", () => new StatModifier());
+		Modifiers.Add("Happy", () => new StatModifier(new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)));
+		Modifiers.Add("Ecstatic", () => new StatModifier(new StatBonus(StatType.LCK, 3f), new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.HIT, -20)));
+		Modifiers.Add("Manic", () => new StatModifier(new StatBonus(StatType.LCK, 4f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.HIT, -30)));
+		Modifiers.Add("Angry", () => new StatModifier(new StatBonus(StatType.ATK, 1.3f), new StatBonus(StatType.DEF, 0.5f)));
+		Modifiers.Add("Enraged", () => new StatModifier(new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.3f)));
+		Modifiers.Add("Furious", () => new StatModifier(new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.15f)));
+		Modifiers.Add("Sad", () => new StatModifier(new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.SPD, 0.8f)));
+		Modifiers.Add("Depressed", () => new StatModifier(new StatBonus(StatType.DEF, 1.35f), new StatBonus(StatType.SPD, 0.65f)));
+		Modifiers.Add("Miserable", () => new StatModifier(new StatBonus(StatType.DEF, 1.5f), new StatBonus(StatType.SPD, 0.5f)));
+		Modifiers.Add("Stressed", () => new StatModifier(new StatBonus(StatType.ATK, 1.2f), new StatBonus(StatType.DEF, 0.9f)));
+		Modifiers.Add("AttackUp", () => new TierStatModifier(6, new StatBonus(StatType.ATK, 1.1f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.ATK, 1.5f)).WithMessages("ATTACK rose!", "ATTACK cannot go any higher!"));
+		Modifiers.Add("AttackDown", () => new TierStatModifier(6, new StatBonus(StatType.ATK, 0.9f), new StatBonus(StatType.ATK, 0.8f), new StatBonus(StatType.ATK, 0.7f)).WithMessages("ATTACK fell!", "ATTACK cannot go any lower!"));
+		Modifiers.Add("DefenseUp", () => new TierStatModifier(6, new StatBonus(StatType.DEF, 1.15f), new StatBonus(StatType.DEF, 1.3f), new StatBonus(StatType.DEF, 1.5f)).WithMessages("DEFENSE rose!", "DEFENSE cannot go any higher!"));
+		Modifiers.Add("DefenseDown", () => new TierStatModifier(6, new StatBonus(StatType.DEF, 0.75f), new StatBonus(StatType.DEF, 0.5f), new StatBonus(StatType.DEF, 0.25f)).WithMessages("DEFENSE fell!", "DEFENSE cannot go any lower!"));
+		Modifiers.Add("SpeedUp", () => new TierStatModifier(6, new StatBonus(StatType.SPD, 1.15f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.SPD, 5f)).WithMessages("SPEED rose!", "SPEED cannot go any higher!"));
+		Modifiers.Add("SpeedDown", () => new TierStatModifier(6, new StatBonus(StatType.SPD, 0.8f), new StatBonus(StatType.SPD, 0.5f), new StatBonus(StatType.SPD, 0.25f)).WithMessages("SPEED fell!", "SPEED cannot go any lower!"));
+		Modifiers.Add("ReleaseEnergy", () => new StatModifier(new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.LCK, 1.25f)));
+		Modifiers.Add("ReleaseEnergyBasil", () => new StatModifier(new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.LCK, 1.25f)));
+		Modifiers.Add("SnoCone", () => new StatModifier(new StatBonus(StatType.SPD, 1.2f), new StatBonus(StatType.ATK, 1.2f), new StatBonus(StatType.DEF, 1.2f), new StatBonus(StatType.LCK, 1.2f)));
+		Modifiers.Add("Flex", () => new FlexStatModifier(new StatBonus(StatType.HIT, 1000)));
+		// see if these even need to be their own classes
+		Modifiers.Add("Guard", () => new GuardStatModifier(1));
+		Modifiers.Add("PlotArmor", () => new PlotArmorStatModifier(1));
+		Modifiers.Add("Tickle", () => new TierStatModifier(1));
+		Modifiers.Add("SweetheartHappy", () => new EmotionLockStatModifier("happy", new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)));
+		Modifiers.Add("SweetheartEcstatic", () => new EmotionLockStatModifier("happy", new StatBonus(StatType.LCK, 3f), new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.HIT, -20)));
+		Modifiers.Add("SweetheartManic", () => new EmotionLockStatModifier("happy", new StatBonus(StatType.LCK, 4f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.HIT, -30)));
+		Modifiers.Add("SpaceExAngry", () => new EmotionLockStatModifier("angry", new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 0.9f)));
+		Modifiers.Add("SpaceExEnraged", () => new EmotionLockStatModifier("angry", new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.5f)));
+		Modifiers.Add("SpaceExFurious", () => new EmotionLockStatModifier("angry", new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.3f)));
+		Modifiers.Add("MrJawsumBarrier", () => new MrJawsumStatModifier());
 		#endregion
 
 		#region SNACKS
@@ -3208,10 +3209,10 @@ public class Database
 				target.Heal(target.CurrentStats.MaxHP);
 				target.HealJuice(target.CurrentStats.MaxJuice);
 				target.AddStatModifier("SnoCone");
-				BattleLogManager.Instance.QueueMessage(self, target, $"[actor]'s ATTACK rose!");
-				BattleLogManager.Instance.QueueMessage(self, target, $"[actor]'s DEFENSE rose!");
-				BattleLogManager.Instance.QueueMessage(self, target, $"[actor]'s SPEED rose!");
-				BattleLogManager.Instance.QueueMessage(self, target, $"[actor]'s LUCK rose!");
+				BattleLogManager.Instance.QueueMessage(self, target, "[target]'s ATTACK rose!");
+				BattleLogManager.Instance.QueueMessage(self, target, "[target]'s DEFENSE rose!");
+				BattleLogManager.Instance.QueueMessage(self, target, "[target]'s SPEED rose!");
+				BattleLogManager.Instance.QueueMessage(self, target, "[target]'s LUCK rose!");
 			}
 		);
 
@@ -3759,8 +3760,8 @@ public class Database
 				   GameManager.Instance.AnimationManager.PlayAnimation(212, member.Actor, false);
 				   member.Actor.Heal(heal);
 				   BattleManager.Instance.SpawnDamageNumber(heal, member.Actor.CenterPoint, DamageType.Heal);
-			   }
-			   BattleLogManager.Instance.QueueMessage($"Everyone recovered {heal} HEART!");
+                   BattleLogManager.Instance.QueueMessage(self, member.Actor, $"[target] recovered {heal} HEART!");
+               }
 			   await Task.CompletedTask;
 		   }
 	   );
@@ -3786,8 +3787,8 @@ public class Database
 				   GameManager.Instance.AnimationManager.PlayAnimation(213, member.Actor, false);
 				   member.Actor.HealJuice(total);
 				   BattleManager.Instance.SpawnDamageNumber(total, member.Actor.CenterPoint, DamageType.JuiceGain);
-			   }
-			   BattleLogManager.Instance.QueueMessage($"Everyone recovered {total} JUICE!");
+                   BattleLogManager.Instance.QueueMessage(self, member.Actor, $"[target] recovered {total} JUICE!");
+               }
 			   await Task.CompletedTask;
 		   }
 	   );

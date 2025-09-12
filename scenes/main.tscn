@@ -46,7 +46,7 @@ EnemyUI = ExtResource("8_choun")
 BattlebackParent = NodePath("../UI/Battleback")
 FPSLabel = NodePath("../UI/HBoxContainer/FPS")
 Party = NodePath("../UI/Party")
-Followups = Array[PackedScene]([ExtResource("4_muem4"), ExtResource("5_dp3eg"), ExtResource("6_0ld40"), ExtResource("7_gqmmt"), ExtResource("8_vxglm")])
+Followups = Array[PackedScene]([ExtResource("4_muem4"), ExtResource("5_dp3eg"), ExtResource("7_gqmmt"), ExtResource("6_0ld40"), ExtResource("8_vxglm")])
 
 [node name="BattleManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("EnergyText", "EnergyBar", "EnergyDots", "MenuButtonContainer")]
 script = ExtResource("9_y6deb")
@@ -125,7 +125,7 @@ text = "0"
 layout_mode = 2
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 10
-text = "OmoriSandbox v0.6.0"
+text = "OmoriSandbox v0.6.1"
 
 [node name="FullScreenEffects" type="Node2D" parent="BattleCanvas/UI"]
 

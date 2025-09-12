@@ -66,28 +66,29 @@ public abstract class Actor
 
 	public void AddStatModifier(string modifier, bool silent = false)
 	{
-		StatModifier mod = Database.CreateModifier(modifier);
-		if (mod == null)
+		if (StatModifiers.TryGetValue(modifier, out StatModifier m))
 		{
-			GD.PrintErr("Unknown stat modifier: " + modifier);
-			return;
-		}
-		if (mod is TierStatModifier tier)
-		{
-			if (StatModifiers.TryGetValue(modifier, out StatModifier m))
+			if (m is TierStatModifier tier)
 			{
-				tier = m as TierStatModifier;
 				bool success = tier.IncreaseTier();
 				if (!silent)
 					ShowStatMessage(success ? tier.SuccessMessage : tier.FailureMessage);
+			}
+			// if the actor already has the modifier and it's not tiered, do nothing
+		}
+		else
+		{
+			StatModifier mod = Database.CreateModifier(modifier);
+			if (mod == null)
+			{
+				GD.PrintErr("Unknown stat modifier: " + modifier);
 				return;
 			}
-			else
-			{
-				ShowStatMessage(tier.SuccessMessage);
-			}
+			StatModifiers.Add(modifier, mod);
+			GD.Print("Added modifier " + modifier + " to " + Name);
+			if (mod is TierStatModifier t)
+				ShowStatMessage(t.SuccessMessage);
 		}
-		StatModifiers.Add(modifier, mod);
 	}
 
 	public void AddTierStatModifier(string modifier, int tier = 1, int turns = 6, bool silent = false)
@@ -103,6 +104,7 @@ public abstract class Actor
 		{
 			TierStatModifier existing = m as TierStatModifier;
 			bool success = existing.IncreaseTier();
+			GD.Print("Increased tier of " + modifier + " on " + Name);
 			if (!silent)
 			{
 				ShowStatMessage(success ? existing.SuccessMessage : existing.FailureMessage);
@@ -112,6 +114,7 @@ public abstract class Actor
 		t.SetTier(tier);
 		t.SetTurnsLeft(turns);
 		StatModifiers.Add(modifier, t);
+		GD.Print("Added modifier " + modifier + " to " + Name);
 		ShowStatMessage(t.SuccessMessage);
 	}
 
@@ -136,11 +139,12 @@ public abstract class Actor
 				omori.OldEmotion = null;
 				StatModifiers.Remove(mod.Key);
 			}
-			if (mod.Value is TierStatModifier tier)
+			if (mod.Value.TurnsLeft != -1)
 			{
-				tier.DecreaseTurns();
-				if (tier.TurnsLeft <= 0)
+				mod.Value.DecreaseTurns();
+				if (mod.Value.TurnsLeft == 0)
 				{
+					GD.Print("Removed modifier " + mod.Key + " from " + Name);
 					StatModifiers.Remove(mod.Key);
 					continue;
 				}

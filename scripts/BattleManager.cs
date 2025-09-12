@@ -24,7 +24,9 @@ public partial class BattleManager : Node
 	private List<Node2D> DyingEnemies = [];
 	private Godot.Collections.Dictionary<string, int> Items = [];
 	private BattleAction SelectedAction;
+	private HashSet<Vector2> DamageNumbers = [];
 	public int Energy { get; private set; } = 0;
+	private bool FollowupActive = false;
 	private bool FollowupSelected = false;
 	private bool ForceHideFollowup = false;
 	private int FollowupTier = 1;
@@ -39,14 +41,14 @@ public partial class BattleManager : Node
 	// has a preferred and fallback target if the preferred party member does not exist
 	private Dictionary<(int Position, InputDirection Direction), (int Preferred, int Fallback)> DirectionTable = new()
 	{
-		{ (0, InputDirection.Up),    (1, 2) },
-		{ (0, InputDirection.Right), (3, 2) },
-		{ (1, InputDirection.Down),  (0, 3) },
-		{ (1, InputDirection.Right), (2, 3) },
-		{ (2, InputDirection.Left),  (1, 0) },
-		{ (2, InputDirection.Down),  (3, 0) },
-		{ (3, InputDirection.Left),  (0, 1) },
-		{ (3, InputDirection.Up),    (2, 1) },
+		{ (0, InputDirection.Up),    (1, 3) },
+		{ (0, InputDirection.Right), (2, 3) },
+		{ (1, InputDirection.Down),  (0, 2) },
+		{ (1, InputDirection.Right), (3, 2) },
+		{ (2, InputDirection.Left),  (0, 1) },
+		{ (2, InputDirection.Up),    (3, 1) },
+		{ (3, InputDirection.Left),  (1, 0) },
+		{ (3, InputDirection.Down),  (2, 0) },
 	};
 
 	// table used for handling followup behavior
@@ -60,14 +62,14 @@ public partial class BattleManager : Node
 		{ (0, InputDirection.Down), (0, "ReleaseEnergy") },
 
 		// Aubrey
-		{ (1, InputDirection.Up), (2, "LookAtHero") },
-		{ (1, InputDirection.Right), (3, "LookAtKel") },
+		{ (1, InputDirection.Up), (3, "LookAtHero") },
+		{ (1, InputDirection.Right), (2, "LookAtKel") },
 		{ (1, InputDirection.Down), (0, "LookAtOmori") },
 
 		// Hero
-		{ (2, InputDirection.Up), (1, "CallAubrey") },
-		{ (2, InputDirection.Left), (0, "CallOmori") },
-		{ (2, InputDirection.Down), (3, "CallKel") },
+		{ (3, InputDirection.Up), (1, "CallAubrey") },
+		{ (3, InputDirection.Left), (0, "CallOmori") },
+		{ (3, InputDirection.Down), (2, "CallKel") },
 
 		// Kel and Basil are added dynamically in Init()
 	};
@@ -131,15 +133,15 @@ public partial class BattleManager : Node
 		// update the FollowupTable depending on if Basil followups are enabled
 		if (UseBasilFollowups)
 		{
-			FollowupTable[(3, InputDirection.Down)] = (0, "Comfort");
-			FollowupTable[(3, InputDirection.Left)] = (1, "Mull");
-			FollowupTable[(3, InputDirection.Up)] = (2, "Vent");
+			FollowupTable[(2, InputDirection.Down)] = (0, "Comfort");
+			FollowupTable[(2, InputDirection.Left)] = (1, "Mull");
+			FollowupTable[(2, InputDirection.Up)] = (3, "Vent");
 		}
 		else
 		{
-			FollowupTable[(3, InputDirection.Down)] = (0, "PassToOmori");
-			FollowupTable[(3, InputDirection.Left)] = (1, "PassToAubrey");
-			FollowupTable[(3, InputDirection.Up)] = (2, "PassToHero");
+			FollowupTable[(2, InputDirection.Down)] = (0, "PassToOmori");
+			FollowupTable[(2, InputDirection.Left)] = (1, "PassToAubrey");
+			FollowupTable[(2, InputDirection.Up)] = (3, "PassToHero");
 		}
 
 		DamageNumber.CacheTexture(ResourceLoader.Load<Texture2D>("res://assets/system/Damage.png"));
@@ -250,7 +252,7 @@ public partial class BattleManager : Node
 						Commands.RemoveAt(Commands.Count - 1);
 						CurrentPartyMember--;
 						AudioManager.Instance.PlaySFX("sys_cancel");
-						MenuManager.Instance.ShowMenu(MenuState.Battle);
+						MenuManager.Instance.ShowMenu(MenuState.Battle, false);
 						SetPhase(BattlePhase.PlayerCommand);
 					}
 					break;
@@ -258,12 +260,12 @@ public partial class BattleManager : Node
 					AudioManager.Instance.PlaySFX("sys_cancel");
 					CurrentEnemyTarget = -1;
 					CurrentPartyMemberTarget = -1;
-					MenuManager.Instance.ShowMenu(MenuState.Battle);
+					MenuManager.Instance.ShowMenu(MenuState.Battle, false);
 					SetPhase(BattlePhase.PlayerCommand);
 					break;
 				case BattlePhase.SkillSelection:
 					AudioManager.Instance.PlaySFX("sys_cancel");
-					MenuManager.Instance.ShowMenu(MenuState.Battle);
+					MenuManager.Instance.ShowMenu(MenuState.Battle, false);
 					SetPhase(BattlePhase.PlayerCommand);
 					break;
 			}
@@ -361,6 +363,7 @@ public partial class BattleManager : Node
 	public void OnFightSelected()
 	{
 		CurrentPartyMember++;
+		MenuManager.Instance.ShowMenu(MenuState.Battle);
 		SetPhase(BattlePhase.PlayerCommand);
 	}
 
@@ -433,6 +436,10 @@ public partial class BattleManager : Node
 		Item i = SelectedAction as Item;
 		// convert item name to CamelCase for dictionary lookup
 		string name = i.Name.Capitalize();
+		// Godot's Captialize treats - as a regular character and puts a space after it
+		// manually fix that for sno-cone
+		if (i.Name == "SNO-CONE")
+			name = "Sno-Cone";
 		Items[name]--;
 		if (Items[name] == 0)
 			Items.Remove(name);
@@ -510,6 +517,7 @@ public partial class BattleManager : Node
 						}
 					}
 					FollowupSelected = false;
+					FollowupActive = false;
 
 					foreach (EnemyComponent enemy in Enemies.ToList())
 					{
@@ -588,7 +596,6 @@ public partial class BattleManager : Node
 		}
 		BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[CurrentPartyMember].Actor.Name.ToUpper() + " do?");
 		MenuManager.Instance.ShowButtons(CurrentParty[CurrentPartyMember].Actor.IsRealWorld);
-		MenuManager.Instance.ShowMenu(MenuState.Battle);
 	}
 
 	private void HandleTargetSelection()
@@ -678,6 +685,7 @@ public partial class BattleManager : Node
 		CurrentEnemyTarget = -1;
 		CurrentPartyMemberTarget = -1;
 		CurrentPartyMember++;
+		SelectedAction = null;
 		if (CurrentPartyMember >= CurrentParty.Count)
 		{
 			BattleLogManager.Instance.ClearBattleLog();
@@ -685,7 +693,10 @@ public partial class BattleManager : Node
 			SetPhase(BattlePhase.PreCommand);
 		}
 		else
+		{
+			MenuManager.Instance.ShowMenu(MenuState.Battle);
 			SetPhase(BattlePhase.PlayerCommand);
+		}
 	}
 
 	private async void HandleCommandExecute()
@@ -769,6 +780,7 @@ public partial class BattleManager : Node
 					if (component.HasFollowup)
 					{
 						component.FadeInFollowups(Energy);
+						FollowupActive = true;
 					}
 				}
 			}
@@ -784,7 +796,7 @@ public partial class BattleManager : Node
 
 	private bool HandleFollowup(InputDirection direction)
 	{
-		if (Energy < 3 || ForceHideFollowup || !EnergyBar.Visible || FollowupSelected)
+		if (Energy < 3 || !FollowupActive || ForceHideFollowup || !EnergyBar.Visible || FollowupSelected)
 			return false;
 
 		PartyMemberComponent current = CurrentParty.First(x => x.Actor == Commands[CommandIndex].Actor);
@@ -809,7 +821,7 @@ public partial class BattleManager : Node
 		}
 		else
 		{
-			if (current.Position == 3 && UseBasilFollowups)
+			if (current.Position == 2 && UseBasilFollowups)
 				basil = true;
 
 			if (!basil)
@@ -856,7 +868,7 @@ public partial class BattleManager : Node
 				x.Actor.Heal(heal);
 				x.Actor.HealJuice(juice);
 				SpawnDamageNumber(heal, x.Actor.CenterPoint, DamageType.Heal);
-				SpawnDamageNumber(juice, x.Actor.CenterPoint + new Vector2(0, 50), DamageType.JuiceGain);
+				SpawnDamageNumber(juice, x.Actor.CenterPoint, DamageType.JuiceGain);
 			}
 		});
 		Enemies.ForEach(x =>
@@ -983,10 +995,7 @@ public partial class BattleManager : Node
 
 		foreach (StatModifier mod in self.StatModifiers.Values)
 		{
-			if (mod is DamageStatModifier damageMod)
-			{
-				damageMod.OverrideDamage(ref finalDamage, self, target);
-			}
+			mod.OverrideDamage(ref finalDamage, self, target, true);
 		}
 
 		// this could (should) be moved out of here
@@ -997,10 +1006,7 @@ public partial class BattleManager : Node
 
 		foreach (StatModifier mod in target.StatModifiers.Values)
 		{
-			if (mod is DamageStatModifier damageMod)
-			{
-				damageMod.OverrideDamage(ref finalDamage, self, target);
-			}
+			mod.OverrideDamage(ref finalDamage, self, target, false);
 		}
 
 		int rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
@@ -1037,7 +1043,7 @@ public partial class BattleManager : Node
 		if (juiceLost > 0)
 		{
 			BattleLogManager.Instance.QueueMessage(self, target, "[target] lost " + juiceLost + " juice...");
-			SpawnDamageNumber(juiceLost, target.CenterPoint + new Vector2(0, 50), DamageType.JuiceLoss);
+			SpawnDamageNumber(juiceLost, target.CenterPoint, DamageType.JuiceLoss);
 		}
 
 		return true;
@@ -1189,15 +1195,21 @@ public partial class BattleManager : Node
 	{
 		DamageNumber dmg = new(damage, type, critical)
 		{
-			Position = position,
 			ZAsRelative = false,
 			ZIndex = 5
 		};
+		while (DamageNumbers.Contains(position))
+		{
+			position.Y += 40;
+		}
+		dmg.Position = position;
 		AddChild(dmg);
+		DamageNumbers.Add(position);
 
 		Task.Delay(TimeSpan.FromSeconds(1.5f)).ContinueWith(_ =>
 		{
 			dmg.CallDeferred(DamageNumber.MethodName.Despawn);
+			DamageNumbers.Remove(position);
 		});
 	}
 

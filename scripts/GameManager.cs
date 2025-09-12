@@ -86,7 +86,7 @@ public partial class GameManager : Node
 			bool followupsDisabled = entry["followupsDisabled"].AsBool();
 			if (!followupsDisabled)
 			{
-				if (UseBasilFollowups && position == 3)
+				if (UseBasilFollowups && position == 2)
 					followup = Followups[4];
 				else
 					followup = Followups[position];
@@ -176,11 +176,11 @@ public partial class GameManager : Node
 				card.Position = new Vector2(20, 5);
 				break;
 			case 2:
-				card.Position = new Vector2(506, 5);
+                card.Position = new Vector2(506, 306);
 				break;
 			case 3:
-				card.Position = new Vector2(506, 306);
-				break;
+                card.Position = new Vector2(506, 5);
+                break;
 		}
 		PartyMemberComponent component = new();
 		card.AddChild(component);

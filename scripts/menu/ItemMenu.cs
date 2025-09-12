@@ -12,7 +12,8 @@ public partial class ItemMenu : Menu
 	private List<Vector2I> Positions = [new Vector2I(170, 435), new Vector2I(340, 435), new Vector2I(170, 457), new Vector2I(340, 457)];
 
 	private Vector2I GridSize = new(2, 2);
-	public void Populate(bool toys)
+
+    public void Populate(bool toys)
 	{
 		Items.Clear();
 		Items.AddRange(toys ? BattleManager.Instance.GetToys() : BattleManager.Instance.GetSnacks());
@@ -86,6 +87,6 @@ public partial class ItemMenu : Menu
 	{
 		if (Empty) return;
 		Item selected = DisplayedItems[CursorIndex].Item1;
-		BattleManager.Instance.OnSelectItem(selected);
+        BattleManager.Instance.OnSelectItem(selected);
 	}
 }

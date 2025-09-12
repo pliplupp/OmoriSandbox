@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public class TierStatModifier : TurnStatModifier
+public class TierStatModifier : StatModifier
 {
     private int Tier;
     private readonly int MaxTier;
@@ -9,11 +9,22 @@ public class TierStatModifier : TurnStatModifier
     public string FailureMessage { get; private set; }
 
     /// <summary>
-    /// Represents a tiered stat bonus with a turn counter. Defaults to starting at tier 1 and 6 turns remaining.
+    /// Represents a tiered stat bonus with no turn counter. Defaults to starting at tier 1.
+    /// Use <see cref="WithTier(int)"/> to modify the starting value.
+    /// </summary>
+    /// <param name="bonuses">A list of stat bonuses. Each index of is list is mapped to the stat to provide at that tier.</param>
+    public TierStatModifier(params StatBonus[] bonuses) : base(bonuses)
+    {
+        Tier = 1;
+        MaxTier = bonuses.Length;
+    }
+
+    /// <summary>
+    /// Represents a tiered stat bonus with a turn counter. Defaults to starting at tier 1.
     /// Use <see cref="WithTier(int)"/> and <see cref="WithTurnsLeft(int)"/> to modify these starting values.
     /// </summary>
     /// <param name="bonuses">A list of stat bonuses. Each index of is list is mapped to the stat to provide at that tier.</param>
-    public TierStatModifier(StatBonus[] bonuses) : base(bonuses)
+    public TierStatModifier(int turns, params StatBonus[] bonuses) : base(turns, bonuses)
     {
         Tier = 1;
         MaxTier = bonuses.Length;

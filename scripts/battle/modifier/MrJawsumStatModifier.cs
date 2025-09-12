@@ -1,11 +1,12 @@
 using System;
 
-public class MrJawsumStatModifier : DamageStatModifier
+public class MrJawsumStatModifier : StatModifier
 {
-    public MrJawsumStatModifier(float damageMultiplier, params StatBonus[] bonuses) : base(damageMultiplier, bonuses) { }
-
-    public override void OverrideDamage(ref float damage, Actor attacker, Actor defender)
+    public override void OverrideDamage(ref float damage, Actor attacker, Actor defender, bool isAttacking)
     {
+        if (!isAttacking)
+            return;
+
         if (defender is not MrJawsum jawsum)
             return;
 
@@ -25,6 +26,6 @@ public class MrJawsumStatModifier : DamageStatModifier
                 jawsum.GatorGuys.RemoveAt(i);
             }
         }
-        damage *= DamageMultiplier;
+        damage = 0f;
     }
 }
