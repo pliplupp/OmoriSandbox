@@ -87,22 +87,6 @@ public partial class ItemMenu : Menu
 	{
 		if (Empty) return;
 		Item selected = DisplayedItems[CursorIndex].Item1;
-		BattleManager.Instance.OnSelectItem(selected);
+        BattleManager.Instance.OnSelectItem(selected);
 	}
-
-    public override void RememberCursor(BattleCommand previous)
-	{
-		if (previous.Action is Item item)
-		{
-			int idx = Items.FindIndex(x => x.Item1 == item);
-			if (idx != -1)
-			{
-				Page = idx / 4;
-				UpdatePage();
-				CursorIndex = idx % 4;
-				CursorIndex = Mathf.Min(CursorIndex, DisplayedItems.Count - 1);
-				UpdateCursor();
-			}
-		}
-    }
 }

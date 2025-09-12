@@ -20,7 +20,6 @@ public partial class BattleManager : Node
 	private int CurrentPartyMemberTarget = -1;
 	private List<BattleCommand> Commands = [];
 	private int CommandIndex = -1;
-	public BattleCommand LastSelectedCommand { get; private set; } = null;
 	private Timer Delay;
 	private List<Node2D> DyingEnemies = [];
 	private Godot.Collections.Dictionary<string, int> Items = [];
@@ -241,8 +240,7 @@ public partial class BattleManager : Node
 					}
 					else
 					{
-						BattleAction action = Commands[^1].Action;
-						if (action is Item item)
+						if (Commands[^1].Action is Item item)
 						{
 							// Capitalize the item name for dictionary lookup
 							string name = item.Name.Capitalize();
@@ -251,15 +249,10 @@ public partial class BattleManager : Node
 							else
 								Items[name]++;
 						}
-						SkillTarget target = action.Target;
-						bool rememberCursor = Commands[^1].Target != null || target == SkillTarget.AllAllies || target == SkillTarget.AllEnemies || target == SkillTarget.AllDeadAllies;
-						if (rememberCursor)
-						{
-							LastSelectedCommand = Commands[^1];
-						}
 						Commands.RemoveAt(Commands.Count - 1);
 						CurrentPartyMember--;
 						AudioManager.Instance.PlaySFX("sys_cancel");
+						MenuManager.Instance.ShowMenu(MenuState.Battle, false);
 						SetPhase(BattlePhase.PlayerCommand);
 					}
 					break;
@@ -267,10 +260,12 @@ public partial class BattleManager : Node
 					AudioManager.Instance.PlaySFX("sys_cancel");
 					CurrentEnemyTarget = -1;
 					CurrentPartyMemberTarget = -1;
+					MenuManager.Instance.ShowMenu(MenuState.Battle, false);
 					SetPhase(BattlePhase.PlayerCommand);
 					break;
 				case BattlePhase.SkillSelection:
 					AudioManager.Instance.PlaySFX("sys_cancel");
+					MenuManager.Instance.ShowMenu(MenuState.Battle, false);
 					SetPhase(BattlePhase.PlayerCommand);
 					break;
 			}
@@ -368,6 +363,7 @@ public partial class BattleManager : Node
 	public void OnFightSelected()
 	{
 		CurrentPartyMember++;
+		MenuManager.Instance.ShowMenu(MenuState.Battle);
 		SetPhase(BattlePhase.PlayerCommand);
 	}
 
@@ -600,7 +596,6 @@ public partial class BattleManager : Node
 		}
 		BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[CurrentPartyMember].Actor.Name.ToUpper() + " do?");
 		MenuManager.Instance.ShowButtons(CurrentParty[CurrentPartyMember].Actor.IsRealWorld);
-		MenuManager.Instance.ShowMenu(MenuState.Battle, LastSelectedCommand);
 	}
 
 	private void HandleTargetSelection()
@@ -690,7 +685,6 @@ public partial class BattleManager : Node
 		CurrentEnemyTarget = -1;
 		CurrentPartyMemberTarget = -1;
 		CurrentPartyMember++;
-		LastSelectedCommand = null;
 		SelectedAction = null;
 		if (CurrentPartyMember >= CurrentParty.Count)
 		{
@@ -699,7 +693,10 @@ public partial class BattleManager : Node
 			SetPhase(BattlePhase.PreCommand);
 		}
 		else
+		{
+			MenuManager.Instance.ShowMenu(MenuState.Battle);
 			SetPhase(BattlePhase.PlayerCommand);
+		}
 	}
 
 	private async void HandleCommandExecute()
@@ -859,7 +856,6 @@ public partial class BattleManager : Node
 
 	private void EndOfTurn()
 	{
-		LastSelectedCommand = null;
 		CheckBattleOver();
 		// tick down stat turn timers
 		CurrentParty.ForEach(x =>

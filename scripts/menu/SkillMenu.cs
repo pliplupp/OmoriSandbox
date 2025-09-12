@@ -29,16 +29,11 @@ public partial class SkillMenu : Menu
         if (SkillLabels.All(x => x.Text == ""))
         {
 			CursorPositions = Positions.GetRange(0, 1);
-			CursorIndex = 0;
-			UpdateCursor();
             Empty = true;
             return;
         }
 		Empty = false;
-        CursorIndex = 0;
 		CursorPositions = Positions.GetRange(0, Skills.Count);
-		UpdateCursor();
-        ShowSkillInfo();
 	}
 	
 	private void ShowSkillInfo()
@@ -71,16 +66,9 @@ public partial class SkillMenu : Menu
 		BattleManager.Instance.OnSelectSkill(selected);
 	}
 
-	public override void RememberCursor(BattleCommand previous)
+	public override void OnOpen(bool reset)
 	{
-		if (Empty) return;
-		if (previous.Action is Skill skill)
-		{
-			int idx = Skills.FindIndex(x => x.Name == skill.Name);
-			if (idx != -1)
-				CursorIndex = idx;
-			UpdateCursor();
-			ShowSkillInfo();
-		}
+		base.OnOpen(reset);
+		ShowSkillInfo();
     }
 }

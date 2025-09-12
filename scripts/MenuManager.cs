@@ -51,7 +51,7 @@ public partial class MenuManager : Node
 		}
 	}
 
-	public void ShowMenu(MenuState state, BattleCommand previous = null)
+	public void ShowMenu(MenuState state, bool reset = true)
 	{
 		if (CurrentState != MenuState.None)
 		{
@@ -61,18 +61,15 @@ public partial class MenuManager : Node
 		CurrentState = state;
 		if (CurrentState == MenuState.None)
 		{
-            CurrentMenu = null;
-            foreach (Menu m in Menus.Values)
-                m.OnClose();
-            Cursor.Visible = false;
-            MoveEnergyBarDown();
+			CurrentMenu = null;
+			foreach (Menu m in Menus.Values)
+				m.OnClose();
+			Cursor.Visible = false;
+			MoveEnergyBarDown();
 			return;
-        }
+		}
 
 		CurrentMenu = Menus[CurrentState];
-		Cursor.Visible = true;
-		CurrentMenu.OnOpen();
-		MoveEnergyBarUp();
 
 		if (CurrentMenu is SkillMenu skill)
 		{
@@ -83,9 +80,10 @@ public partial class MenuManager : Node
 			item.Populate(CurrentState == MenuState.Toy);
 		}
 
-		if (previous != null)
-			CurrentMenu.RememberCursor(previous);
-    }
+		Cursor.Visible = true;
+		CurrentMenu.OnOpen(reset);
+		MoveEnergyBarUp();
+	}
 
 	public override void _Process(double delta)
 	{
@@ -100,7 +98,7 @@ public partial class MenuManager : Node
 			else if (Input.IsActionJustPressed("MenuRight"))
 				CurrentMenu.OnInput(Vector2I.Right);
 		}
-    }
+	}
 
 	public void Select()
 	{

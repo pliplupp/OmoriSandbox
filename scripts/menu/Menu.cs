@@ -34,12 +34,12 @@ public abstract partial class Menu : Sprite2D
     }
 
     protected abstract void OnSelect();
-    public virtual void OnOpen() 
+    public virtual void OnOpen(bool reset) 
     { 
         Show();
-        CursorIndex = 0;
-        UpdateCursor();
+        if (reset)
+            CursorIndex = 0;
+        UpdateCursor(); 
     }
     public virtual void OnClose() { Hide(); }
-    public virtual void RememberCursor(BattleCommand previous) { }
 }
