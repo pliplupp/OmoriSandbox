@@ -14,7 +14,6 @@ public class LostSproutMole : Enemy
     public override BattleCommand ProcessAI()
 	{
 		int roll;
-		Actor target = BattleManager.Instance.GetRandomAlivePartyMember();
 		switch (CurrentState)
 		{
 			case "happy":
@@ -51,11 +50,11 @@ public class LostSproutMole : Enemy
 				goto run;
 
 		}
-		attack:
-		return new BattleCommand(this, target, Skills["LSMAttack"]);
-		nothing:
-		return new BattleCommand(this, target, Skills["LSMDoNothing"]);
-		run:
-		return new BattleCommand(this, target, Skills["LSMRunAround"]);
+	attack:
+		return new BattleCommand(this, SelectTarget(), Skills["LSMAttack"]);
+	nothing:
+		return new BattleCommand(this, null, Skills["LSMDoNothing"]);
+	run:
+		return new BattleCommand(this, SelectTarget(), Skills["LSMRunAround"]);
 	}
 }

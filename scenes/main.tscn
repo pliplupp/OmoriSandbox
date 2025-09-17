@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3 uid="uid://dnxcj20hgcsj8"]
+[gd_scene load_steps=34 format=3 uid="uid://dnxcj20hgcsj8"]
 
 [ext_resource type="PackedScene" uid="uid://dxm1fg4428tk" path="res://scenes/main_menu.tscn" id="1_yq6so"]
 [ext_resource type="PackedScene" uid="uid://b8h6qs361gmp5" path="res://scenes/omori_followup.tscn" id="4_muem4"]
@@ -29,6 +29,8 @@
 [ext_resource type="Script" uid="uid://c3w7m65ic8go4" path="res://scripts/CursorBounce.cs" id="19_0ld40"]
 [ext_resource type="Script" uid="uid://co38b7eed26qs" path="res://scripts/menu/SkillMenu.cs" id="19_og1vs"]
 [ext_resource type="Script" uid="uid://bnnng1lk81pyg" path="res://scripts/menu/ItemMenu.cs" id="21_2wyq8"]
+[ext_resource type="Script" uid="uid://clg2gcav7pm8q" path="res://scripts/DialogueManager.cs" id="22_5q0nq"]
+[ext_resource type="Texture2D" uid="uid://xnt03w7xslfi" path="res://assets/system/battle_speech_tail.png" id="22_qkpxi"]
 [ext_resource type="Script" uid="uid://brg8pn4xipyww" path="res://scripts/EnergyDots.cs" id="24_tel4y"]
 [ext_resource type="Material" uid="uid://duiu3jck554il" path="res://assets/mask_shader.tres" id="30_fv21b"]
 
@@ -125,7 +127,7 @@ text = "0"
 layout_mode = 2
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 10
-text = "OmoriSandbox v0.6.1"
+text = "OmoriSandbox v0.7.0"
 
 [node name="FullScreenEffects" type="Node2D" parent="BattleCanvas/UI"]
 
@@ -154,6 +156,12 @@ position = Vector2(320, 243.5)
 sprite_frames = ExtResource("15_vxglm")
 frame = 3
 frame_progress = 0.0638822
+
+[node name="Photograph" type="ColorRect" parent="BattleCanvas/UI/FullScreenEffects"]
+visible = false
+z_index = -4
+offset_right = 640.0
+offset_bottom = 480.0
 
 [node name="Battleback" type="TextureRect" parent="BattleCanvas/UI"]
 z_index = -100
@@ -198,6 +206,50 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 24
+
+[node name="DialogueBox" type="Node2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("Text", "SpeakerSprite", "Cursor")]
+visible = false
+position = Vector2(320, 300)
+script = ExtResource("22_5q0nq")
+Text = NodePath("Text")
+SpeakerSprite = NodePath("SpeakerArrow")
+Cursor = NodePath("Cursor")
+
+[node name="Text" type="Label" parent="BattleCanvas/UI/DialogueBox"]
+offset_left = -166.0
+offset_top = 9.0
+offset_right = 162.0
+offset_bottom = 99.0
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("10_choun")
+theme_override_font_sizes/font_size = 28
+
+[node name="TextureRect" type="TextureRect" parent="BattleCanvas/UI/DialogueBox"]
+z_index = -1
+offset_left = -180.0
+offset_right = 182.0
+offset_bottom = 110.0
+texture = ExtResource("9_85g3d")
+
+[node name="TextureRect2" type="TextureRect" parent="BattleCanvas/UI/DialogueBox"]
+z_index = -1
+offset_left = -180.0
+offset_right = 182.0
+offset_bottom = 88.0
+texture = ExtResource("9_85g3d")
+flip_v = true
+
+[node name="SpeakerArrow" type="Sprite2D" parent="BattleCanvas/UI/DialogueBox"]
+visible = false
+modulate = Color(0.870588, 0.870588, 0.870588, 1)
+position = Vector2(0, -2.5)
+texture = ExtResource("22_qkpxi")
+
+[node name="Cursor" type="Sprite2D" parent="BattleCanvas/UI/DialogueBox"]
+visible = false
+position = Vector2(145, 90)
+texture = ExtResource("5_85g3d")
+script = ExtResource("19_0ld40")
 
 [node name="Energy" type="Sprite2D" parent="BattleCanvas/UI"]
 visible = false

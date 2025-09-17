@@ -26,6 +26,8 @@ public class StatModifier
         MaxTurns = TurnsLeft;
     }
 
+    public virtual void OnAdd() { }
+
     public virtual void ApplyStats(ref Stats stats)
     {
         // base class simply applies all stat bonuses to the provided stats

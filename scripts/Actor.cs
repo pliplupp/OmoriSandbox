@@ -85,6 +85,7 @@ public abstract class Actor
 				return;
 			}
 			StatModifiers.Add(modifier, mod);
+			mod.OnAdd();
 			GD.Print("Added modifier " + modifier + " to " + Name);
 			if (mod is TierStatModifier t)
 				ShowStatMessage(t.SuccessMessage);
@@ -114,6 +115,7 @@ public abstract class Actor
 		t.SetTier(tier);
 		t.SetTurnsLeft(turns);
 		StatModifiers.Add(modifier, t);
+		t.OnAdd();
 		GD.Print("Added modifier " + modifier + " to " + Name);
 		ShowStatMessage(t.SuccessMessage);
 	}
@@ -121,6 +123,10 @@ public abstract class Actor
 	public void RemoveStatModifier(string modifier)
 	{
 		StatModifiers.Remove(modifier);
+	}
+	public void RemoveAllStatModifiers()
+	{
+		StatModifiers.Clear();
 	}
 
 	private void ShowStatMessage(string message)

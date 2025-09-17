@@ -14,6 +14,7 @@ public partial class AnimationManager : Node2D
 	private AnimatedSprite2D ReleaseEnergyBasil;
 	private AnimatedSprite2D RedHands;
 	private AnimatedSprite2D FlowerCrown;
+	private ColorRect Photograph;
 	private Node2D FullScreenEffectNode;
 
 	private Dictionary<int, RPGMAnimatedSprite> Animations = [];
@@ -37,6 +38,7 @@ public partial class AnimationManager : Node2D
 		ReleaseEnergyBasil = GetNode<AnimatedSprite2D>("../../UI/FullScreenEffects/ReleaseEnergyBasil");
 		RedHands = GetNode<AnimatedSprite2D>("../../UI/FullScreenEffects/RedHands");
 		FlowerCrown = GetNode<AnimatedSprite2D>("../../UI/FullScreenEffects/FlowerCrown");
+		Photograph = GetNode<ColorRect>("../../UI/FullScreenEffects/Photograph");
 
 		string data = FileAccess.GetFileAsString("res://animations/animations.json");
 		List<AnimationInfo> animationData = JsonConvert.DeserializeObject<List<AnimationInfo>>(data);
@@ -172,7 +174,7 @@ public partial class AnimationManager : Node2D
 
 	public void PlayScreenAnimation(int id, bool targetsEnemy)
 	{
-		StartAnimation(id, new Vector2(320, 240), targetsEnemy);
+		StartAnimation(id, new Vector2(315, 240), targetsEnemy);
 	}
 
 	public Task WaitForAnimation(int id, Actor target, bool targetsEnemy = true)
@@ -360,6 +362,18 @@ public partial class AnimationManager : Node2D
 		effectTween.TweenCallback(Callable.From(Finished));
 
 		return tcs.Task;
+	}
+
+	public void PlayPhotograph()
+	{
+		Photograph.Visible = true;
+		Tween tween = GetTree().CreateTween();
+		tween.TweenProperty(Photograph, "modulate:a", 0f, 1f);
+		tween.TweenCallback(Callable.From(() =>
+		{
+			Photograph.Modulate = Colors.White;
+			Photograph.Visible = false;
+		}));
 	}
 
 	private void StartAnimation(int id, Vector2 position, bool targetsEnemy)

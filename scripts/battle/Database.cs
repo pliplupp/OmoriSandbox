@@ -757,6 +757,28 @@ public class Database
 			}
 		);
 
+		Skills["Photograph"] = new Skill(
+			name: "PHOTOGRAPH",
+			description: "Acts first, reducing HIT RATE for all foes for 1\nturn. All foes target BASIL for 1 turn. Cost: 50",
+			target: SkillTarget.AllEnemies,
+			cost: 50,
+			effect: async (self, target) =>
+			{
+				AudioManager.Instance.PlaySFX("SYS_tag1", volume: 0.9f);
+				GameManager.Instance.AnimationManager.PlayPhotograph();
+				await Task.Delay(500);
+				self.AddStatModifier("Taunt");
+				foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
+				{
+					GameManager.Instance.AnimationManager.PlayAnimation(219, enemy);
+					enemy.AddStatModifier("PhotographHitRateDown");
+				}
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] takes a picture.");
+				BattleLogManager.Instance.QueueMessage("The foe's HIT RATE fell!");
+			},
+			goesFirst: true
+		);
+
 		Skills["HerbalRemedy"] = new Skill(
 			name: "HERBAL REMEDY",
 			description: "Heals a friend for 75% of their HEART. Also\nincreases ENERGY by 1. Cost: 35",
@@ -1013,6 +1035,22 @@ public class Database
 					BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2.5f - target.CurrentStats.DEF; }, false);
 				self.CurrentHP = (int)Math.Max(1f, self.CurrentHP - Math.Floor(self.CurrentStats.MaxHP * 0.2));
 			}
+		);
+
+		Skills["Counter"] = new Skill(
+			name: "COUNTER",
+			description: "All foes target AUBREY for 1 turn.\nIf AUBREY is attacked, she attacks. Cost: 5",
+			target: SkillTarget.Self,
+			cost: 5,
+			effect: async (self, target) =>
+			{
+				AudioManager.Instance.PlaySFX("BA_protect", volume: 0.9f);
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] readies her bat!");
+				self.AddStatModifier("Taunt");
+				self.AddStatModifier("AubreyCounter");
+				await Task.CompletedTask;
+			},
+			goesFirst: true
 		);
 
 		Skills["PowerHit"] = new Skill(
@@ -1449,6 +1487,24 @@ public class Database
 			}
 		);
 
+		Skills["CantCatchMe"] = new Skill(
+			name: "CAN'T CATCH ME",
+			description: "Attracts attention and reduces all foes'\nHIT RATE for the turn. Cost: 50",
+			target: SkillTarget.Self,
+			cost: 50,
+			effect: async (self, target) =>
+			{
+				AudioManager.Instance.PlaySFX("BA_dodge", volume: 0.9f);
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] starts taunting all the foes!");
+				BattleLogManager.Instance.QueueMessage(self, target, "All foes' HIT RATE fell for the turn!");
+				self.AddStatModifier("Taunt");
+				foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
+					enemy.AddStatModifier("HitRateDown");
+				await Task.CompletedTask;
+			},
+			goesFirst: true
+		);
+
 		Skills["Curveball"] = new Skill(
 			name: "CURVEBALL",
 			description: "Makes a foe feel a random EMOTION. Deals\nextra damage to foes with EMOTION. Cost: 20",
@@ -1854,6 +1910,65 @@ public class Database
 				if (target.CurrentState == "neutral")
 					BattleLogManager.Instance.QueueMessage(target.Name.ToUpper() + " calms down...");
 			}
+		);
+		Skills["Charm"] = new Skill(
+			name: "CHARM",
+			description: "Acts first, a foe targets HERO for 1 turn.\nCost: 10",
+			target: SkillTarget.Enemy,
+			cost: 10,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] draws [target]'s\nattention.");
+				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(90, false);
+				target.AddStatModifier("Charm");
+				await Task.Delay(2000);
+			},
+			goesFirst: true
+		);
+		Skills["Enchant"] = new Skill(
+			name: "ENCHANT",
+			description: "Acts first. A foe targets HERO for 1 turn\nand becomes HAPPY. Cost: 15",
+			target: SkillTarget.Enemy,
+			cost: 15,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] draws the foe's attention\nwith a smile.");
+				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(90, false);
+				target.AddStatModifier("Charm");
+				MakeHappy(target);
+				await Task.Delay(2000);
+			},
+			goesFirst: true
+		);
+		Skills["Captivate"] = new Skill(
+			name: "CAPTIVATE",
+			description: "Acts first. All foes target HERO for 1 turn.\nCost: 20",
+			target: SkillTarget.Self,
+			cost: 20,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] draws the foe's attention.");
+				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(91, false);
+				self.AddStatModifier("Taunt");
+				await Task.Delay(1000);
+			},
+			goesFirst: true
+		);
+		Skills["Mesmerize"] = new Skill(
+			name: "MESMERIZE",
+			description: "Acts first. All foes target HERO for 1 turn.\nHERO takes less damage. Cost: 30",
+			target: SkillTarget.Self,
+			cost: 30,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] draws the foe's attention.");
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] prepares to block enemy attacks.");
+				await GameManager.Instance.AnimationManager.WaitForScreenAnimation(92, false);
+				self.AddStatModifier("Taunt");
+				self.AddStatModifier("Guard");
+				await Task.Delay(1000);
+			},
+			goesFirst: true
 		);
 		Skills["SpicyFood"] = new Skill(
 			name: "SPICY FOOD",
@@ -2348,7 +2463,6 @@ public class Database
 				GameManager.Instance.AnimationManager.PlayScreenAnimation(200, false);
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] runs around!");
 				await Task.Delay(100);
-				target = BattleManager.Instance.GetRandomAlivePartyMember();
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false);
 				await Task.Delay(917);
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false);
@@ -2874,7 +2988,6 @@ public class Database
 			{
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] gets rough.");
 				await Task.Delay(100);
-				target = BattleManager.Instance.GetRandomAlivePartyMember();
 				GameManager.Instance.AnimationManager.PlayAnimation(123, target, false);
 				BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF; }, false, neverCrit: true);
 				await Task.Delay(917);
@@ -3027,6 +3140,11 @@ public class Database
 		Modifiers.Add("SpaceExEnraged", () => new EmotionLockStatModifier("angry", new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 0.5f)));
 		Modifiers.Add("SpaceExFurious", () => new EmotionLockStatModifier("angry", new StatBonus(StatType.ATK, 2f), new StatBonus(StatType.DEF, 0.3f)));
 		Modifiers.Add("MrJawsumBarrier", () => new MrJawsumStatModifier());
+		Modifiers.Add("Taunt", () => new StatModifier(1));
+		Modifiers.Add("AubreyCounter", () => new AubreyCounterModifier(1));
+		Modifiers.Add("HitRateDown", () => new StatModifier(2, new StatBonus(StatType.HIT, -55)));
+		Modifiers.Add("PhotographHitRateDown", () => new StatModifier(1, new StatBonus(StatType.HIT, -25)));
+		Modifiers.Add("Charm", () => new CharmStatModifier(1));
 		#endregion
 
 		#region SNACKS
@@ -3086,7 +3204,7 @@ public class Database
 		AddGroupJuiceSnack("Dino Smoothie", "Berry smoothie in a dino-shaped cup.\nHeals 150 JUICE to all friends.", 150);
 
 		AddComboSnack("Tomato", "You say tomato, I say tomato.\nHeals 100 HEART and 50 JUICE.", 100, 50);
-		AddComboSnack("Combo Meal", "What more could you ask for?", 250, 100);
+		AddComboSnack("Combo Meal", "What more could you ask for?\nHeals 250 HEART and 100 JUICE.", 250, 100);
 
 		Items["Grape Soda"] = new Item(
 			name: "GRAPE SODA",
@@ -3760,8 +3878,8 @@ public class Database
 				   GameManager.Instance.AnimationManager.PlayAnimation(212, member.Actor, false);
 				   member.Actor.Heal(heal);
 				   BattleManager.Instance.SpawnDamageNumber(heal, member.Actor.CenterPoint, DamageType.Heal);
-                   BattleLogManager.Instance.QueueMessage(self, member.Actor, $"[target] recovered {heal} HEART!");
-               }
+				   BattleLogManager.Instance.QueueMessage(self, member.Actor, $"[target] recovered {heal} HEART!");
+			   }
 			   await Task.CompletedTask;
 		   }
 	   );
@@ -3787,8 +3905,8 @@ public class Database
 				   GameManager.Instance.AnimationManager.PlayAnimation(213, member.Actor, false);
 				   member.Actor.HealJuice(total);
 				   BattleManager.Instance.SpawnDamageNumber(total, member.Actor.CenterPoint, DamageType.JuiceGain);
-                   BattleLogManager.Instance.QueueMessage(self, member.Actor, $"[target] recovered {total} JUICE!");
-               }
+				   BattleLogManager.Instance.QueueMessage(self, member.Actor, $"[target] recovered {total} JUICE!");
+			   }
 			   await Task.CompletedTask;
 		   }
 	   );

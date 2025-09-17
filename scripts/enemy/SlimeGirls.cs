@@ -19,8 +19,8 @@ public class SlimeGirls : Enemy
 	public override BattleCommand ProcessAI()
 	{
 		int roll;
-		Actor target = BattleManager.Instance.GetRandomAlivePartyMember();
-		switch (CurrentState)
+		Actor target = SelectTarget();
+        switch (CurrentState)
 		{
 			case "happy":
 				roll = GameManager.Instance.Random.RandiRange(0, 100);

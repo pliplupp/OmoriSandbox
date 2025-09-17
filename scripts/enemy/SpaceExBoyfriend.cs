@@ -21,7 +21,7 @@ public class SpaceExBoyfriend : Enemy
     public override BattleCommand ProcessAI()
     {
         int roll;
-        Actor target = BattleManager.Instance.GetRandomAlivePartyMember();
+        Actor target = SelectTarget();
         switch (CurrentState)
         {
             case "se_furious":

@@ -324,12 +324,14 @@ public partial class BattleManager : Node
 			{
 				if (direction == InputDirection.Right)
 				{
+					AudioManager.Instance.PlaySFX("SYS_move");
 					CurrentEnemyTarget++;
 					if (CurrentEnemyTarget >= Enemies.Count)
 						CurrentEnemyTarget = 0;
 				}
 				else if (direction == InputDirection.Left)
 				{
+					AudioManager.Instance.PlaySFX("SYS_move");
 					CurrentEnemyTarget--;
 					if (CurrentEnemyTarget < 0)
 						CurrentEnemyTarget = Enemies.Count - 1;
@@ -505,6 +507,7 @@ public partial class BattleManager : Node
 						if (x.Actor.CurrentHP == 0 && x.Actor.CurrentState != "toast")
 						{
 							x.Actor.SetState("toast", true);
+							x.Actor.RemoveAllStatModifiers();
 							AudioManager.Instance.PlaySFX("SYS_you died_2", 1.2f);
 						}
 					});
@@ -578,7 +581,7 @@ public partial class BattleManager : Node
 		else
 			BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " do?");
 		MenuManager.Instance.ShowButtons(CurrentParty[0].Actor.IsRealWorld);
-		MenuManager.Instance.ShowMenu(MenuState.Party);
+		MenuManager.Instance.ShowMenu(MenuState.None);
 	}
 
 	private void HandlePlayerCommand()
@@ -724,6 +727,7 @@ public partial class BattleManager : Node
 		{
 			// overwrite the empty enemy skill with an actual command
 			currentAction = enemy.ProcessAI();
+			Commands[CommandIndex] = currentAction;
 		}
 
 		BattleLogManager.Instance.ClearBattleLog();
@@ -768,7 +772,7 @@ public partial class BattleManager : Node
 					currentAction.Actor.CurrentJuice -= skill.Cost;
 				}
 			}
-			if (currentAction.Actor is PartyMember && currentAction.Action.Name.EndsWith("Attack"))
+			if (currentAction.Actor is PartyMember && currentAction.Action.Name.EndsWith("Attack") && !(currentAction.Actor.CurrentState == "afraid" || currentAction.Actor.CurrentState == "stressed"))
 			{
 				if (ForceHideFollowup)
 				{
@@ -935,7 +939,7 @@ public partial class BattleManager : Node
 			MenuButtonContainer.Visible = true;
 		}
 	}
-
+	
 	public bool Damage(Actor self, Actor target, Func<float> damageFunc, bool neverMiss = true, float variance = 0.2f, bool guaranteeCrit = false, bool neverCrit = false)
 	{
 		if (!neverMiss)
@@ -952,7 +956,7 @@ public partial class BattleManager : Node
 		}
 		float baseDamage = damageFunc();
 		float damageVariance = GameManager.Instance.Random.RandfRange(1f - variance, 1f + variance);
-		bool critical = self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit;
+		bool critical = self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit || target.HasStatModifier("Tickle");
 		float finalDamage = baseDamage * damageVariance;
 		string selfState = self.CurrentState;
 		string targetState = target.CurrentState;
@@ -968,9 +972,9 @@ public partial class BattleManager : Node
 		}
 
 		finalDamage = CalculateEmotionModifiers(selfState, targetState, finalDamage, out int effectiveness);
-		if ((critical || target.HasStatModifier("Tickle")) && !neverCrit)
+		if (critical && !neverCrit)
 		{
-			finalDamage = (finalDamage * 1.5f) + 2;
+			finalDamage *= 1.5f;
 			BattleLogManager.Instance.QueueMessage("IT HIT RIGHT IN THE HEART!");
 			AudioManager.Instance.PlaySFX("BA_CRITICAL_HIT", volume: 2f);
 		}
@@ -995,18 +999,27 @@ public partial class BattleManager : Node
 
 		foreach (StatModifier mod in self.StatModifiers.Values)
 		{
+			// omori calculates flex damage after everything else
+			if (mod is FlexStatModifier)
+				continue;
 			mod.OverrideDamage(ref finalDamage, self, target, true);
-		}
-
-		// this could (should) be moved out of here
-		if (self.HasStatModifier("Flex"))
-		{
-			self.RemoveStatModifier("Flex");
 		}
 
 		foreach (StatModifier mod in target.StatModifiers.Values)
 		{
 			mod.OverrideDamage(ref finalDamage, self, target, false);
+		}
+
+		// critical hits always do at least 2 damage
+		if (critical && !neverCrit)
+			finalDamage += 2;
+
+		// now calculate flex damage
+		if (self.HasStatModifier("Flex"))
+		{
+			StatModifier mod = self.StatModifiers["Flex"];
+			mod.OverrideDamage(ref finalDamage, self, target, true);
+			self.RemoveStatModifier("Flex");
 		}
 
 		int rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
@@ -1246,6 +1259,13 @@ public partial class BattleManager : Node
 	public List<Enemy> GetAllEnemies()
 	{
 		return Enemies.Select(x => x.Actor).ToList();
+	}
+
+	public BattleCommand GetCurrentCommand()
+	{
+		if (CommandIndex < 0 || CommandIndex >= Commands.Count)
+			return null;
+		return Commands[CommandIndex];
 	}
 
 	/// <summary>

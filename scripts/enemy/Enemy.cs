@@ -1,4 +1,6 @@
 using Godot;
+using System.Collections.Generic;
+using System.Linq;
 
 public abstract class Enemy : Actor
 {
@@ -31,6 +33,20 @@ public abstract class Enemy : Actor
             }
             GD.PrintErr("Unknown skill: " + s);
         }
+    }
+
+    protected virtual PartyMember SelectTarget()
+    {
+        if (HasStatModifier("Charm"))
+            return (StatModifiers["Charm"] as CharmStatModifier).CharmedBy;
+        List<PartyMemberComponent> members = BattleManager.Instance.GetAlivePartyMembers();
+        List<PartyMemberComponent> taunting = members.FindAll(x => x.Actor.HasStatModifier("Taunt"));
+        if (taunting.Count == 0)
+        {
+            // if nobody is taunting, pick a random target
+            return members[GameManager.Instance.Random.RandiRange(0, members.Count - 1)].Actor;
+        }
+        return taunting[GameManager.Instance.Random.RandiRange(0, taunting.Count - 1)].Actor;
     }
 
     protected abstract Stats Stats { get; }
