@@ -11,42 +11,32 @@ public class GatorGuyJawsum : Enemy
     }
     public override BattleCommand ProcessAI()
     {
-        int roll;
         switch (CurrentState)
         {
             case "happy":
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 31)
+                if (Roll() < 31)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 31)
+                if (Roll() < 31)
                     goto nothing;
                 goto rough;
             case "sad":
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 26)
+                if (Roll() < 26)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 41)
+                if (Roll() < 41)
                     goto nothing;
                 goto rough;
             case "angry":
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 46)
+                if (Roll() < 46)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 26)
+                if (Roll() < 26)
                     goto nothing;
                 goto rough;
             default:
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 36)
+                if (Roll() < 36)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 26)
+                if (Roll() < 26)
                     goto nothing;
                 goto rough;
-
         }
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["GGAttack"]);

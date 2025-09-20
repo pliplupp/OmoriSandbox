@@ -12,16 +12,12 @@ public class FearOfSpiders : Enemy
 
     public override BattleCommand ProcessAI()
     {
-        int roll = GameManager.Instance.Random.RandiRange(0, 100);
-        if (roll < 26)
+        if (Roll() < 26)
             return new BattleCommand(this, SelectTarget(), Skills["FOSAttack"]);
-        roll = GameManager.Instance.Random.RandiRange(0, 100);
-        if (roll < 16)
+        if (Roll() < 16)
             return new BattleCommand(this, null, Skills["FOSDoNothing"]);
-        roll = GameManager.Instance.Random.RandiRange(0, 100);
-        if (roll < 19)
+        if (Roll() < 19)
             return new BattleCommand(this, SelectTarget(), Skills["FOSSpinWeb"]);
-        else
-            return new BattleCommand(this, null, Skills["FOSAttackAll"]);
+        return new BattleCommand(this, null, Skills["FOSAttackAll"]);
     }
 }

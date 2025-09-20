@@ -1,3 +1,6 @@
+using System.Linq;
+using System.Threading.Tasks;
+
 public class Hero : PartyMember
 {
     public override string Name => "Hero";
@@ -12,4 +15,12 @@ public class Hero : PartyMember
     public override string[] InvalidStates => ["miserable", "manic", "furious", "stressed"];
 
     public override bool IsRealWorld => false;
+
+    public override async Task OnStartOfBattle()
+    {
+        if (BattleManager.Instance.GetAllPartyMembers().Any(x => x.Actor.Weapon.Name == "Hero's Trophy")) {
+            SetState("sad", true);
+        }
+        await base.OnStartOfBattle();
+    }
 }

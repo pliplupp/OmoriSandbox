@@ -15,7 +15,6 @@ public partial class GameManager : Node
 	[Export] public PackedScene[] Followups;
 
 	public RandomNumberGenerator Random = new();
-	public AnimationManager AnimationManager { get; private set; }
 	public DiscordManager DiscordManager { get; private set; }
 
 	public string CustomDataPath = "user://custom/";
@@ -37,12 +36,10 @@ public partial class GameManager : Node
 	{
 		Instance = this;
 
-		AnimationManager = new();
-		AddChild(AnimationManager);
-
 		DiscordManager = new();
 
-		AudioManager.Instance.Init();
+        AnimationManager.Instance.Init();
+        AudioManager.Instance.Init();
 	}
 
     public override void _ExitTree()
@@ -60,6 +57,9 @@ public partial class GameManager : Node
 		int FollowupTier = data["followupTier"].AsInt32();
 		bool UseBasilFollowups = data["basilFollowups"].AsBool();
 		bool UseBasilReleaseEnergy = data["basilReleaseEnergy"].AsBool();
+		bool DisableDialogue = false;
+		if (data.TryGetValue("disableDialogue", out Variant value))
+			DisableDialogue = value.AsBool();
 
 		string battleback = data["battleback"].AsString();
 		if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback))
@@ -129,6 +129,7 @@ public partial class GameManager : Node
 			enemy.Add(en);
 		}
 
+		DialogueManager.Instance.DialogueDisabled = DisableDialogue;
 		DiscordManager.SetBattling(enemies.Count);
 		BattleManager.Instance.Init(party, enemy, items, FollowupTier, UseBasilFollowups, UseBasilReleaseEnergy);
 	}
@@ -140,7 +141,8 @@ public partial class GameManager : Node
 			child.QueueFree();
 		}
 
-		foreach (Node child in BattlebackParent.GetChildren())
+		// skip the first child as the first child is the FullscreenEffects
+		foreach (Node child in BattlebackParent.GetChildren().Skip(1))
 		{
 			child.QueueFree();
 		}

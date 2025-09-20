@@ -5,7 +5,7 @@ public partial class PartyMenu : Menu
 	public override void _Ready()
 	{
 		Options = ["Fight", "Run"];
-		CursorPositions = [new Vector2I(250, 410), new Vector2I(250, 450)];
+		CursorPositions = [new Vector2I(-125, -20), new Vector2I(-125, 20)];
 	}
 
 	protected override void MoveCursor(Vector2I direction)
@@ -19,7 +19,6 @@ public partial class PartyMenu : Menu
 	{
 		if (CursorIndex == 0)
 		{
-			MenuManager.Instance.ShowMenu(MenuState.Battle);
 			BattleManager.Instance.OnFightSelected();
 			AudioManager.Instance.PlaySFX("SYS_select");        
 		}
@@ -30,4 +29,32 @@ public partial class PartyMenu : Menu
 			AudioManager.Instance.PlaySFX("SYS_select");
 		}
 	}
+
+    public override void MoveUp(bool immediate)
+    {
+        Tween?.Kill();
+        if (immediate)
+        {
+            Position = new Vector2(Position.X, 429);
+        }
+        else
+        {
+            Tween = CreateTween();
+            Tween.TweenProperty(this, "position", new Vector2(Position.X, 429), 0.2f).SetTrans(Tween.TransitionType.Sine);
+        }
+    }
+
+    public override void MoveDown(bool immediate)
+    {
+        Tween?.Kill();
+        if (immediate)
+        {
+            Position = new Vector2(Position.X, 529);
+        }
+        else
+        {
+            Tween = CreateTween();
+            Tween.TweenProperty(this, "position", new Vector2(Position.X, 529), 0.2f).SetTrans(Tween.TransitionType.Sine);
+        }
+    }
 }

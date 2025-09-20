@@ -7,7 +7,7 @@ public partial class BattleMenu : Menu
 	public override void _Ready()
 	{
 		Options = ["Attack", "Skill", "Snack", "Toy"];
-		CursorPositions = [new Vector2I(165, 410), new Vector2I(350, 410), new Vector2I(165, 450), new Vector2I(350, 450)];
+		CursorPositions = [new Vector2I(-155, -20), new Vector2I(35, -20), new Vector2I(-155, 20), new Vector2I(35, 20)];
 	}
 
 	protected override void MoveCursor(Vector2I direction)
@@ -44,4 +44,32 @@ public partial class BattleMenu : Menu
 		}
 		AudioManager.Instance.PlaySFX("SYS_select");
 	}
+
+    public override void MoveUp(bool immediate)
+    {
+        Tween?.Kill();
+        if (immediate)
+        {
+            Position = new Vector2(Position.X, 429);
+        }
+        else
+        {
+            Tween = CreateTween();
+            Tween.TweenProperty(this, "position", new Vector2(Position.X, 429), 0.2f).SetTrans(Tween.TransitionType.Sine);
+        }
+    }
+
+    public override void MoveDown(bool immediate)
+    {
+        Tween?.Kill();
+        if (immediate)
+        {
+            Position = new Vector2(Position.X, 529);
+        }
+        else
+        {
+            Tween = CreateTween();
+            Tween.TweenProperty(this, "position", new Vector2(Position.X, 529), 0.2f).SetTrans(Tween.TransitionType.Sine);
+        }
+    }
 }

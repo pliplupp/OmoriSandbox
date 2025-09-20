@@ -30,13 +30,11 @@ public class AubreyEnemy : Enemy
 
     public override BattleCommand ProcessAI()
     {
-        int roll = GameManager.Instance.Random.RandiRange(0, 100);
-        if (roll < 46)
+        if (Roll() < 46)
         {
             return new BattleCommand(this, SelectTarget(), Skills["AEAttack"]);
         }
-        roll = GameManager.Instance.Random.RandiRange(0, 100);
-        if (roll < 31)
+        if (Roll() < 31)
         {
             return new BattleCommand(this, null, Skills["AEDoNothing"]);
         }

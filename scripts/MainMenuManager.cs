@@ -276,6 +276,7 @@ public partial class MainMenuManager : Node
 			{ "followupTier", (int)FollowupTierSlider.Value },
 			{ "basilFollowups", BasilFollowupsCheckbox.ButtonPressed },
 			{ "basilReleaseEnergy", BasilReleaseEnergyCheckbox.ButtonPressed },
+			{ "disableDialogue", DisableDialogue.ButtonPressed },
 		};
 
 		Godot.Collections.Dictionary<string, int> items = [];
@@ -387,6 +388,9 @@ public partial class MainMenuManager : Node
 			int followupTier = (int)dict["followupTier"];
 			bool basilFollowups = (bool)dict["basilFollowups"];
 			bool basilReleaseEnergy = (bool)dict["basilReleaseEnergy"];
+			bool disableDialogue = false;
+			if (dict.TryGetValue("disableDialogue", out Variant value))
+				disableDialogue = value.AsBool();
 			Godot.Collections.Dictionary<string, int> items = dict["items"].AsGodotDictionary<string, int>();
 			Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>> actors = dict["actors"].AsGodotArray<Godot.Collections.Dictionary<string, Variant>>();
 			Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>> enemies = dict["enemies"].AsGodotArray<Godot.Collections.Dictionary<string, Variant>>();
@@ -407,6 +411,7 @@ public partial class MainMenuManager : Node
 			FollowupTierSlider.Value = followupTier;
 			BasilFollowupsCheckbox.ButtonPressed = basilFollowups;
 			BasilReleaseEnergyCheckbox.ButtonPressed = basilReleaseEnergy;
+			DisableDialogue.ButtonPressed = disableDialogue;
 
 			foreach (var entry in items)
 			{
@@ -654,6 +659,7 @@ public partial class MainMenuManager : Node
 		FollowupTierSlider.Value = 1;
 		BasilFollowupsCheckbox.ButtonPressed = false;
 		BasilReleaseEnergyCheckbox.ButtonPressed = false;
+		DisableDialogue.ButtonPressed = false;
 
 		if (PreviewButton.Text == "Stop")
 		{
@@ -748,6 +754,9 @@ public partial class MainMenuManager : Node
 
 	[Export]
 	private CheckBox BasilReleaseEnergyCheckbox;
+
+	[Export]
+	private CheckBox DisableDialogue;
 
 	[Export]
 	private Button AddItemButton;

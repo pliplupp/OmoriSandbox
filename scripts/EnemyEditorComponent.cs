@@ -35,6 +35,7 @@ public partial class EnemyEditorComponent : Control
 		foreach (string member in Database.GetAllEnemyNames())
 			EnemyDropdown.AddItem(member);
 
+		EnemyDropdown.Selected = EnemyDropdown.GetItemIndex("LostSproutMole");
 		EnemyDropdown.ItemSelected += (idx) => Populate(EnemyDropdown.GetItemText((int)idx));
 		EmotionDropdown.ItemSelected += (idx) => UpdateState(EmotionDropdown.GetItemText((int)idx));
 
@@ -59,9 +60,6 @@ public partial class EnemyEditorComponent : Control
 			QueueFree();
 		};
 
-		// default to Lost Sprout Mole
-		EnemyDropdown.Selected = 0;
-
 		Populate("LostSproutMole");
 	}
 
@@ -80,6 +78,7 @@ public partial class EnemyEditorComponent : Control
 		Populate(name);
 		EnemyDropdown.Selected = EnemyDropdown.GetItemIndex(name);
 		EmotionDropdown.Selected = EmotionDropdown.GetItemIndex(emotion);
+		LayerBox.Value = layer;
 		XPosBox.SetValueNoSignal(position.X);
 		YPosBox.SetValueNoSignal(position.Y);
 		Animator.GlobalPosition = position;

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bhbqjkkq6e8m1"]
+
+[ext_resource type="Texture2D" uid="uid://bcotownqxngls" path="res://assets/pictures/perfect_overlay.png" id="1_fwrby"]
+
+[node name="PerfectheartOverlaySprite" type="Sprite2D"]
+texture = ExtResource("1_fwrby")

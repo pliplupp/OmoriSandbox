@@ -3,43 +3,76 @@ using Godot;
 
 public abstract partial class Menu : Sprite2D
 {
-    [Export] public Sprite2D CursorSprite;
-    protected List<string> Options = [];
-    protected List<Vector2I> CursorPositions = [];
-    protected int CursorIndex = 0;
-    protected bool Empty = false;
+	[Export] protected Sprite2D CursorSprite;
+	protected List<string> Options = [];
+	protected List<Vector2I> CursorPositions = [];
+	protected int CursorIndex = 0;
+	protected bool Empty = false;
+	protected Tween Tween;
 
-    public void OnInput(Vector2I direction)
+	public void OnInput(Vector2I direction)
+	{
+		// kind of a wacky way to do this but I didn't feel like making an enum when I can just use the struct for directions
+		if (direction == Vector2I.Zero)
+			OnSelect();
+		else
+			MoveCursor(direction);
+	}
+
+	protected virtual void MoveCursor(Vector2I direction) {}
+
+	protected virtual void UpdateCursor()
+	{
+		if (CursorPositions.Count > CursorIndex)
+			CursorSprite.Position = CursorPositions[CursorIndex];
+	}
+
+	public Vector2I GetCursorPosition()
+	{
+		if (CursorPositions.Count > CursorIndex)
+			return CursorPositions[CursorIndex];
+		return Vector2I.Zero;
+	}
+
+	protected abstract void OnSelect();
+	public virtual void OnOpen(bool reset) 
+	{ 
+		Show();
+		if (reset)
+			CursorIndex = 0;
+		UpdateCursor();
+	}
+	public virtual void OnClose() 
+	{ 
+		Hide();
+	}
+
+	// TODO: make all menus the same size so these don't have to be overridden
+	public virtual void MoveUp(bool immediate)
+	{
+		Tween?.Kill();
+		if (immediate)
+		{
+			Position = new Vector2(Position.X, 437);
+		}
+		else
+		{
+			Tween = CreateTween();
+			Tween.TweenProperty(this, "position", new Vector2(Position.X, 437), 0.2f).SetTrans(Tween.TransitionType.Sine);
+		}
+	}
+
+    public virtual void MoveDown(bool immediate)
     {
-        // kind of a wacky way to do this but I didn't feel like making an enum when I can just use the struct for directions
-        if (direction == Vector2I.Zero)
-            OnSelect();
+        Tween?.Kill();
+        if (immediate)
+        {
+            Position = new Vector2(Position.X, 537);
+        }
         else
-            MoveCursor(direction);
+        {
+            Tween = CreateTween();
+            Tween.TweenProperty(this, "position", new Vector2(Position.X, 537), 0.2f).SetTrans(Tween.TransitionType.Sine);
+        }
     }
-
-    protected virtual void MoveCursor(Vector2I direction) {}
-
-    protected virtual void UpdateCursor()
-    {
-        if (CursorPositions.Count > CursorIndex)
-            CursorSprite.Position = CursorPositions[CursorIndex];
-    }
-
-    public Vector2I GetCursorPosition()
-    {
-        if (CursorPositions.Count > CursorIndex)
-            return CursorPositions[CursorIndex];
-        return Vector2I.Zero;
-    }
-
-    protected abstract void OnSelect();
-    public virtual void OnOpen(bool reset) 
-    { 
-        Show();
-        if (reset)
-            CursorIndex = 0;
-        UpdateCursor(); 
-    }
-    public virtual void OnClose() { Hide(); }
 }

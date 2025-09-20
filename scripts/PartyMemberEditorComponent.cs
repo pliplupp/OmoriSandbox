@@ -47,6 +47,7 @@ public partial class PartyMemberEditorComponent : Control
 		foreach (string member in Database.GetAllPartyMemberNames())
 			ActorDropdown.AddItem(member);
 
+		ActorDropdown.Selected = ActorDropdown.GetItemIndex("Omori");
 		ActorDropdown.ItemSelected += (idx) => Populate(ActorDropdown.GetItemText((int)idx));
 		EmotionDropdown.ItemSelected += (idx) => UpdateState(EmotionDropdown.GetItemText((int)idx));
 
@@ -72,8 +73,6 @@ public partial class PartyMemberEditorComponent : Control
 			QueueFree();
 		};
 
-		// default to Omori
-		ActorDropdown.Selected = 0;
 		WeaponDropdown.Selected = 0;
 		// charms are optional so we can leave it unselected
 		Populate("Omori");

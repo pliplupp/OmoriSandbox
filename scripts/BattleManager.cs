@@ -35,6 +35,9 @@ public partial class BattleManager : Node
 
 	private bool IsBattling = false;
 
+	// TODO: This is a poor way to do this, should probably be improved
+	private bool ProcessedEndOfTurn = false;
+
 	public static BattleManager Instance { get; private set; }
 
 	// table used for handling selecting a party member target
@@ -148,45 +151,18 @@ public partial class BattleManager : Node
 
 		CallDeferred(MethodName.PreBattle);
 
-		SetPhase(BattlePhase.FightRun);
+		MenuManager.Instance.ShowMenu(MenuState.None, immediate: true);
 
 		IsBattling = true;
 	}
 
-	private void PreBattle()
+	private async void PreBattle()
 	{
-		if (CurrentParty.Any(x => x.Actor.Weapon.Name == "Hero's Trophy"))
-		{
-			foreach (PartyMemberComponent party in CurrentParty)
-			{
-				if (party.Actor is Hero)
-				{
-					party.Actor.SetState("sad", true);
-				}
-			}
-		}
-
-		foreach (PartyMemberComponent party in CurrentParty)
-		{
-			if (party.Actor.Weapon.Name == "LOL Sword")
-			{
-				party.Actor.SetState("happy", true);
-			}
-			party.Actor.Charm?.StartOfBattle(party.Actor);
-		}
-
-		// TODO: add more events for different parts of the battle
+		foreach (PartyMemberComponent p in CurrentParty)
+			await p.Actor.OnStartOfBattle();
 		for (int i = 0; i < Enemies.Count; i++)
-		{
-			if (Enemies[i].Actor is MrJawsum jawsum)
-			{
-				// jawsum always starts with 2 gator guys
-				// this may be configurable in the future
-				jawsum.AddStatModifier("MrJawsumBarrier");
-				jawsum.GatorGuys.Add(SummonEnemy("GatorGuyJawsum", new Vector2(jawsum.CenterPoint.X - 145, jawsum.CenterPoint.Y + 65)));
-				jawsum.GatorGuys.Add(SummonEnemy("GatorGuyJawsum", new Vector2(jawsum.CenterPoint.X + 145, jawsum.CenterPoint.Y + 65)));
-			}
-		}
+			await Enemies[i].Actor.OnStartOfBattle();
+		SetPhase(BattlePhase.FightRun);
 	}
 
 	public override void _Process(double delta)
@@ -235,7 +211,7 @@ public partial class BattleManager : Node
 					if (CurrentPartyMember == 0)
 					{
 						AudioManager.Instance.PlaySFX("sys_cancel");
-						MenuManager.Instance.ShowMenu(MenuState.Party);
+						MenuManager.Instance.ShowMenu(MenuState.Party, immediate: true);
 						SetPhase(BattlePhase.FightRun);
 					}
 					else
@@ -341,7 +317,6 @@ public partial class BattleManager : Node
 			if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
 			{
 				int target = SelectPartyMember(CurrentPartyMemberTarget, direction);
-				GD.Print(target);
 				if (target > -1)
 				{
 					AudioManager.Instance.PlaySFX("SYS_move");
@@ -365,17 +340,18 @@ public partial class BattleManager : Node
 	public void OnFightSelected()
 	{
 		CurrentPartyMember++;
-		MenuManager.Instance.ShowMenu(MenuState.Battle);
+		MenuManager.Instance.ShowMenu(MenuState.Battle, immediate: true);
 		SetPhase(BattlePhase.PlayerCommand);
 	}
 
 	public void Reset()
 	{
 		GameManager.Instance.DespawnAll();
+		AnimationManager.Instance.DespawnAll();
 		CurrentParty.Clear();
 		Enemies.Clear();
 		Items.Clear();
-		MenuManager.Instance.ShowMenu(MenuState.None);
+		MenuManager.Instance.ShowMenu(MenuState.None, immediate: true);
 		EnergyBar.Visible = false;
 		BattleLogManager.Instance.ClearBattleLog();
 		BattleLogManager.Instance.Visible = false;
@@ -438,7 +414,7 @@ public partial class BattleManager : Node
 		Item i = SelectedAction as Item;
 		// convert item name to CamelCase for dictionary lookup
 		string name = i.Name.Capitalize();
-		// Godot's Captialize treats - as a regular character and puts a space after it
+		// Godot's Captialize treats '-' as a regular character and puts a space after it
 		// manually fix that for sno-cone
 		if (i.Name == "SNO-CONE")
 			name = "Sno-Cone";
@@ -483,7 +459,7 @@ public partial class BattleManager : Node
 		}
 	}
 
-	private void OnDelayTimeout()
+	private async void OnDelayTimeout()
 	{
 		switch (Phase)
 		{
@@ -492,7 +468,7 @@ public partial class BattleManager : Node
 				if (CommandIndex >= Commands.Count)
 				{
 					EndOfTurn();
-					SetPhase(BattlePhase.FightRun);
+					return;
 				}
 				else
 				{
@@ -525,6 +501,7 @@ public partial class BattleManager : Node
 					foreach (EnemyComponent enemy in Enemies.ToList())
 					{
 						enemy.Actor.SetHurt(false);
+						await enemy.Actor.ProcessBattleConditions();
 						if (enemy.Actor.CurrentHP == 0)
 						{
 							enemy.Actor.SetState("toast", true);
@@ -532,7 +509,6 @@ public partial class BattleManager : Node
 								DyingEnemies.Add(enemy.GetParent<Node2D>());
 							Enemies.Remove(enemy);
 						}
-						enemy.Actor.ProcessBattleConditions();
 					}
 					CommandIndex++;
 					if (DyingEnemies.Count > 0)
@@ -569,19 +545,23 @@ public partial class BattleManager : Node
 		GD.Print("Preparing to process " + Commands.Count + " commands...");
 	}
 
-	private void HandleFightRun()
+	private async void HandleFightRun()
 	{
 		CurrentPartyMember = -1;
 		CurrentEnemyTarget = -1;
 		CurrentPartyMemberTarget = -1;
 		CommandIndex = -1;
 		Commands.Clear();
+		ProcessedEndOfTurn = false;
+		GameManager.Instance.DiscordManager.SetBattling(Enemies.Count);
+		for (int i = 0; i < Enemies.Count; i++)
+			await Enemies[i].Actor.ProcessStartOfTurn();
 		if (CurrentParty.Count > 1)
 			BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " and friends do?");
 		else
 			BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " do?");
 		MenuManager.Instance.ShowButtons(CurrentParty[0].Actor.IsRealWorld);
-		MenuManager.Instance.ShowMenu(MenuState.None);
+		MenuManager.Instance.ShowMenu(MenuState.Party);
 	}
 
 	private void HandlePlayerCommand()
@@ -716,7 +696,6 @@ public partial class BattleManager : Node
 			if (CommandIndex >= Commands.Count)
 			{
 				EndOfTurn();
-				SetPhase(BattlePhase.FightRun);
 				return;
 			}
 		}
@@ -731,6 +710,7 @@ public partial class BattleManager : Node
 		}
 
 		BattleLogManager.Instance.ClearBattleLog();
+		GD.Print("Processing action " + currentAction.Action.Name);
 		Actor target = currentAction.Target;
 		// if the enemy we're trying to target is null for whatever reason, pick a new one
 		if (target == null && (currentAction.Action.Target == SkillTarget.Enemy || currentAction.Action.Target == SkillTarget.AllyOrEnemy))
@@ -762,11 +742,12 @@ public partial class BattleManager : Node
 		{
 			if (skill.Cost > 0)
 			{
-				// if the current actor does not have enough juice to use their skill, replace it with a basic attack
 				if (currentAction.Actor.CurrentJuice < skill.Cost)
 				{
-					currentAction.Action = currentAction.Actor.Skills.First().Value;
-				}
+					BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + " does not have enough juice!");
+                    SetPhase(BattlePhase.WaitForBattleLog);
+					return;
+                }
 				else
 				{
 					currentAction.Actor.CurrentJuice -= skill.Cost;
@@ -841,10 +822,13 @@ public partial class BattleManager : Node
 
 	public void ForceCommand(Actor self, Actor target, Skill skill)
 	{
-		if (skill.Name.EndsWith("Attack"))
+		if (self is PartyMember && skill.Name.EndsWith("Attack"))
 			// if the forced skill is an attack, hide the followup bubbles
 			ForceHideFollowup = true;
-		Commands.Insert(CommandIndex + 1, new BattleCommand(self, target, skill));
+		if (CommandIndex == Commands.Count)
+			Commands.Add(new BattleCommand(self, target, skill));
+		else
+			Commands.Insert(CommandIndex + 1, new BattleCommand(self, target, skill));
 	}
 
 	private void ProcessFollowupSuccess()
@@ -858,9 +842,25 @@ public partial class BattleManager : Node
 			Energy -= 3;
 	}
 
-	private void EndOfTurn()
+	private async void EndOfTurn()
 	{
-		CheckBattleOver();
+		if (!ProcessedEndOfTurn)
+		{
+			for (int i = 0; i < Enemies.Count; i++)
+			{
+				await Enemies[i].Actor.ProcessEndOfTurn();
+			}
+			ProcessedEndOfTurn = true;
+		}
+
+        // if any commands were added during the ProcessEndOfTurn, we need to run those stll
+        if (CommandIndex < Commands.Count)
+		{
+			SetPhase(BattlePhase.PreCommand);
+			return;
+		}
+
+        CheckBattleOver();
 		// tick down stat turn timers
 		CurrentParty.ForEach(x =>
 		{
@@ -875,13 +875,11 @@ public partial class BattleManager : Node
 				SpawnDamageNumber(juice, x.Actor.CenterPoint, DamageType.JuiceGain);
 			}
 		});
-		Enemies.ForEach(x =>
-		{
-			x.Actor.ProcessEndOfTurn();
-			x.Actor.DecreaseStatTurnCounter();
-			x.Actor.ProcessStartOfTurn();
-		});
-	}
+
+		Enemies.ForEach(x => x.Actor.DecreaseStatTurnCounter());
+
+        SetPhase(BattlePhase.FightRun);
+    }
 
 	public void OnBattleLogFinished()
 	{
@@ -907,11 +905,12 @@ public partial class BattleManager : Node
 		SetPhase(BattlePhase.PreCommand);
 	}
 
-	private void CheckBattleOver()
+	public async void CheckBattleOver()
 	{
 		if (Enemies.Count == 0)
 		{
 			SetPhase(BattlePhase.BattleOver);
+			await EndOfBattle(true);
 			CurrentParty.ForEach(x =>
 			{
 				if (x.Actor.CurrentState != "toast")
@@ -925,7 +924,8 @@ public partial class BattleManager : Node
 		if (CurrentParty.All(x => x.Actor.CurrentHP == 0))
 		{
 			SetPhase(BattlePhase.BattleOver);
-			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was defeated...");
+            await EndOfBattle(false);
+            BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was defeated...");
 			MenuButtonContainer.Visible = true;
 			return;
 		}
@@ -935,12 +935,21 @@ public partial class BattleManager : Node
 		if (omori != null)
 		{
 			SetPhase(BattlePhase.BattleOver);
-			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was defeated...");
+            await EndOfBattle(false);
+            BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was defeated...");
 			MenuButtonContainer.Visible = true;
 		}
 	}
+
+	private async Task EndOfBattle(bool victory)
+	{
+		foreach (PartyMemberComponent p in CurrentParty)
+			await p.Actor.OnEndOfBattle(victory);
+		foreach (EnemyComponent e in Enemies)
+			await e.Actor.OnEndOfBattle(victory);
+	}
 	
-	public bool Damage(Actor self, Actor target, Func<float> damageFunc, bool neverMiss = true, float variance = 0.2f, bool guaranteeCrit = false, bool neverCrit = false)
+	public int Damage(Actor self, Actor target, Func<float> damageFunc, bool neverMiss = true, float variance = 0.2f, bool guaranteeCrit = false, bool neverCrit = false)
 	{
 		if (!neverMiss)
 		{
@@ -950,8 +959,8 @@ public partial class BattleManager : Node
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor]'s attack missed...");
 				AudioManager.Instance.PlaySFX("BA_miss");
 				// Miss text spawns a little further down
-				SpawnDamageNumber(-1, target.CenterPoint + new Vector2(0, 30), DamageType.Miss);
-				return false;
+				SpawnDamageNumber(-1, target.CenterPoint, DamageType.Miss);
+				return -1;
 			}
 		}
 		float baseDamage = damageFunc();
@@ -983,7 +992,7 @@ public partial class BattleManager : Node
 		switch (target.CurrentState)
 		{
 			case "miserable":
-				juiceLost = Math.Min((int)Math.Floor(finalDamage), 0);
+				juiceLost = Math.Min((int)Math.Floor(finalDamage), target.CurrentJuice);
 				finalDamage -= juiceLost;
 				break;
 			case "depressed":
@@ -1005,21 +1014,26 @@ public partial class BattleManager : Node
 			mod.OverrideDamage(ref finalDamage, self, target, true);
 		}
 
-		foreach (StatModifier mod in target.StatModifiers.Values)
+        // critical hits always do at least 2 damage
+        if (critical && !neverCrit)
+        {
+            if (finalDamage <= 0)
+                finalDamage = 2;
+            else
+                finalDamage += 2;
+        }
+
+        // now calculate flex damage
+        if (self.HasStatModifier("Flex"))
+        {
+            StatModifier mod = self.StatModifiers["Flex"];
+            mod.OverrideDamage(ref finalDamage, self, target, true);
+            self.RemoveStatModifier("Flex");
+        }
+
+        foreach (StatModifier mod in target.StatModifiers.Values)
 		{
 			mod.OverrideDamage(ref finalDamage, self, target, false);
-		}
-
-		// critical hits always do at least 2 damage
-		if (critical && !neverCrit)
-			finalDamage += 2;
-
-		// now calculate flex damage
-		if (self.HasStatModifier("Flex"))
-		{
-			StatModifier mod = self.StatModifiers["Flex"];
-			mod.OverrideDamage(ref finalDamage, self, target, true);
-			self.RemoveStatModifier("Flex");
 		}
 
 		int rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
@@ -1059,7 +1073,7 @@ public partial class BattleManager : Node
 			SpawnDamageNumber(juiceLost, target.CenterPoint, DamageType.JuiceLoss);
 		}
 
-		return true;
+		return rounded;
 	}
 
 	// some healing and juice skills are affected by emotion
@@ -1098,6 +1112,13 @@ public partial class BattleManager : Node
 
 	private float CalculateEmotionModifiers(string self, string target, float damage, out int effect)
 	{
+		// exploit emotion type
+		if (self == "emotion" && target != "neutral")
+		{
+			effect = 1;
+			return damage * weakness[GetEmotionTier(target)];
+		}
+
 		if (self != "neutral" && target == "afraid")
 		{
 			// afraid takes 50% more damage from all emotions
@@ -1219,11 +1240,12 @@ public partial class BattleManager : Node
 		AddChild(dmg);
 		DamageNumbers.Add(position);
 
-		Task.Delay(TimeSpan.FromSeconds(1.5f)).ContinueWith(_ =>
+		SceneTreeTimer timer = GetTree().CreateTimer(1.5f);
+		timer.Timeout += () =>
 		{
-			dmg.CallDeferred(DamageNumber.MethodName.Despawn);
+			dmg.Despawn();
 			DamageNumbers.Remove(position);
-		});
+		};
 	}
 
 	public EnemyComponent SummonEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)

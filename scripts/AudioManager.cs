@@ -35,7 +35,7 @@ public partial class AudioManager : Node
 			player.Finished += () => OnSFXFinish(player);
 		}
 		// preload animation sfx
-		foreach (RPGMAnimatedSprite animation in GameManager.Instance.AnimationManager.GetAllAnimations())
+		foreach (RPGMAnimatedSprite animation in AnimationManager.Instance.GetAllAnimations())
 		{
 			foreach (List<SFX> sfxList in animation.AllSFX)
 			{
@@ -96,15 +96,16 @@ public partial class AudioManager : Node
 				stream = ResourceLoader.Load<AudioStreamOggVorbis>("res://audio/bgm/" + name + ".ogg");
 			// check the custom folder too
 			else if (FileAccess.FileExists(GameManager.Instance.CustomDataPath + "/bgm/" + name + ".ogg"))
+			{
 				stream = LoadCustomBGM(GameManager.Instance.CustomDataPath + "/bgm/" + name + ".ogg");
+				stream.LoopOffset = 0d;
+            }
 			else
 			{
 				GD.PrintErr("Unknown BGM: " + name);
 				return;
 			}
 			stream.Loop = true;
-			// TOOD: allow custom BGM to have a loop offset
-			stream.LoopOffset = 0d;
 			BGMDictionary.Add(name, stream);
 		}
 

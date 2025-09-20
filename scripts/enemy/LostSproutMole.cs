@@ -13,39 +13,30 @@ public class LostSproutMole : Enemy
 	}
     public override BattleCommand ProcessAI()
 	{
-		int roll;
 		switch (CurrentState)
 		{
 			case "happy":
-				roll = GameManager.Instance.Random.RandiRange(0, 100);
-				if (roll < 36)
+				if (Roll() < 36)
 					goto attack;
-				roll = GameManager.Instance.Random.RandiRange(0, 100);
-				if (roll < 36)
+				if (Roll() < 36)
 					goto nothing;
 				goto run;
 			case "sad":
-				roll = GameManager.Instance.Random.RandiRange(0, 100);
-				if (roll < 31)
+				if (Roll() < 31)
 					goto attack;
-				roll = GameManager.Instance.Random.RandiRange(0, 100);
-				if (roll < 56)
+				if (Roll() < 56)
 					goto nothing;
 				goto run;
 			case "angry":
-				roll = GameManager.Instance.Random.RandiRange(0, 100);
-				if (roll < 61)
+				if (Roll() < 61)
 					goto attack;
-				roll = GameManager.Instance.Random.RandiRange(0, 100);
-				if (roll < 21)
+				if (Roll() < 21)
 					goto nothing;
 				goto run;
 			default:
-				roll = GameManager.Instance.Random.RandiRange(0, 100);
-				if (roll < 56)
+				if (Roll() < 56)
 					goto attack;
-				roll = GameManager.Instance.Random.RandiRange(0, 100);
-				if (roll < 36)
+				if (Roll() < 36)
 					goto nothing;
 				goto run;
 

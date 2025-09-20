@@ -1,6 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 public abstract class Enemy : Actor
 {
@@ -49,12 +50,17 @@ public abstract class Enemy : Actor
         return taunting[GameManager.Instance.Random.RandiRange(0, taunting.Count - 1)].Actor;
     }
 
+    protected int Roll()
+    {
+        return GameManager.Instance.Random.RandiRange(0, 100);
+    }
+
     protected abstract Stats Stats { get; }
     protected abstract string[] EquippedSkills { get; }
     public abstract string AnimationPath { get; }
     public abstract BattleCommand ProcessAI();
     public bool FallsOffScreen = true;
-    public virtual void ProcessBattleConditions() { }
-    public virtual void ProcessStartOfTurn() { }
-    public virtual void ProcessEndOfTurn() { }
+    public virtual async Task ProcessBattleConditions() { await Task.CompletedTask; }
+    public virtual async Task ProcessStartOfTurn() { await Task.CompletedTask; }
+    public virtual async Task ProcessEndOfTurn() { await Task.CompletedTask; }
 }

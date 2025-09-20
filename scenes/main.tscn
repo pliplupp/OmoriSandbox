@@ -1,9 +1,8 @@
-[gd_scene load_steps=34 format=3 uid="uid://dnxcj20hgcsj8"]
+[gd_scene load_steps=37 format=3 uid="uid://dnxcj20hgcsj8"]
 
 [ext_resource type="PackedScene" uid="uid://dxm1fg4428tk" path="res://scenes/main_menu.tscn" id="1_yq6so"]
 [ext_resource type="PackedScene" uid="uid://b8h6qs361gmp5" path="res://scenes/omori_followup.tscn" id="4_muem4"]
 [ext_resource type="Texture2D" uid="uid://dy720f7vg7l3t" path="res://assets/atlases/battleATLAS.png" id="4_tipki"]
-[ext_resource type="Texture2D" uid="uid://q4jxuj12jmru" path="res://assets/system/bsys_cursor.png" id="5_85g3d"]
 [ext_resource type="PackedScene" uid="uid://cmi2ecyja4pw6" path="res://scenes/aubrey_followup.tscn" id="5_dp3eg"]
 [ext_resource type="PackedScene" uid="uid://d32syyvyr6iwr" path="res://scenes/party_member.tscn" id="5_tefeu"]
 [ext_resource type="PackedScene" uid="uid://dksr6yuevphnc" path="res://scenes/hero_followup.tscn" id="6_0ld40"]
@@ -19,6 +18,8 @@
 [ext_resource type="SpriteFrames" uid="uid://clatbr34577po" path="res://animations/release_energy.tres" id="11_dp3eg"]
 [ext_resource type="Texture2D" uid="uid://chn8rp07chfy7" path="res://assets/system/mp_icon.png" id="11_eb6dy"]
 [ext_resource type="Script" uid="uid://ckd81otw7er8y" path="res://scripts/AudioManager.cs" id="11_ya4ey"]
+[ext_resource type="Script" uid="uid://cihomi8gnk1uh" path="res://scripts/animation/AnimationManager.cs" id="12_5q0nq"]
+[ext_resource type="PackedScene" uid="uid://bhbqjkkq6e8m1" path="res://scenes/perfectheart_overlay_sprite.tscn" id="13_dgi5k"]
 [ext_resource type="SpriteFrames" uid="uid://cseyj3p0lwirh" path="res://animations/red_hands.tres" id="13_og1vs"]
 [ext_resource type="SpriteFrames" uid="uid://68syofv06s0d" path="res://animations/flower_crown.tres" id="14_2wyq8"]
 [ext_resource type="Script" uid="uid://bcfwwj4klv2cq" path="res://scripts/GameManager.cs" id="14_a8y0u"]
@@ -26,13 +27,19 @@
 [ext_resource type="SpriteFrames" uid="uid://bqqlfuslvq0co" path="res://animations/release_energy_basil.tres" id="15_vxglm"]
 [ext_resource type="Script" uid="uid://b0t86bflug3po" path="res://scripts/menu/PartyMenu.cs" id="17_pm3ni"]
 [ext_resource type="Script" uid="uid://cbac1p51c0gbd" path="res://scripts/menu/BattleMenu.cs" id="18_y6deb"]
-[ext_resource type="Script" uid="uid://c3w7m65ic8go4" path="res://scripts/CursorBounce.cs" id="19_0ld40"]
 [ext_resource type="Script" uid="uid://co38b7eed26qs" path="res://scripts/menu/SkillMenu.cs" id="19_og1vs"]
 [ext_resource type="Script" uid="uid://bnnng1lk81pyg" path="res://scripts/menu/ItemMenu.cs" id="21_2wyq8"]
 [ext_resource type="Script" uid="uid://clg2gcav7pm8q" path="res://scripts/DialogueManager.cs" id="22_5q0nq"]
 [ext_resource type="Texture2D" uid="uid://xnt03w7xslfi" path="res://assets/system/battle_speech_tail.png" id="22_qkpxi"]
+[ext_resource type="PackedScene" uid="uid://b6d4hja4l4r44" path="res://scenes/cursor.tscn" id="24_qkpxi"]
 [ext_resource type="Script" uid="uid://brg8pn4xipyww" path="res://scripts/EnergyDots.cs" id="24_tel4y"]
 [ext_resource type="Material" uid="uid://duiu3jck554il" path="res://assets/mask_shader.tres" id="30_fv21b"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_5q0nq"]
+blend_mode = 1
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_dgi5k"]
+viewport_path = NodePath("BattleCanvas/UI/Battleback/FullScreenEffects/SubViewport")
 
 [node name="Main" type="Node2D"]
 
@@ -57,9 +64,8 @@ EnergyBar = NodePath("../UI/Energy")
 EnergyDots = NodePath("../UI/Energy/EnergyDots")
 MenuButtonContainer = NodePath("../UI/MenuButtons")
 
-[node name="MenuManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("Cursor", "PartyMenu", "BattleMenu", "SkillMenu", "SnackMenu", "ToyMenu", "EnergyBar", "EnergyText")]
+[node name="MenuManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("PartyMenu", "BattleMenu", "SkillMenu", "SnackMenu", "ToyMenu", "EnergyBar", "EnergyText")]
 script = ExtResource("9_ya4ey")
-Cursor = NodePath("../UI/Cursor")
 PartyMenu = NodePath("../UI/PartyMenu")
 BattleMenu = NodePath("../UI/BattleMenu")
 SkillMenu = NodePath("../UI/SkillMenu")
@@ -70,6 +76,18 @@ EnergyText = NodePath("../UI/Energy/EnergyAmount")
 
 [node name="BGM" type="AudioStreamPlayer" parent="BattleCanvas"]
 volume_db = -10.0
+
+[node name="AnimationManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("Battleback", "ReleaseEnergy", "ReleaseEnergyBasil", "RedHands", "FlowerCrown", "Photograph", "PerfectheartOverlayParent", "FullScreenEffectNode")]
+script = ExtResource("12_5q0nq")
+Battleback = NodePath("../UI/Battleback")
+ReleaseEnergy = NodePath("../UI/Battleback/FullScreenEffects/ReleaseEnergy")
+ReleaseEnergyBasil = NodePath("../UI/Battleback/FullScreenEffects/ReleaseEnergyBasil")
+RedHands = NodePath("../UI/Battleback/FullScreenEffects/RedHands")
+FlowerCrown = NodePath("../UI/Battleback/FullScreenEffects/FlowerCrown")
+Photograph = NodePath("../UI/Battleback/FullScreenEffects/Photograph")
+PerfectheartOverlaySprite = ExtResource("13_dgi5k")
+PerfectheartOverlayParent = NodePath("../UI/Battleback/FullScreenEffects/SubViewport/PerfectheartOverlayParent")
+FullScreenEffectNode = NodePath("../UI/Battleback/FullScreenEffects")
 
 [node name="AudioManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("BGM")]
 script = ExtResource("11_ya4ey")
@@ -129,40 +147,6 @@ theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 10
 text = "OmoriSandbox v0.7.0"
 
-[node name="FullScreenEffects" type="Node2D" parent="BattleCanvas/UI"]
-
-[node name="ReleaseEnergy" type="AnimatedSprite2D" parent="BattleCanvas/UI/FullScreenEffects"]
-visible = false
-z_index = 20
-position = Vector2(320, 243.5)
-scale = Vector2(1, 1.01458)
-sprite_frames = ExtResource("11_dp3eg")
-
-[node name="RedHands" type="AnimatedSprite2D" parent="BattleCanvas/UI/FullScreenEffects"]
-visible = false
-z_index = 20
-position = Vector2(320, 243.5)
-scale = Vector2(1, 1.02937)
-sprite_frames = ExtResource("13_og1vs")
-
-[node name="FlowerCrown" type="AnimatedSprite2D" parent="BattleCanvas/UI/FullScreenEffects"]
-visible = false
-position = Vector2(320, 243.5)
-sprite_frames = ExtResource("14_2wyq8")
-
-[node name="ReleaseEnergyBasil" type="AnimatedSprite2D" parent="BattleCanvas/UI/FullScreenEffects"]
-visible = false
-position = Vector2(320, 243.5)
-sprite_frames = ExtResource("15_vxglm")
-frame = 3
-frame_progress = 0.0638822
-
-[node name="Photograph" type="ColorRect" parent="BattleCanvas/UI/FullScreenEffects"]
-visible = false
-z_index = -4
-offset_right = 640.0
-offset_bottom = 480.0
-
 [node name="Battleback" type="TextureRect" parent="BattleCanvas/UI"]
 z_index = -100
 texture_repeat = 3
@@ -172,6 +156,56 @@ offset_right = 1280.0
 offset_bottom = 480.0
 texture = ExtResource("14_og1vs")
 stretch_mode = 1
+
+[node name="FullScreenEffects" type="Node2D" parent="BattleCanvas/UI/Battleback"]
+z_as_relative = false
+position = Vector2(640, 0)
+
+[node name="ReleaseEnergy" type="AnimatedSprite2D" parent="BattleCanvas/UI/Battleback/FullScreenEffects"]
+visible = false
+z_index = 20
+position = Vector2(320, 243.5)
+scale = Vector2(1, 1.01458)
+sprite_frames = ExtResource("11_dp3eg")
+
+[node name="RedHands" type="AnimatedSprite2D" parent="BattleCanvas/UI/Battleback/FullScreenEffects"]
+visible = false
+z_index = 20
+position = Vector2(320, 243.5)
+scale = Vector2(1, 1.02937)
+sprite_frames = ExtResource("13_og1vs")
+
+[node name="FlowerCrown" type="AnimatedSprite2D" parent="BattleCanvas/UI/Battleback/FullScreenEffects"]
+visible = false
+position = Vector2(320, 243.5)
+sprite_frames = ExtResource("14_2wyq8")
+
+[node name="ReleaseEnergyBasil" type="AnimatedSprite2D" parent="BattleCanvas/UI/Battleback/FullScreenEffects"]
+visible = false
+position = Vector2(320, 243.5)
+sprite_frames = ExtResource("15_vxglm")
+frame = 3
+frame_progress = 0.0638822
+
+[node name="Photograph" type="ColorRect" parent="BattleCanvas/UI/Battleback/FullScreenEffects"]
+visible = false
+z_index = -4
+offset_right = 640.0
+offset_bottom = 480.0
+
+[node name="SubViewport" type="SubViewport" parent="BattleCanvas/UI/Battleback/FullScreenEffects"]
+disable_3d = true
+transparent_bg = true
+size = Vector2i(640, 480)
+render_target_update_mode = 4
+
+[node name="PerfectheartOverlayParent" type="Node2D" parent="BattleCanvas/UI/Battleback/FullScreenEffects/SubViewport"]
+
+[node name="PerfectheartOverlay" type="Sprite2D" parent="BattleCanvas/UI/Battleback/FullScreenEffects"]
+z_index = -4
+material = SubResource("CanvasItemMaterial_5q0nq")
+texture = SubResource("ViewportTexture_dgi5k")
+centered = false
 
 [node name="Party" type="Node" parent="BattleCanvas/UI"]
 
@@ -245,15 +279,12 @@ modulate = Color(0.870588, 0.870588, 0.870588, 1)
 position = Vector2(0, -2.5)
 texture = ExtResource("22_qkpxi")
 
-[node name="Cursor" type="Sprite2D" parent="BattleCanvas/UI/DialogueBox"]
-visible = false
+[node name="Cursor" parent="BattleCanvas/UI/DialogueBox" instance=ExtResource("24_qkpxi")]
 position = Vector2(145, 90)
-texture = ExtResource("5_85g3d")
-script = ExtResource("19_0ld40")
 
 [node name="Energy" type="Sprite2D" parent="BattleCanvas/UI"]
 visible = false
-z_index = -5
+z_index = -4
 position = Vector2(320, 360)
 texture = ExtResource("4_tipki")
 region_enabled = true
@@ -282,32 +313,39 @@ script = ExtResource("24_tel4y")
 [node name="PartyMenu" type="Sprite2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("CursorSprite")]
 visible = false
 z_index = -1
-position = Vector2(320, 429)
+position = Vector2(320, 529)
 texture = ExtResource("4_tipki")
 region_enabled = true
 region_rect = Rect2(653, 376, 362, 82)
 script = ExtResource("17_pm3ni")
-CursorSprite = NodePath("../Cursor")
+CursorSprite = NodePath("Cursor")
+
+[node name="Cursor" parent="BattleCanvas/UI/PartyMenu" instance=ExtResource("24_qkpxi")]
+visible = true
+position = Vector2(-125, 20)
 
 [node name="BattleMenu" type="Sprite2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("CursorSprite")]
 visible = false
 z_index = -1
-position = Vector2(320, 429)
+position = Vector2(320, 529)
 texture = ExtResource("4_tipki")
 region_enabled = true
 region_rect = Rect2(653, 130, 362, 82)
 script = ExtResource("18_y6deb")
-CursorSprite = NodePath("../Cursor")
+CursorSprite = NodePath("Cursor")
+
+[node name="Cursor" parent="BattleCanvas/UI/BattleMenu" instance=ExtResource("24_qkpxi")]
+visible = true
 
 [node name="SkillMenu" type="Sprite2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("SkillLabels", "CostText", "CursorSprite")]
 visible = false
-position = Vector2(320, 437)
+position = Vector2(320, 537)
 texture = ExtResource("9_85g3d")
 flip_v = true
 script = ExtResource("19_og1vs")
 SkillLabels = [NodePath("Skill1"), NodePath("Skill3"), NodePath("Skill2"), NodePath("Skill4")]
 CostText = NodePath("Cost/Value")
-CursorSprite = NodePath("../Cursor")
+CursorSprite = NodePath("Cursor")
 
 [node name="Line2D" type="Line2D" parent="BattleCanvas/UI/SkillMenu"]
 position = Vector2(-174, -13.5833)
@@ -370,15 +408,18 @@ offset_bottom = 37.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
+[node name="Cursor" parent="BattleCanvas/UI/SkillMenu" instance=ExtResource("24_qkpxi")]
+visible = true
+
 [node name="SnackMenu" type="Sprite2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("ItemLabels", "CostText", "CursorSprite")]
 visible = false
-position = Vector2(320, 437)
+position = Vector2(320, 537)
 texture = ExtResource("9_85g3d")
 flip_v = true
 script = ExtResource("21_2wyq8")
 ItemLabels = [NodePath("Skill1"), NodePath("Skill3"), NodePath("Skill2"), NodePath("Skill4")]
 CostText = NodePath("Cost/Value")
-CursorSprite = NodePath("../Cursor")
+CursorSprite = NodePath("Cursor")
 
 [node name="Line2D" type="Line2D" parent="BattleCanvas/UI/SnackMenu"]
 position = Vector2(-174, -13.5833)
@@ -437,15 +478,18 @@ offset_bottom = 37.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
+[node name="Cursor" parent="BattleCanvas/UI/SnackMenu" instance=ExtResource("24_qkpxi")]
+visible = true
+
 [node name="ToyMenu" type="Sprite2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("ItemLabels", "CostText", "CursorSprite")]
 visible = false
-position = Vector2(320, 437)
+position = Vector2(320, 537)
 texture = ExtResource("9_85g3d")
 flip_v = true
 script = ExtResource("21_2wyq8")
 ItemLabels = [NodePath("Skill1"), NodePath("Skill3"), NodePath("Skill2"), NodePath("Skill4")]
 CostText = NodePath("Cost/Value")
-CursorSprite = NodePath("../Cursor")
+CursorSprite = NodePath("Cursor")
 
 [node name="Line2D" type="Line2D" parent="BattleCanvas/UI/ToyMenu"]
 position = Vector2(-174, -13.5833)
@@ -504,11 +548,8 @@ offset_bottom = 37.4167
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
-[node name="Cursor" type="Sprite2D" parent="BattleCanvas/UI"]
-visible = false
-position = Vector2(250, 410)
-texture = ExtResource("5_85g3d")
-script = ExtResource("19_0ld40")
+[node name="Cursor" parent="BattleCanvas/UI/ToyMenu" instance=ExtResource("24_qkpxi")]
+visible = true
 
 [node name="MenuButtons" type="HBoxContainer" parent="BattleCanvas/UI"]
 visible = false

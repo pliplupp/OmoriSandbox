@@ -9,7 +9,7 @@ public partial class BattleLogManager : Control
 	[Export] public Label ImmediateLabel;
 	[Export] public Font Font;
 
-	private readonly Queue<string> MessageQueue = [];
+	private readonly List<string> MessageQueue = [];
 	private readonly List<Control> ActiveLines = [];
 	private const int HEIGHT = 26;
 	public bool IsProcessingMessage { get; private set; } = false;
@@ -27,7 +27,7 @@ public partial class BattleLogManager : Control
 
 	public void QueueMessage(string message)
 	{
-		MessageQueue.Enqueue(message);
+		MessageQueue.Add(message);
 
 		if (!IsProcessingMessage)
 			ProcessMessage();
@@ -79,7 +79,7 @@ public partial class BattleLogManager : Control
 		}
 
 		IsProcessingMessage = true;
-		string next = MessageQueue.Dequeue();
+		string next = MessageQueue[0];
 
 		string[] lines = next.Split('\n');
 
@@ -91,8 +91,13 @@ public partial class BattleLogManager : Control
 
 		for (int i = 1; i < lines.Length; i++)
 		{
-			QueueMessage(lines[i]);
-		}
+			// fixes a bug where some text like "cannot go any lower" would get split across messages if multiple messages are queued at once
+			if (MessageQueue.Count >= 2)
+				MessageQueue.Insert(i, lines[i]);
+			else
+				MessageQueue.Add(lines[i]);
+        }
+		MessageQueue.RemoveAt(0);
 
 		Control newLine = LogLine.Instantiate<Control>();
 		newLine.GetNode<Label>("Label").Text = lines[0];

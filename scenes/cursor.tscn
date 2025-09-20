@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://b6d4hja4l4r44"]
+
+[ext_resource type="Texture2D" uid="uid://q4jxuj12jmru" path="res://assets/system/bsys_cursor.png" id="1_s0nli"]
+[ext_resource type="Script" uid="uid://c3w7m65ic8go4" path="res://scripts/CursorBounce.cs" id="2_ndevg"]
+
+[node name="Cursor" type="Sprite2D"]
+visible = false
+texture = ExtResource("1_s0nli")
+script = ExtResource("2_ndevg")

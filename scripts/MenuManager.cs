@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 public partial class MenuManager : Node
 {
-	[Export] public Sprite2D Cursor;
 	[Export] public PartyMenu PartyMenu;
 	[Export] public BattleMenu BattleMenu;
 	[Export] public SkillMenu SkillMenu;
@@ -11,6 +10,7 @@ public partial class MenuManager : Node
 	[Export] public ItemMenu ToyMenu;
 	[Export] public Sprite2D EnergyBar;
 	[Export] public Label EnergyText;
+	private Tween EnergyBarTween;
 
 	public static MenuManager Instance { get; private set; }
 
@@ -51,21 +51,19 @@ public partial class MenuManager : Node
 		}
 	}
 
-	public void ShowMenu(MenuState state, bool reset = true)
+	public void ShowMenu(MenuState state, bool reset = true, bool immediate = false)
 	{
 		if (CurrentState != MenuState.None)
 		{
 			CurrentMenu.OnClose();
+			CurrentMenu.MoveDown(immediate);
 		}
 
 		CurrentState = state;
 		if (CurrentState == MenuState.None)
 		{
 			CurrentMenu = null;
-			foreach (Menu m in Menus.Values)
-				m.OnClose();
-			Cursor.Visible = false;
-			MoveEnergyBarDown();
+			MoveEnergyBarDown(immediate);
 			return;
 		}
 
@@ -80,9 +78,9 @@ public partial class MenuManager : Node
 			item.Populate(CurrentState == MenuState.Toy);
 		}
 
-		Cursor.Visible = true;
 		CurrentMenu.OnOpen(reset);
-		MoveEnergyBarUp();
+		CurrentMenu.MoveUp(immediate);
+		MoveEnergyBarUp(immediate);
 	}
 
 	public override void _Process(double delta)
@@ -108,15 +106,31 @@ public partial class MenuManager : Node
 		}
 	}
 
-	private void MoveEnergyBarDown()
+	private void MoveEnergyBarDown(bool immediate)
 	{
-		Tween tween = CreateTween();
-		tween.TweenProperty(EnergyBar, "position", new Vector2(320f, 450f), 0.1f).SetTrans(Tween.TransitionType.Sine);
+		if (immediate)
+		{
+			EnergyBar.Position = new Vector2(320f, 450f);
+		}
+		else
+		{
+			EnergyBarTween?.Kill();
+            EnergyBarTween = CreateTween();
+            EnergyBarTween.TweenProperty(EnergyBar, "position", new Vector2(320f, 450f), 0.2f).SetTrans(Tween.TransitionType.Sine);
+		}
 	}
 
-	private void MoveEnergyBarUp()
+	private void MoveEnergyBarUp(bool immediate)
 	{
-		Tween tween = CreateTween();
-		tween.TweenProperty(EnergyBar, "position", new Vector2(320f, 360f), 0.1f).SetTrans(Tween.TransitionType.Sine); ;
-	}
+        if (immediate)
+        {
+            EnergyBar.Position = new Vector2(320f, 360f);
+        }
+        else
+        {
+            EnergyBarTween?.Kill();
+            EnergyBarTween = CreateTween();
+            EnergyBarTween.TweenProperty(EnergyBar, "position", new Vector2(320f, 360f), 0.2f).SetTrans(Tween.TransitionType.Sine);
+        }
+    }
 }

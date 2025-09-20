@@ -1,0 +1,48 @@
+public class Sesame : Enemy
+{
+    public override string Name => "SESAME";
+    public override string AnimationPath => "res://animations/sesame.tres";
+    protected override Stats Stats => new(288, 197, 51, 43, 91, 10, 95);
+    public override bool IsStateValid(string state)
+    {
+        return state == "neutral" || state == "sad" || state == "happy" || state == "angry" || state == "hurt" || state == "toast";
+    }
+    protected override string[] EquippedSkills => ["SESAttack", "SESDoNothing", "SESBreadRoll"];
+  
+    public override BattleCommand ProcessAI()
+    {
+        switch (CurrentState)
+        {
+            case "happy":
+                if (Roll() < 41)
+                    goto attack;
+                if (Roll() < 31)
+                    goto nothing;
+                goto roll;
+            case "sad":
+                if (Roll() < 36)
+                    goto attack;
+                if (Roll() < 61)
+                    goto nothing;
+                goto roll;
+            case "angry":
+                if (Roll() < 61)
+                    goto attack;
+                if (Roll() < 21)
+                    goto nothing;
+                goto roll;
+            default:
+                if (Roll() < 66)
+                    goto attack;
+                if (Roll() < 31)
+                    goto nothing;
+                goto roll;
+        }
+    attack:
+        return new BattleCommand(this, SelectTarget(), Skills["SESAttack"]);
+    nothing:
+        return new BattleCommand(this, null, Skills["SESDoNothing"]);
+    roll:
+        return new BattleCommand(this, null, Skills["SESBreadRoll"]);
+    }
+}
