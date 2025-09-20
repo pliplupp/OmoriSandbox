@@ -1,0 +1,57 @@
+using System.Threading.Tasks;
+
+public class FearOfHeights : Enemy
+{
+    public override string Name => "SOMETHING";
+    public override string AnimationPath => "res://animations/fear_of_heights.tres";
+    protected override Stats Stats => new(6000, 4000, 120, 100, 80, 10, 95);
+    protected override string[] EquippedSkills => ["FOHAttack", "FOHDoNothing", "FOHGrab", "FOHHands", "FOHShove"];
+
+    public override bool IsStateValid(string state)
+    {
+        return state == "neutral" || state == "hurt" || state == "toast";
+    }
+
+    public override BattleCommand ProcessAI()
+    {
+        if (Roll() < 31)
+            return new BattleCommand(this, SelectTarget(), Skills["FOHAttack"]);
+        if (Roll() < 16)
+            return new BattleCommand(this, SelectTarget(), Skills["FOSDoNothing"]);
+        if (Roll() < 26)
+            return new BattleCommand(this, null, Skills["FOHGrab"]);
+        if (Roll() < 31)
+            return new BattleCommand(this, null, Skills["FOHHands"]);
+        else
+            return new BattleCommand(this, SelectTarget(), Skills["FOHShove"]);
+    }
+
+    private int TurnsLeft = 11;
+    public override async Task ProcessStartOfTurn()
+    {
+        TurnsLeft--;
+        if (TurnsLeft == 0)
+        {
+            AnimationManager.Instance.InitShake(new Shake(255, 70, 60));
+            foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
+            {
+                // fear of heights bypasses plot armor
+                member.Actor.CurrentHP = 0;
+                member.Actor.SetState("toast", true);
+            }
+            await Task.Delay(1500);
+            DialogueManager.Instance.QueueMessage("You hit the ground.");
+            await DialogueManager.Instance.WaitForDialogue();
+            BattleManager.Instance.CheckBattleOver();
+            return;
+        }
+        DialogueManager.Instance.QueueMessage(TurnsLeft + " turns left.");
+        await DialogueManager.Instance.WaitForDialogue();
+    }
+
+    public override async Task OnStartOfBattle()
+    {
+        DialogueManager.Instance.QueueMessage("You are falling.");
+        await DialogueManager.Instance.WaitForDialogue();
+    }
+}

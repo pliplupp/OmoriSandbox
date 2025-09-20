@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 public abstract class Actor
 {
 	public event EventHandler OnStateChanged;
@@ -71,7 +72,11 @@ public abstract class Actor
 			if (m is TierStatModifier tier)
 			{
 				bool success = tier.IncreaseTier();
-				if (!silent)
+				if (success)
+				{
+                    GD.Print("Increased tier of " + modifier + " on " + Name + " to " + tier.CurrentTier);
+                }
+				if (!silent && tier.SuccessMessage != null)
 					ShowStatMessage(success ? tier.SuccessMessage : tier.FailureMessage);
 			}
 			// if the actor already has the modifier and it's not tiered, do nothing
@@ -85,8 +90,9 @@ public abstract class Actor
 				return;
 			}
 			StatModifiers.Add(modifier, mod);
+			mod.OnAdd();
 			GD.Print("Added modifier " + modifier + " to " + Name);
-			if (mod is TierStatModifier t)
+			if (mod is TierStatModifier t && t.SuccessMessage != null && !silent)
 				ShowStatMessage(t.SuccessMessage);
 		}
 	}
@@ -103,9 +109,13 @@ public abstract class Actor
 		if (StatModifiers.TryGetValue(modifier, out StatModifier m))
 		{
 			TierStatModifier existing = m as TierStatModifier;
-			bool success = existing.IncreaseTier();
-			GD.Print("Increased tier of " + modifier + " on " + Name);
-			if (!silent)
+			bool success = existing.SetTier(tier);
+			if (success)
+			{
+                GD.Print("Increased tier of " + modifier + " on " + Name + " to " + existing.CurrentTier);
+                existing.SetTurnsLeft(turns);
+			}
+			if (!silent && existing.SuccessMessage != null)
 			{
 				ShowStatMessage(success ? existing.SuccessMessage : existing.FailureMessage);
 			}
@@ -114,13 +124,19 @@ public abstract class Actor
 		t.SetTier(tier);
 		t.SetTurnsLeft(turns);
 		StatModifiers.Add(modifier, t);
+		t.OnAdd();
 		GD.Print("Added modifier " + modifier + " to " + Name);
-		ShowStatMessage(t.SuccessMessage);
+		if (!silent && t.SuccessMessage != null)
+			ShowStatMessage(t.SuccessMessage);
 	}
 
 	public void RemoveStatModifier(string modifier)
 	{
 		StatModifiers.Remove(modifier);
+	}
+	public void RemoveAllStatModifiers()
+	{
+		StatModifiers.Clear();
 	}
 
 	private void ShowStatMessage(string message)
@@ -242,7 +258,7 @@ public abstract class Actor
 
 	// forces a state without any validity checks
 	// mainly used for bosses like Sweetheart
-	public void ForceState(string state, string fakeState = null, bool silent = false)
+	public void ForceState(string state, string fakeState = null)
 	{
 		// TODO: attach emotion/animation info to non-emotion modifiers, like boss specific emotions
 		if (fakeState != null)
@@ -260,14 +276,9 @@ public abstract class Actor
 		{
 			StateStatModifier = mod;
 		}
-		if (!silent)
-		{
-			if (fakeState != null)
-				BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " became " + fakeState.ToUpper() + "!");
-			else
-				BattleLogManager.Instance.QueueMessage(Name.ToUpper() + " became " + state.ToUpper() + "!");
-		}
 	}
+	public virtual async Task OnStartOfBattle() { await Task.CompletedTask; }
+	public virtual async Task OnEndOfBattle(bool victory) { await Task.CompletedTask; }
 
 	private string Capitalize(string s)
 	{

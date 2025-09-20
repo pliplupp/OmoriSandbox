@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 public class AubreyEnemy : Enemy
@@ -14,19 +15,29 @@ public class AubreyEnemy : Enemy
               || state == "angry" || state == "hurt" || state == "toast";
     }
 
+    protected override PartyMember SelectTarget()
+    {
+        if (HasStatModifier("Charm"))
+            return (StatModifiers["Charm"] as CharmStatModifier).CharmedBy;
+        List<PartyMemberComponent> members = BattleManager.Instance.GetAlivePartyMembers();
+        List<PartyMemberComponent> taunting = members.FindAll(x => x.Actor.HasStatModifier("Taunt"));
+        if (taunting.Count == 0)
+        {
+            return members.MaxBy(x => x.Actor.CurrentStats.SPD).Actor;
+        }
+        return taunting.MaxBy(x => x.Actor.CurrentStats.SPD).Actor;
+    }
+
     public override BattleCommand ProcessAI()
     {
-        int roll = GameManager.Instance.Random.RandiRange(0, 100);
-        Actor target = BattleManager.Instance.GetAlivePartyMembers().MaxBy(x => x.Actor.CurrentStats.SPD).Actor;
-        if (roll < 46)
+        if (Roll() < 46)
         {
-            return new BattleCommand(this, target, Skills["AEAttack"]);
+            return new BattleCommand(this, SelectTarget(), Skills["AEAttack"]);
         }
-        roll = GameManager.Instance.Random.RandiRange(0, 100);
-        if (roll < 31)
+        if (Roll() < 31)
         {
             return new BattleCommand(this, null, Skills["AEDoNothing"]);
         }
-        return new BattleCommand(this, target, Skills["AEHeadbutt"]);
+        return new BattleCommand(this, SelectTarget(), Skills["AEHeadbutt"]);
     }
 }

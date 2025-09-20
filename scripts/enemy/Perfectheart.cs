@@ -1,0 +1,88 @@
+using Godot;
+using System.Threading.Tasks;
+
+public class Perfectheart : Enemy
+{
+    public override string Name => "PERFECTHEART";
+    public override string AnimationPath => "res://animations/perfectheart.tres";
+    protected override Stats Stats => new(10000, 5000, 140, 140, 140, 15, 95);
+
+    protected override string[] EquippedSkills => ["PHStealHeart", "PHStealBreath", "PHWrath", "PHExploitEmotion", "PHSpare", "PHAngelicVoice"];
+
+    public override bool IsStateValid(string state)
+    {
+        return state == "neutral" || state == "sad" || state == "happy"
+              || state == "angry" || state == "hurt" || state == "toast";
+    }
+
+    private bool SecondPhase = false;
+    private bool HasSpoken = false;
+    private Sprite2D OverlaySprite = null;
+
+    public override BattleCommand ProcessAI()
+    {
+        if (SecondPhase)
+            return new BattleCommand(this, null, Skills["PHWrath"]);
+        if (Roll() < 36)
+            return new BattleCommand(this, SelectTarget(), Skills["PHStealHeart"]);
+        if (Roll() < 26)
+            return new BattleCommand(this, SelectTarget(), Skills["PHStealBreath"]);
+        if (Roll() < 36)
+            return new BattleCommand(this, null, Skills["PHAngelicVoice"]);
+        if (Roll() < 46)
+            return new BattleCommand(this, SelectTarget(), Skills["PHExploitEmotion"]);
+        return new BattleCommand(this, SelectTarget(), Skills["PHSpare"]);
+    }
+
+    public override async Task ProcessBattleConditions()
+    {
+        if (CurrentHP < 3500 && !SecondPhase)
+        {
+            DialogueManager.Instance.QueueMessage(this, "Oh...@ You are quite strong.");
+            DialogueManager.Instance.QueueMessage(this, "It seems I must try a bit harder.");
+            await DialogueManager.Instance.WaitForDialogue();
+            AudioManager.Instance.PlaySFX("GEN_shine", 0.5f, 0.9f);
+            OverlaySprite = AnimationManager.Instance.SpawnPerfectheartOverlay(new Vector2(CenterPoint.X, CenterPoint.Y - 45));
+            await Task.Delay(2000);
+            AnimationManager.Instance.PlayAnimation(216, this);
+            CurrentHP = CurrentStats.MaxHP;
+            SetState("neutral", true);
+            RemoveAllStatModifiers();
+            await Task.Delay(1000);
+            SecondPhase = true;
+            return;
+        }
+
+        if (CurrentHP < 2500 && !HasSpoken)
+        {
+            DialogueManager.Instance.QueueMessage(this, "Hm?@ W-what's this?@ A drop of sweat?");
+            DialogueManager.Instance.QueueMessage(this, "My, my...@ I cannot believe this.");
+            await DialogueManager.Instance.WaitForDialogue();
+            HasSpoken = true;
+        }
+
+        if (CurrentHP <= 0)
+        {
+            OverlaySprite?.QueueFree();
+            DialogueManager.Instance.QueueMessage(this, "Ah.@ You have bested me.");
+            DialogueManager.Instance.QueueMessage(this, "Right, then.@ I know when to admit defeat.");
+            await DialogueManager.Instance.WaitForDialogue();
+        }
+    }
+
+    public override async Task OnStartOfBattle()
+    {
+        DialogueManager.Instance.QueueMessage(this, "Remember, children...@ You brought this upon yourselves!");
+        await DialogueManager.Instance.WaitForDialogue();
+    }
+
+    public override async Task OnEndOfBattle(bool victory)
+    {
+        if (!victory)
+        {
+            DialogueManager.Instance.QueueMessage(this, "I said that you would regret this, children.");
+            DialogueManager.Instance.QueueMessage(this, "Don't make me do this again.");
+            await DialogueManager.Instance.WaitForDialogue();
+        }
+    }
+}

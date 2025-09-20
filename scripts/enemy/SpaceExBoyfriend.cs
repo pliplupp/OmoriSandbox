@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 public class SpaceExBoyfriend : Enemy
 {
     public override string Name => "SPACE EX-BOYFRIEND";
@@ -20,71 +22,53 @@ public class SpaceExBoyfriend : Enemy
     private int Stage = 0;
     public override BattleCommand ProcessAI()
     {
-        int roll;
-        Actor target = BattleManager.Instance.GetRandomAlivePartyMember();
+        Actor target = SelectTarget();
         switch (CurrentState)
         {
             case "se_furious":
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 36)
+                if (Roll() < 36)
                     goto attack;
                 goto bullet;
             case "se_enraged":
             case "se_angry":
             case "angry":
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 46)
+                if (Roll() < 46)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 21)
+                if (Roll() < 21)
                     goto nothing;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 21)
+                if (Roll() < 21)
                     goto angsty;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 31)
+                if (Roll() < 31)
                     goto angry;
                 goto laser;
             case "sad":
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 31)
+                if (Roll() < 31)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 21)
+                if (Roll() < 21)
                     goto nothing;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 41)
+                if (Roll() < 41)
                     goto angsty;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 21)
+                if (Roll() < 21)
                     goto angry;
                 goto laser;
             case "happy":
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 36)
+                if (Roll() < 36)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 21)
+                if (Roll()   < 21)
                     goto nothing;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 21)
+                if (Roll() < 21)
                     goto angsty;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 21)
+                if (Roll() < 21)
                     goto angry;
                 goto laser;
             default:
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 36)
+                if (Roll() < 36)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 31)
+                if (Roll() < 31)
                     goto nothing;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 31)
+                if (Roll() < 31)
                     goto angsty;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 31)
+                if (Roll() < 31)
                     goto angry;
                 goto laser;
 
@@ -103,15 +87,28 @@ public class SpaceExBoyfriend : Enemy
         return new BattleCommand(this, target, Skills["BulletHell"]);
     }
 
-    public override void ProcessBattleConditions()
+    public override async Task ProcessBattleConditions()
     {
-        if (Stage > 2 || CurrentHP <= 0)
+        if (CurrentHP <= 0)
+        {
+            DialogueManager.Instance.QueueMessage(this, "Ugh...@ my heart...");
+            DialogueManager.Instance.QueueMessage(this, "It...@ hurts...");
+            await DialogueManager.Instance.WaitForDialogue();
+            return;
+        }
+
+        if (Stage > 2)
             return;
 
         if (CurrentHP < 338 && Stage <= 2)
         {
             EmotionLocked = false;
+            DialogueManager.Instance.QueueMessage(this, "Out of my way, earthly scum!");
+            DialogueManager.Instance.QueueMessage(this, "This is your last chance!");
+            await DialogueManager.Instance.WaitForDialogue();
             ForceState("SpaceExFurious", "furious");
+            DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND became FURIOUS!");
+            await DialogueManager.Instance.WaitForDialogue();
             EmotionLocked = true;
             Stage = 3;
         }
@@ -119,16 +116,36 @@ public class SpaceExBoyfriend : Enemy
         if (CurrentHP < 675 && Stage <= 1)
         {
             EmotionLocked = false;
+            DialogueManager.Instance.QueueMessage(this, "Gah! How are you still moving!?");
+            DialogueManager.Instance.QueueMessage(this, "I...@ I won't let you defeat me!");
+            await DialogueManager.Instance.WaitForDialogue();
             ForceState("SpaceExEnraged", "enraged");
+            DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND became ENRAGED!");
+            await DialogueManager.Instance.WaitForDialogue();
             EmotionLocked = true;
             Stage = 2;
         }
 
         if (CurrentHP < 1013 && Stage == 0)
         {
+            DialogueManager.Instance.QueueMessage(this, "My rage cannot be contained...@ You cannot placate me!");
+            await DialogueManager.Instance.WaitForDialogue();
             ForceState("SpaceExAngry", "angry");
+            DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND became ANGRY!");
+            DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND can no longer be HAPPY or SAD!");
+            await DialogueManager.Instance.WaitForDialogue();
             EmotionLocked = true;
             Stage = 1;
+        }
+    }
+
+    public override async Task OnEndOfBattle(bool victory)
+    {
+        if (!victory)
+        {
+            DialogueManager.Instance.QueueMessage(this, "You should have thought twice before challenging me.");
+            DialogueManager.Instance.QueueMessage(this, "You are nothing but earthly scum!");
+            await DialogueManager.Instance.WaitForDialogue();
         }
     }
 }

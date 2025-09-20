@@ -4,7 +4,7 @@ public class MrJawsumStatModifier : StatModifier
 {
     public override void OverrideDamage(ref float damage, Actor attacker, Actor defender, bool isAttacking)
     {
-        if (!isAttacking)
+        if (isAttacking)
             return;
 
         if (defender is not MrJawsum jawsum)
@@ -19,7 +19,7 @@ public class MrJawsumStatModifier : StatModifier
             EnemyComponent gator = jawsum.GatorGuys[i];
             gator.Actor.Damage(shared);
             BattleManager.Instance.SpawnDamageNumber(shared, gator.Actor.CenterPoint);
-            GameManager.Instance.AnimationManager.PlayAnimation(123, gator.Actor);
+            AnimationManager.Instance.PlayAnimation(123, gator.Actor);
             BattleLogManager.Instance.QueueMessage(attacker, gator.Actor, "[target] takes " + shared + " damage!");
             if (gator.Actor.CurrentHP <= 0)
             {

@@ -7,13 +7,15 @@ public partial class SkillMenu : Menu
 	[Export] public Label[] SkillLabels;
 	[Export] public Label CostText;
 	private readonly List<Skill> Skills = [];
-	private List<Vector2I> Positions = [new Vector2I(170, 440), new Vector2I(340, 440), new Vector2I(170, 462), new Vector2I(340, 462)];
+	private List<Vector2I> Positions = [new Vector2I(-145, 5), new Vector2I(25, 5), new Vector2I(-145, 25), new Vector2I(25, 25)];
 
 	private Vector2I GridSize = new(2, 2);
+	private string ActorName = "";
 
 	public void Populate(Actor actor)
 	{
 		Skills.Clear();
+		ActorName = actor.Name.ToUpper();
         CostText.Text = "0";
         foreach (Label l in SkillLabels)
 			l.Text = "";
@@ -41,7 +43,7 @@ public partial class SkillMenu : Menu
         if (Empty) return;
         Skill s = Skills[CursorIndex];
 		CostText.Text = s.Cost.ToString();
-		BattleLogManager.Instance.ClearAndShowMessage($"{s.Name}\n{s.Description}");
+		BattleLogManager.Instance.ClearAndShowMessage($"{s.Name}\n{s.Description.Replace("[actor]", ActorName).Replace("[first]", BattleManager.Instance.GetPartyMember(0).Name)}");
 	}
 
 	protected override void MoveCursor(Vector2I direction)

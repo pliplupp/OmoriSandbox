@@ -4,17 +4,20 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-public partial class AnimationManager : Node2D
+public partial class AnimationManager : Node
 {
 	[Signal]
 	public delegate void AnimationFinishedEventHandler();
 
-	private TextureRect Battleback;
-	private AnimatedSprite2D ReleaseEnergy;
-	private AnimatedSprite2D ReleaseEnergyBasil;
-	private AnimatedSprite2D RedHands;
-	private AnimatedSprite2D FlowerCrown;
-	private Node2D FullScreenEffectNode;
+    [Export] private TextureRect Battleback;
+    [Export] private AnimatedSprite2D ReleaseEnergy;
+    [Export] private AnimatedSprite2D ReleaseEnergyBasil;
+    [Export] private AnimatedSprite2D RedHands;
+    [Export] private AnimatedSprite2D FlowerCrown;
+    [Export] private ColorRect Photograph;
+	[Export] private PackedScene PerfectheartOverlaySprite;
+	[Export] private Node2D PerfectheartOverlayParent;
+    [Export] private Node2D FullScreenEffectNode;
 
 	private Dictionary<int, RPGMAnimatedSprite> Animations = [];
 
@@ -29,15 +32,15 @@ public partial class AnimationManager : Node2D
 	private int ShakeDuration = 0;
 	private float ShakeDirection = -1f;
 
-	public override void _Ready()
-	{
-		Battleback = GetNode<TextureRect>("../../UI/Battleback");
-		FullScreenEffectNode = GetNode<Node2D>("../../UI/FullScreenEffects");
-		ReleaseEnergy = GetNode<AnimatedSprite2D>("../../UI/FullScreenEffects/ReleaseEnergy");
-		ReleaseEnergyBasil = GetNode<AnimatedSprite2D>("../../UI/FullScreenEffects/ReleaseEnergyBasil");
-		RedHands = GetNode<AnimatedSprite2D>("../../UI/FullScreenEffects/RedHands");
-		FlowerCrown = GetNode<AnimatedSprite2D>("../../UI/FullScreenEffects/FlowerCrown");
+	public static AnimationManager Instance { get; private set; }
 
+    public override void _EnterTree()
+    {
+		Instance = this;
+    }
+
+	public void Init()
+	{
 		string data = FileAccess.GetFileAsString("res://animations/animations.json");
 		List<AnimationInfo> animationData = JsonConvert.DeserializeObject<List<AnimationInfo>>(data);
 		foreach (AnimationInfo info in animationData)
@@ -147,7 +150,7 @@ public partial class AnimationManager : Node2D
 		ShakeDuration--;
 	}
 
-	private void InitShake(Shake shake)
+	public void InitShake(Shake shake)
 	{
 		Battleback.Position = new Vector2(-640, 0);
 		Shake = 0f;
@@ -172,7 +175,7 @@ public partial class AnimationManager : Node2D
 
 	public void PlayScreenAnimation(int id, bool targetsEnemy)
 	{
-		StartAnimation(id, new Vector2(320, 240), targetsEnemy);
+		StartAnimation(id, new Vector2(315, 240), targetsEnemy);
 	}
 
 	public Task WaitForAnimation(int id, Actor target, bool targetsEnemy = true)
@@ -360,6 +363,35 @@ public partial class AnimationManager : Node2D
 		effectTween.TweenCallback(Callable.From(Finished));
 
 		return tcs.Task;
+	}
+
+	public void PlayPhotograph()
+	{
+		Photograph.Visible = true;
+		Tween tween = GetTree().CreateTween();
+		tween.TweenProperty(Photograph, "modulate:a", 0f, 1f);
+		tween.TweenCallback(Callable.From(() =>
+		{
+			Photograph.Modulate = Colors.White;
+			Photograph.Visible = false;
+		}));
+	}
+
+	public Sprite2D SpawnPerfectheartOverlay(Vector2 position)
+	{
+		Sprite2D sprite = PerfectheartOverlaySprite.Instantiate<Sprite2D>();
+		PerfectheartOverlayParent.AddChild(sprite);
+		sprite.Modulate = Colors.Transparent;
+		sprite.Position = position;
+		Tween tween = sprite.CreateTween();
+		tween.TweenProperty(sprite, "modulate:a", 1f, 1f);
+		return sprite;
+	}
+
+	public void DespawnAll()
+	{
+		foreach (Node child in PerfectheartOverlayParent.GetChildren())
+			child.QueueFree();
 	}
 
 	private void StartAnimation(int id, Vector2 position, bool targetsEnemy)

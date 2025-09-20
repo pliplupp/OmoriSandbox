@@ -1,0 +1,101 @@
+using System.Threading.Tasks;
+
+public class Roboheart : Enemy
+{
+    public override string Name => "ROBOHEART";
+    public override string AnimationPath => "res://animations/roboheart.tres";
+    protected override Stats Stats => new(2500, 1250, 45, 40, 60, 10, 95);
+    protected override string[] EquippedSkills => ["RHAttack", "RHDoNothing", "RHLaser", "RHSnack", "RHExplode"];
+    public override bool IsStateValid(string state)
+    {
+        return state == "neutral" || state == "happy" || state == "sad"
+               || state == "angry" || state == "hurt" || state == "toast";
+    }
+
+    public override BattleCommand ProcessAI()
+    {
+        if (CurrentHP < 250)
+            return new BattleCommand(this, null, Skills["RHExplode"]);
+
+        switch (CurrentState)
+        {
+            case "happy":
+                if (Roll() < 31)
+                    goto attack;
+                if (Roll() < 26)
+                    goto nothing;
+                if (Roll() < 41)
+                    goto laser;
+                goto snack;
+            case "sad":
+                if (Roll() < 31)
+                    goto attack;
+                if (Roll() < 56)
+                    goto nothing;
+                if (Roll() < 31)
+                    goto laser;
+                goto snack;
+            case "angry":
+                if (Roll() < 46)
+                    goto attack;
+                if (Roll() < 36)
+                    goto nothing;
+                if (Roll() < 56)
+                    goto laser;
+                goto snack;
+            default:
+                if (Roll() < 36)
+                    goto attack;
+                if (Roll() < 36)
+                    goto nothing;
+                if (Roll() < 36)
+                    goto laser;
+                goto snack;
+        }
+    attack:
+        return new BattleCommand(this, null, Skills["RHAttack"]);
+    nothing:
+        return new BattleCommand(this, null, Skills["RHDoNothing"]);
+    laser:
+        return new BattleCommand(this, null, Skills["RHLaser"]);
+    snack:
+        return new BattleCommand(this, null, Skills["RHSnack"]);
+    }
+
+    private int Stage = 0;
+    public override async Task ProcessBattleConditions()
+    {
+        if (CurrentHP <= 0)
+        {
+            DialogueManager.Instance.QueueMessage(this, "V2h5Pw==");
+            await DialogueManager.Instance.WaitForDialogue();
+            return;
+        }
+
+        if (Stage > 1)
+            return;
+
+        if (CurrentHP < 625 && Stage <= 1)
+        {
+            DialogueManager.Instance.QueueMessage(this, "SGVscC4uLiBtZS4uLgo=");
+            await DialogueManager.Instance.WaitForDialogue();
+            Stage++;
+        }
+
+        if (CurrentHP < 1875 && Stage == 0)
+        {
+            DialogueManager.Instance.QueueMessage(this, "TXkgbGlmZSBpcyBzdW\nZmZXJpbmch");
+            await DialogueManager.Instance.WaitForDialogue();
+            Stage++;
+        }
+    }
+
+    public override async Task OnEndOfBattle(bool victory)
+    {
+        if (!victory)
+        {
+            DialogueManager.Instance.QueueMessage(this, "Tm8sIEkgZGlkbid0I\nG1lYW4gdG8h");
+            await DialogueManager.Instance.WaitForDialogue();
+        }
+    }
+}

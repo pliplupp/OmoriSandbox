@@ -15,43 +15,33 @@ public class ForestBunnyQuestion : Enemy
 
     public override BattleCommand ProcessAI()
     {
-        int roll;
-        Actor target = BattleManager.Instance.GetRandomAlivePartyMember();
+        Actor target = SelectTarget();
         switch (CurrentState)
         {
             case "happy":
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 46)
+                if (Roll() < 46)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 31)
+                if (Roll() < 31)
                     goto nothing;
                 goto cute;
             case "sad":
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 31)
+                if (Roll() < 31)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 31)
+                if (Roll() < 31)
                     goto nothing;
                 goto sad;
             case "angry":
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 71)
+                if (Roll() < 71)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 21)
+                if (Roll() < 21)
                     goto nothing;
                 goto cute;
             default:
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 61)
+                if (Roll() < 61)
                     goto attack;
-                roll = GameManager.Instance.Random.RandiRange(0, 100);
-                if (roll < 41)
+                if (Roll() < 41)
                     goto nothing;
                 goto cute;
-
         }
     attack:
         return new BattleCommand(this, target, Skills["FBQAttack"]);

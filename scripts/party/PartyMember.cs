@@ -1,5 +1,6 @@
 using Godot;
 using System.Linq;
+using System.Threading.Tasks;
 
 public abstract class PartyMember : Actor
 {
@@ -71,6 +72,16 @@ public abstract class PartyMember : Actor
 	{
 		return !(InvalidStates.Any(x => x == state) || (Charm != null && Charm.Name == "Paper Bag"));
 	}
+
+    public override async Task OnStartOfBattle()
+    {
+        if (Weapon.Name == "LOL Sword")
+		{
+			SetState("happy", true);
+		}
+		Charm?.StartOfBattle(this);
+		await Task.CompletedTask;
+    }
 
 	public abstract string AnimationPath { get; }
 	public abstract int[] HPTree { get; }
