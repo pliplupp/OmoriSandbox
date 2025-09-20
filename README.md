@@ -87,15 +87,15 @@ The following features are currently missing and/or not fully functional in the 
 - [ ] Some Screen Tint/Wave Effects
 - [ ] Faraway Town Snacks and Toys
 - [ ] Sales Tag, Chef's Hat, Contract, Abbi's Eye, Unused Charms
-- [ ] In-Battle Dialogue
-- [ ] Any skills that perform a Taunt
+- [X] In-Battle Dialogue
+- [X] Any skills that perform a Taunt
 ### Partially Functional
 - [x] Afraid and Stressed Out
 - [X] Party sizes below 4
 - [x] Skills that use the `<Not User>` tag
 - [ ] Boss-Specific Behavior
 - [ ] Game Over
-- [ ] Skill/Item descriptions that use character names
+- [X] Skill/Item descriptions that use character names
 - [ ] General Refactoring and Code Improvements
 ### Planned Changes/Additions
 - [ ] Official Mod Support/Modding API + Documentation
