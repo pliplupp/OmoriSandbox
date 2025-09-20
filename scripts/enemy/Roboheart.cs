@@ -84,7 +84,7 @@ public class Roboheart : Enemy
 
         if (CurrentHP < 1875 && Stage == 0)
         {
-            DialogueManager.Instance.QueueMessage(this, "TXkgbGlmZSBpcyBzdWZmZXJpbmch");
+            DialogueManager.Instance.QueueMessage(this, "TXkgbGlmZSBpcyBzdW\nZmZXJpbmch");
             await DialogueManager.Instance.WaitForDialogue();
             Stage++;
         }
@@ -94,7 +94,7 @@ public class Roboheart : Enemy
     {
         if (!victory)
         {
-            DialogueManager.Instance.QueueMessage(this, "Tm8sIEkgZGlkbid0IG1lYW4gdG8h");
+            DialogueManager.Instance.QueueMessage(this, "Tm8sIEkgZGlkbid0I\nG1lYW4gdG8h");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }

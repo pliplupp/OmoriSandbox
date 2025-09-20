@@ -36,6 +36,7 @@ public partial class BattleManager : Node
 	private bool IsBattling = false;
 
 	// TODO: This is a poor way to do this, should probably be improved
+	private bool ProcessedStartOfTurn = false;
 	private bool ProcessedEndOfTurn = false;
 
 	public static BattleManager Instance { get; private set; }
@@ -553,9 +554,13 @@ public partial class BattleManager : Node
 		CommandIndex = -1;
 		Commands.Clear();
 		ProcessedEndOfTurn = false;
+		if (!ProcessedStartOfTurn)
+		{
+            for (int i = 0; i < Enemies.Count; i++)
+                await Enemies[i].Actor.ProcessStartOfTurn();
+			ProcessedStartOfTurn = true;
+        }
 		GameManager.Instance.DiscordManager.SetBattling(Enemies.Count);
-		for (int i = 0; i < Enemies.Count; i++)
-			await Enemies[i].Actor.ProcessStartOfTurn();
 		if (CurrentParty.Count > 1)
 			BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " and friends do?");
 		else
@@ -878,6 +883,7 @@ public partial class BattleManager : Node
 
 		Enemies.ForEach(x => x.Actor.DecreaseStatTurnCounter());
 
+		ProcessedStartOfTurn = false;
         SetPhase(BattlePhase.FightRun);
     }
 

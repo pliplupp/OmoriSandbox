@@ -3801,9 +3801,10 @@ public class Database
 			 {
 				 await AnimationManager.Instance.WaitForAnimation(124, target, false);
 				 BattleLogManager.Instance.QueueMessage(self, target, "[actor] exploits [target]'s\nemotions!");
-				 self.AddStatModifier("EmotionExploit");
+				 string old = self.CurrentState;
+				 self.ForceState("EmotionExploit", old);
 				 BattleManager.Instance.Damage(self, target, () => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }, false, 0f, neverCrit: true);
-				 self.RemoveStatModifier("EmotionExploit");
+				 self.ForceState(old);
 			 },
 			 hidden: true
         );
