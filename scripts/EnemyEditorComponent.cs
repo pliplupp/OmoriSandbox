@@ -91,7 +91,7 @@ public partial class EnemyEditorComponent : Control
 		Name = who;
 		Enemy enemy = Database.CreateEnemy(who);
 
-		SpriteFrames animation = ResourceLoader.Load<SpriteFrames>(enemy.AnimationPath);
+		SpriteFrames animation = enemy.Animation;
 		if (animation == null)
 		{
 			GD.PrintErr("Failed to load animations for Enemy: " + Name);

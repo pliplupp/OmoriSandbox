@@ -81,6 +81,19 @@ public partial class BattleLogManager : Control
 		IsProcessingMessage = true;
 		string next = MessageQueue[0];
 
+		// if text overruns the border of the log box
+		if (next.Length > 35)
+		{
+			int lastSpace = next.LastIndexOf(' ');
+			// if there's no spaces in the message I guess we're fucked
+			if (lastSpace > -1)
+			{
+				char[] arr = next.ToCharArray();
+				arr[lastSpace] = '\n';
+				next = new string(arr);
+			}
+		}
+
 		string[] lines = next.Split('\n');
 
 		while (ActiveLines.Count >= 3)

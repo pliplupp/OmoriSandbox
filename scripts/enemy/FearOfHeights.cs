@@ -1,9 +1,10 @@
+using Godot;
 using System.Threading.Tasks;
 
 public class FearOfHeights : Enemy
 {
     public override string Name => "SOMETHING";
-    public override string AnimationPath => "res://animations/fear_of_heights.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/fear_of_heights.tres");
     protected override Stats Stats => new(6000, 4000, 120, 100, 80, 10, 95);
     protected override string[] EquippedSkills => ["FOHAttack", "FOHDoNothing", "FOHGrab", "FOHHands", "FOHShove"];
 

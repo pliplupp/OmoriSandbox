@@ -30,6 +30,8 @@ public partial class PartyMemberComponent : Node
 		PartyMember = partyMember;
 		AnimatedSprite2D face = GetNode<AnimatedSprite2D>("../Battlecard/Face");
 		StateAnimator = GetNode<StateAnimator>("../Battlecard/StateAnimatorComponent");
+		if (initialState == "hurt" || initialState == "victory")
+			initialState = "neutral";
 		PartyMember.Init(face, initialState, level, weapon, charm, skills);
 		HPLabel = GetNode<Label>("../Battlecard/HealthLabel/");
 		HPBar = GetNode<TextureProgressBar>("../Battlecard/Health");

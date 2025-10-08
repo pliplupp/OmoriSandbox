@@ -16,9 +16,6 @@ public partial class GameManager : Node
 
 	public RandomNumberGenerator Random = new();
 	public DiscordManager DiscordManager { get; private set; }
-
-	public string CustomDataPath = "user://custom/";
-
 	public static GameManager Instance { get; private set; }
 
 	public override void _PhysicsProcess(double delta)
@@ -38,14 +35,16 @@ public partial class GameManager : Node
 
 		DiscordManager = new();
 
-        AnimationManager.Instance.Init();
-        AudioManager.Instance.Init();
+		AnimationManager.Instance.Init();
+		AudioManager.Instance.Init();
+		ModManager.Instance.LoadMods();
+		MainMenuManager.Instance.Init();
 	}
 
-    public override void _ExitTree()
-    {
+	public override void _ExitTree()
+	{
 		DiscordManager.Shutdown();
-    }
+	}
 
 	public void LoadBattlePreset(Godot.Collections.Dictionary<string, Variant> data)
 	{
@@ -62,10 +61,10 @@ public partial class GameManager : Node
 			DisableDialogue = value.AsBool();
 
 		string battleback = data["battleback"].AsString();
-		if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback))
-			BattlebackParent.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback);
-		else if (FileAccess.FileExists(CustomDataPath + "/battlebacks/" + battleback))
-			BattlebackParent.Texture = ImageTexture.CreateFromImage(Image.LoadFromFile(CustomDataPath + "/battlebacks/" + battleback));
+		if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback + ".png"))
+			BattlebackParent.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback + ".png");
+		else if (ModManager.Instance.Battlebacks.TryGetValue(battleback, out Texture2D texture))
+			BattlebackParent.Texture = texture;
 		else
 			GD.PrintErr("Failed to load battleback: " + battleback);
 
@@ -115,9 +114,9 @@ public partial class GameManager : Node
 			string positionStr = entry["position"].ToString();
 			string[] positionArr = positionStr.Substring(1, positionStr.Length - 2).Split(',');
 			Vector2 position = new(float.Parse(positionArr[0], CultureInfo.InvariantCulture), float.Parse(positionArr[1], CultureInfo.InvariantCulture));
-            if (!entry.TryGetValue("layer", out Variant layer))
-                layer = 0;
-            EnemyComponent en = SpawnEnemy(
+			if (!entry.TryGetValue("layer", out Variant layer))
+				layer = 0;
+			EnemyComponent en = SpawnEnemy(
 					entry["name"].ToString(),
 					position,
 					entry["emotion"].ToString(),
@@ -178,11 +177,11 @@ public partial class GameManager : Node
 				card.Position = new Vector2(20, 5);
 				break;
 			case 2:
-                card.Position = new Vector2(506, 306);
+				card.Position = new Vector2(506, 306);
 				break;
 			case 3:
-                card.Position = new Vector2(506, 5);
-                break;
+				card.Position = new Vector2(506, 5);
+				break;
 		}
 		PartyMemberComponent component = new();
 		card.AddChild(component);

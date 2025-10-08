@@ -1,7 +1,9 @@
+using Godot;
+
 public class BunBunny : Enemy
 {
     public override string Name => "BUN BUNNY";
-    public override string AnimationPath => "res://animations/bun_bunny.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/bun_bunny.tres");
     protected override Stats Stats => new(400, 200, 35, 35, 30, 10, 95);
     public override bool IsStateValid(string state)
     {

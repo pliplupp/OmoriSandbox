@@ -1,8 +1,9 @@
+using Godot;
 using System.Threading.Tasks;
 
 public class SlimeGirls : Enemy
 {
-	public override string AnimationPath => "res://animations/slimegirls.tres";
+	public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/slimegirls.tres");
 
 	public override string Name => "SLIME GIRLS";
 

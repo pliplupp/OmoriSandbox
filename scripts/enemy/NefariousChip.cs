@@ -1,9 +1,10 @@
+using Godot;
 using System.Threading.Tasks;
 
 public class NefariousChip : Enemy
 {
     public override string Name => "NEFARIOUS CHIP";
-    public override string AnimationPath => "res://animations/nefarious_chip.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/nefarious_chip.tres");
     protected override Stats Stats => new(3456, 1700, 43, 47, 10, 15, 95);
     protected override string[] EquippedSkills => ["NCAttack", "NCDoNothing", "NCLaugh", "NCCookies", "NCCookiesHappy"];
     public override bool IsStateValid(string state)

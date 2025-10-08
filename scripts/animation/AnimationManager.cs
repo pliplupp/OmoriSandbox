@@ -39,7 +39,7 @@ public partial class AnimationManager : Node
 		Instance = this;
     }
 
-	public void Init()
+	internal void Init()
 	{
 		string data = FileAccess.GetFileAsString("res://animations/animations.json");
 		List<AnimationInfo> animationData = JsonConvert.DeserializeObject<List<AnimationInfo>>(data);

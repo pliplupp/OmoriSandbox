@@ -1,7 +1,9 @@
+using Godot;
+
 public class Kel : PartyMember
 {
     public override string Name => "Kel";
-    public override string AnimationPath => "res://animations/kel.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/kel.tres");
 
     public override int[] HPTree => new[] { 37, 38, 40, 42, 47, 52, 58, 61, 66, 71, 75, 77, 81, 90, 93, 103, 108, 110, 115, 119, 124, 128, 133, 139, 141, 147, 151, 157, 165, 167, 174, 179, 185, 187, 192, 196, 201, 205, 210, 218, 227, 236, 243, 251, 260, 269, 276, 286, 296, 300 };
     public override int[] JuiceTree => new[] { 25, 31, 33, 37, 41, 47, 53, 55, 61, 65, 71, 74, 79, 88, 91, 100, 106, 108, 113, 117, 123, 129, 135, 141, 143, 148, 154, 159, 169, 172, 181, 185, 189, 192, 197, 201, 206, 211, 215, 222, 230, 239, 248, 255, 265, 275, 285, 295, 305, 315 };

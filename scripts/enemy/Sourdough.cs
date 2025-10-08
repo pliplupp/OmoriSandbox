@@ -1,7 +1,9 @@
+using Godot;
+
 public class Sourdough : Enemy
 {
     public override string Name => "SOURDOUGH";
-    public override string AnimationPath => "res://animations/sourdough.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/sourdough.tres");
     protected override Stats Stats => new(363, 93, 55, 33, 49, 10, 95);
     public override bool IsStateValid(string state)
     {

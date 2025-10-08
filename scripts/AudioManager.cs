@@ -94,12 +94,6 @@ public partial class AudioManager : Node
 		{
 			if (ResourceLoader.Exists("res://audio/bgm/" + name + ".ogg"))
 				stream = ResourceLoader.Load<AudioStreamOggVorbis>("res://audio/bgm/" + name + ".ogg");
-			// check the custom folder too
-			else if (FileAccess.FileExists(GameManager.Instance.CustomDataPath + "/bgm/" + name + ".ogg"))
-			{
-				stream = LoadCustomBGM(GameManager.Instance.CustomDataPath + "/bgm/" + name + ".ogg");
-				stream.LoopOffset = 0d;
-            }
 			else
 			{
 				GD.PrintErr("Unknown BGM: " + name);
@@ -118,11 +112,17 @@ public partial class AudioManager : Node
 		BGM.Stop();
     }
 
-    private AudioStreamOggVorbis LoadCustomBGM(string path)
+    public bool LoadCustomBGM(string path)
 	{
 		AudioStreamOggVorbis stream = AudioStreamOggVorbis.LoadFromFile(path);
-		return stream;
+		return BGMDictionary.TryAdd(path.GetFile().GetBaseName(), stream);
 	}
+
+	public bool LoadCustomSFX(string path)
+	{
+        AudioStreamOggVorbis stream = AudioStreamOggVorbis.LoadFromFile(path);
+        return SFXDictionary.TryAdd(path.GetFile().GetBaseName(), stream);
+    }
 
 	public void FadeBGMTo(float volume, float seconds = 1f)
 	{
@@ -141,6 +141,11 @@ public partial class AudioManager : Node
 				break;
 			}
 		}
+	}
+
+	public IEnumerable<string> GetAllBGM()
+	{
+		return BGMDictionary.Keys;
 	}
 
 	private void OnBGMFinish()

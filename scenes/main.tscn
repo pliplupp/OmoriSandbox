@@ -1,6 +1,7 @@
-[gd_scene load_steps=37 format=3 uid="uid://dnxcj20hgcsj8"]
+[gd_scene load_steps=38 format=3 uid="uid://dnxcj20hgcsj8"]
 
 [ext_resource type="PackedScene" uid="uid://dxm1fg4428tk" path="res://scenes/main_menu.tscn" id="1_yq6so"]
+[ext_resource type="Script" uid="uid://5otaqjeah5jj" path="res://scripts/modding/ModManager.cs" id="2_j8jky"]
 [ext_resource type="PackedScene" uid="uid://b8h6qs361gmp5" path="res://scenes/omori_followup.tscn" id="4_muem4"]
 [ext_resource type="Texture2D" uid="uid://dy720f7vg7l3t" path="res://assets/atlases/battleATLAS.png" id="4_tipki"]
 [ext_resource type="PackedScene" uid="uid://cmi2ecyja4pw6" path="res://scenes/aubrey_followup.tscn" id="5_dp3eg"]
@@ -47,6 +48,9 @@ viewport_path = NodePath("BattleCanvas/UI/Battleback/FullScreenEffects/SubViewpo
 
 [node name="BattleCanvas" type="CanvasLayer" parent="."]
 layer = 0
+
+[node name="ModManager" type="Node" parent="BattleCanvas"]
+script = ExtResource("2_j8jky")
 
 [node name="GameManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("BattlebackParent", "FPSLabel", "Party")]
 script = ExtResource("14_a8y0u")
@@ -145,7 +149,7 @@ text = "0"
 layout_mode = 2
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 10
-text = "OmoriSandbox v0.7.0"
+text = "OmoriSandbox v0.8.0"
 
 [node name="Battleback" type="TextureRect" parent="BattleCanvas/UI"]
 z_index = -100

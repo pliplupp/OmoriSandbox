@@ -1,10 +1,11 @@
+using Godot;
 using System.Collections.Generic;
 using System.Linq;
 
 public class AubreyEnemy : Enemy
 {
     public override string Name => "AUBREY";
-    public override string AnimationPath => "res://animations/aubrey_enemy.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/aubrey_enemy.tres");
     protected override Stats Stats => new(240, 120, 24, 8, 12, 5, 95);
 
     protected override string[] EquippedSkills => ["AEAttack", "AEDoNothing", "AEHeadbutt"];

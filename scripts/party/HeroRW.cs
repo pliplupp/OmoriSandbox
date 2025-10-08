@@ -1,7 +1,9 @@
+using Godot;
+
 public class HeroRW : PartyMember
 {
     public override string Name => "Hero";
-    public override string AnimationPath => "res://animations/hero_rw.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/hero_rw.tres");
 
     public override int[] HPTree => [260];
 

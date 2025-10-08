@@ -1,7 +1,9 @@
+using Godot;
+
 public class Creepypasta : Enemy
 {
     public override string Name => "CREEPYPASTA";
-    public override string AnimationPath => "res://animations/creepypasta.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/creepypasta.tres");
     protected override Stats Stats => new(300, 150, 50, 1, 90, 10, 95);
     public override bool IsStateValid(string state)
     {

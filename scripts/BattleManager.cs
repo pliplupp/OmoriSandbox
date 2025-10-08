@@ -297,6 +297,7 @@ public partial class BattleManager : Node
 		}
 		if (Phase == BattlePhase.TargetSelection)
 		{
+			// TODO: enemy selection should move relative to visual enemy position and not by array position
 			if (SelectedAction.Target == SkillTarget.Enemy || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentEnemyTarget > -1) && Enemies.Count > 1)
 			{
 				if (direction == InputDirection.Right)

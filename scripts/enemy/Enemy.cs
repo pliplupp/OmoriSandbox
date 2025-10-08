@@ -7,7 +7,7 @@ public abstract class Enemy : Actor
 {
     public void Init(AnimatedSprite2D sprite, string initialState, bool fallsOffScreen)
     {
-        SpriteFrames animation = ResourceLoader.Load<SpriteFrames>(AnimationPath);
+        SpriteFrames animation = Animation;
         if (animation == null)
         {
             GD.PrintErr("Failed to load Sprite animations for Enemy: " + Name);
@@ -57,7 +57,7 @@ public abstract class Enemy : Actor
 
     protected abstract Stats Stats { get; }
     protected abstract string[] EquippedSkills { get; }
-    public abstract string AnimationPath { get; }
+    public abstract SpriteFrames Animation { get; }
     public abstract BattleCommand ProcessAI();
     public bool FallsOffScreen = true;
     public virtual async Task ProcessBattleConditions() { await Task.CompletedTask; }

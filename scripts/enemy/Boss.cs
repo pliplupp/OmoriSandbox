@@ -1,8 +1,9 @@
+using Godot;
 using System.Threading.Tasks;
 
 public class Boss : Enemy
 {
-    public override string AnimationPath => "res://animations/boss.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/boss.tres");
 
     public override string Name => "BOSS";
 

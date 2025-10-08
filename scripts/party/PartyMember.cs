@@ -6,14 +6,14 @@ public abstract class PartyMember : Actor
 {
 	public void Init(AnimatedSprite2D face, string initialState, int level, string weapon, string charm, string[] skills)
 	{
-		SpriteFrames animation = ResourceLoader.Load<SpriteFrames>(AnimationPath);
-		if (animation == null)
-		{
-			GD.PrintErr("Failed to load Face animations for PartyMember: " + Name);
-			return;
-		}
-		// init animation
-		Sprite = face;
+		SpriteFrames animation = Animation;
+        if (animation == null)
+        {
+            GD.PrintErr("Failed to load Face animations for PartyMember: " + Name);
+            return;
+        }
+        // init animation
+        Sprite = face;
 		Sprite.SpriteFrames = animation;
 		Sprite.Animation = initialState;
 		Sprite.Play();
@@ -39,7 +39,10 @@ public abstract class PartyMember : Actor
 			Charm = c;
 		}
 
-		CurrentHP = CurrentStats.HP;
+		if (initialState == "toast")
+			CurrentHP = 0;
+		else
+			CurrentHP = CurrentStats.HP;
 		CurrentJuice = CurrentStats.Juice;
 
 		EquippedSkills = skills;
@@ -83,7 +86,7 @@ public abstract class PartyMember : Actor
 		await Task.CompletedTask;
     }
 
-	public abstract string AnimationPath { get; }
+	public abstract SpriteFrames Animation { get; }
 	public abstract int[] HPTree { get; }
 	public abstract int[] JuiceTree { get; }
 	public abstract int[] ATKTree { get; }

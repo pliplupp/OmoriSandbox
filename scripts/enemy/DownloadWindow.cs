@@ -1,7 +1,9 @@
+using Godot;
+
 public class DownloadWindow : Enemy
 {
     public override string Name => "DOWNLOAD WINDOW";
-    public override string AnimationPath => "res://animations/download_window.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/download_window.tres");
     protected override Stats Stats => new(600, 210, 10, 5, 1, 10, 95);
     protected override string[] EquippedSkills => ["Crash", "DWDoNothing1", "DWDoNothing2"];
     public override bool IsStateValid(string state)
