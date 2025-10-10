@@ -2,9 +2,11 @@ using Godot;
 using Newtonsoft.Json;
 using OmoriSandbox.Battle;
 using OmoriSandbox.Editor;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 
 namespace OmoriSandbox.Modding;
 
@@ -73,9 +75,13 @@ internal partial class ModManager : Node
 			return false;
 		}
 
-		// TODO: Check for .dll
+		foreach (string modDll in DirAccess.GetFilesAt("user://mods/" + dirName).Where(x => x.EndsWith(".dll")))
+		{
+			if (!LoadModAssembly(modDll))
+				return false;
+        }
 
-		foreach (string modDir in DirAccess.GetDirectoriesAt("user://mods/" + dirName))
+        foreach (string modDir in DirAccess.GetDirectoriesAt("user://mods/" + dirName))
 		{
 			bool success = true;
 			switch (modDir.ToLower())
@@ -112,6 +118,33 @@ internal partial class ModManager : Node
 		return true;
 	}
 
+	private bool LoadModAssembly(string path)
+	{
+		try
+		{
+			Assembly asm = Assembly.LoadFile(ProjectSettings.GlobalizePath("user://mods/" + path));
+			var type = asm.GetTypes().FirstOrDefault(t => t.IsSubclassOf(typeof(Mod)) && !t.IsAbstract);
+			if (type == null)
+			{
+				GD.PushWarning($"No valid Mod class found in assembly {path}, skipping!");
+				return false;
+			}
+
+			if (Activator.CreateInstance(type) is not Mod instance)
+			{
+				GD.PrintErr("Failed to instantiate Mod class from assembly " + path);
+				return false;
+			}
+
+			ModParent.AddChild(instance);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+    }
+
 	private bool LoadActors(string root)
 	{
 		string path = "user://mods/" + root + "/actors";
@@ -133,7 +166,7 @@ internal partial class ModManager : Node
 			try
 			{
 				JsonActorMod mod = JsonConvert.DeserializeObject<JsonActorMod>(access.GetAsText());
-				Database.RegisterModdedPartyMember(mod, BuildAnimation(mod, $"{path}/{actor}"));
+				Database.RegisterJsonPartyMember(mod, BuildAnimation(mod, $"{path}/{actor}"));
 			}
 			catch
 			{
@@ -195,7 +228,7 @@ internal partial class ModManager : Node
 			try
 			{
 				JsonEnemyMod mod = JsonConvert.DeserializeObject<JsonEnemyMod>(access.GetAsText());
-				Database.RegisterModdedEnemy(mod, BuildAnimation(mod, $"{path}/{enemy}"));
+				Database.RegisterJsonEnemy(mod, BuildAnimation(mod, $"{path}/{enemy}"));
 			}
 			catch
 			{

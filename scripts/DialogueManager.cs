@@ -159,7 +159,6 @@ public partial class DialogueManager : Node2D
 	/// <remarks>
 	/// If this method is not called after <see cref="QueueMessage"/>, the battle will continue while the dialogue is still on screen.
 	/// </remarks>
-    /// <returns></returns>
     public Task WaitForDialogue()
 	{
 		if (DialogueDisabled)
@@ -180,7 +179,7 @@ public partial class DialogueManager : Node2D
 	/// <summary>
 	/// Queues a message to be displayed in the dialogue box.
 	/// </summary>
-	/// <param name="message">The message to display.</param>
+	/// <param name="message">The message to display. The @ symbol can be used to pause mid-message.</param>
 	public void QueueMessage(string message)
 	{
 		QueueMessage(null, Vector2.Zero, message);
@@ -191,7 +190,7 @@ public partial class DialogueManager : Node2D
 	/// The speaker arrow will point to the <see cref="Enemy"/>'s position on screen.
     /// </summary>
     /// <param name="speaker">The <see cref="Enemy"/> to show as the speaker.</param>
-    /// <param name="message">The message to display.</param>
+    /// <param name="message">The message to display. The @ symbol can be used to pause mid-message.</param>
     public void QueueMessage(Enemy speaker, string message)
 	{
 		QueueMessage(speaker.Name, speaker.CenterPoint, message);
@@ -202,7 +201,7 @@ public partial class DialogueManager : Node2D
     /// </summary>
     /// <param name="speaker">The name of the speaker.</param>
     /// <param name="speakerPos">The position on screen to use as the speaker target.</param>
-    /// <param name="message">The message to display.</param>
+    /// <param name="message">The message to display. The @ symbol can be used to pause mid-message.</param>
     public void QueueMessage(string speaker, Vector2 speakerPos, string message)
 	{
 		if (DialogueDisabled)

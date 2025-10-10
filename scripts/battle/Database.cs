@@ -73,20 +73,20 @@ public class Database
 		return Charms.TryGetValue(name, out charm);
 	}
 
-	internal static void RegisterModdedPartyMember(JsonActorMod jsonActor, SpriteFrames builtFrames)
+	internal static void RegisterJsonPartyMember(JsonActorMod jsonActor, SpriteFrames builtFrames)
 	{
 		if (builtFrames == null)
 			return;
 
 		if (PartyMembers.ContainsKey(jsonActor.Name))
 		{
-			GD.PrintErr("Actor with name " +  jsonActor.Name + " already exists!");
+			GD.PrintErr("Party member with name " +  jsonActor.Name + " already exists!");
 			return;
 		}
 		PartyMembers[jsonActor.Name] = () => new ModdedPartyMember(jsonActor, builtFrames);
 	}
 
-    internal static void RegisterModdedEnemy(JsonEnemyMod jsonEnemy, SpriteFrames builtFrames)
+    internal static void RegisterJsonEnemy(JsonEnemyMod jsonEnemy, SpriteFrames builtFrames)
 	{
 		if (builtFrames == null)
 			return;
@@ -99,7 +99,63 @@ public class Database
 		Enemies[jsonEnemy.Name] = () => new ModdedEnemy(jsonEnemy, builtFrames);
  	}
 
-	internal static PartyMember CreatePartyMember(string who)
+	internal static void RegisterModdedPartyMember<T>(string id) where T : PartyMember, new()
+	{
+		if (!PartyMembers.TryAdd(id, () => new T()))
+		{
+            GD.PrintErr("PartyMember with ID " + id + " already exists!");
+        }
+	}
+
+	internal static void RegisterModdedEnemy<T>(string id) where T : Enemy, new()
+	{
+		if (!Enemies.TryAdd(id, () => new T()))
+		{
+			GD.PrintErr("Enemy with ID " + id + " already exists!");
+		}
+    }
+
+	internal static void RegisterModdedStatModifier(string id, Func<StatModifier> func)
+	{
+		if (!Modifiers.TryAdd(id, func))
+		{
+			GD.PrintErr("StatModifier with ID " + id + " already exists!");
+        }
+    }
+
+	internal static void RegisterModdedSkill(string id, Skill skill)
+	{
+		if (!Skills.TryAdd(id, skill))
+		{
+			GD.PrintErr("Skill with ID " + id + " already exists!");
+		}
+    }
+
+	internal static void RegisterModdedItem(string id, Item item)
+	{
+		if (!Items.TryAdd(id, item))
+		{
+			GD.PrintErr("Item with ID " + id + " already exists!");
+        }
+    }
+
+	internal static void RegisterModdedWeapon(string id, Weapon weapon)
+	{
+		if (!Weapons.TryAdd(id, weapon))
+		{
+			GD.PrintErr("Weapon with ID " + id + " already exists!");
+        }
+	}
+
+	internal static void RegisterModdedCharm(string id, Charm charm)
+	{
+		if (!Charms.TryAdd(id, charm))
+		{
+			GD.PrintErr("Charm with ID " + id + " already exists!");
+        }
+    }
+
+    internal static PartyMember CreatePartyMember(string who)
 	{
 		if (!PartyMembers.TryGetValue(who, out Func<PartyMember> member))
 		{
