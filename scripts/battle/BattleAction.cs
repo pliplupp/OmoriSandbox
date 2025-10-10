@@ -1,5 +1,8 @@
 using System.Threading.Tasks;
 using System;
+using OmoriSandbox.Actors;
+
+namespace OmoriSandbox.Battle;
 
 /// <summary>
 /// A generic action that an actor can perform in a battle

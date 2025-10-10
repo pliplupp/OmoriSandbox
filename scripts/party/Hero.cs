@@ -2,7 +2,9 @@ using Godot;
 using System.Linq;
 using System.Threading.Tasks;
 
-public class Hero : PartyMember
+namespace OmoriSandbox.Actors;
+
+internal sealed class Hero : PartyMember
 {
     public override string Name => "Hero";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/hero.tres");

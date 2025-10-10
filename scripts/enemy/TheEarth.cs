@@ -1,6 +1,9 @@
 using Godot;
 
-public class TheEarth : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class TheEarth : Enemy
 {
     public override string Name => "THE EARTH";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/earth.tres");

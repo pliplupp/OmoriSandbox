@@ -1,5 +1,11 @@
 using Godot;
+using OmoriSandbox.Actors;
 
+namespace OmoriSandbox;
+
+/// <summary>
+/// The component attached to an enemy <see cref="Node"/> in the scene.
+/// </summary>
 public partial class EnemyComponent : Node
 {
     private Enemy Enemy;
@@ -8,9 +14,12 @@ public partial class EnemyComponent : Node
     private Label NameLabel;
     private NinePatchRect NameRect;
 
+    /// <summary>
+    /// The <see cref="Actors.Enemy"/> actor this component is attached to.
+    /// </summary>
     public Enemy Actor => Enemy;
 
-    public void SetEnemy(Enemy enemy, string initialState, bool fallsOffScreen)
+    internal void SetEnemy(Enemy enemy, string initialState, bool fallsOffScreen)
     {
         Enemy = enemy;
         AnimatedSprite2D sprite = GetNode<AnimatedSprite2D>("../Sprite");
@@ -35,11 +44,14 @@ public partial class EnemyComponent : Node
         HPBar.Value = Enemy.CurrentHP;
     }
 
-    public void ShowInfoBox(bool show)
+    internal void ShowInfoBox(bool show)
     {
         AboveHead.Visible = show;
     }
 
+    /// <summary>
+    /// Immediately despawns the enemy from the scene.
+    /// </summary>
     public void Despawn()
     {
         GetParent().QueueFree();

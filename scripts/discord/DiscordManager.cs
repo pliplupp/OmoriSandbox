@@ -1,17 +1,18 @@
-using Discord;
 using Godot;
 using System;
 
-public class DiscordManager
+namespace Discord;
+
+internal class DiscordManager
 {
-    private Discord.Discord DiscordSDK;
+    private Discord DiscordSDK;
     private Activity Activity;
     private readonly bool DiscordDisabled = false;
     public DiscordManager()
     {
         try
         {
-            DiscordSDK = new Discord.Discord(1410108043525488812, (ulong)CreateFlags.NoRequireDiscord);
+            DiscordSDK = new Discord(1410108043525488812, (ulong)CreateFlags.NoRequireDiscord);
             Activity = new Activity()
             {
                 Details = "On the Main Menu",

@@ -1,6 +1,7 @@
 using Godot;
 
-public class Basil : PartyMember
+namespace OmoriSandbox.Actors;
+internal sealed class Basil : PartyMember
 {
     public override string Name => "Basil";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/basil.tres");

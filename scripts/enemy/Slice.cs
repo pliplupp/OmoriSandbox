@@ -1,6 +1,9 @@
 using Godot;
 
-public class Slice : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class Slice : Enemy
 {
     public override string Name => "SLICE";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/slice.tres");

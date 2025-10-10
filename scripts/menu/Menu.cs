@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using Godot;
 
-public abstract partial class Menu : Sprite2D
+namespace OmoriSandbox.Menu;
+
+internal abstract partial class Menu : Sprite2D
 {
 	[Export] protected Sprite2D CursorSprite;
 	protected List<string> Options = [];

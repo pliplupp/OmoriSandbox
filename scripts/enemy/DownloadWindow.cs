@@ -1,6 +1,8 @@
 using Godot;
+using OmoriSandbox.Battle;
 
-public class DownloadWindow : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class DownloadWindow : Enemy
 {
     public override string Name => "DOWNLOAD WINDOW";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/download_window.tres");

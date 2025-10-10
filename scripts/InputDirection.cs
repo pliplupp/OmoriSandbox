@@ -1,3 +1,5 @@
+namespace OmoriSandbox;
+
 public enum InputDirection
 {
     Neutral,

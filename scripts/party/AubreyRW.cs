@@ -1,6 +1,7 @@
 using Godot;
 
-public class AubreyRW : PartyMember
+namespace OmoriSandbox.Actors;
+internal sealed class AubreyRW : PartyMember
 {
     public override string Name => "Aubrey";
 

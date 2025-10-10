@@ -1,7 +1,11 @@
 using Godot;
+using OmoriSandbox.Actors;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Extensions;
 using System.Linq;
 
-public partial class PartyMemberEditorComponent : Control
+namespace OmoriSandbox.Editor;
+internal partial class PartyMemberEditorComponent : Control
 {
 	[Export]
 	public OptionButton ActorDropdown { get; private set; }

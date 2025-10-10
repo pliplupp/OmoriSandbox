@@ -2,10 +2,17 @@ using Godot;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Battle.Modifier;
 
+namespace OmoriSandbox.Actors;
+
+/// <summary>
+/// An <see cref="Actor"/> that is considered an enemy. Can be inherited to create a new enemy.
+/// </summary>
 public abstract class Enemy : Actor
 {
-    public void Init(AnimatedSprite2D sprite, string initialState, bool fallsOffScreen)
+    internal void Init(AnimatedSprite2D sprite, string initialState, bool fallsOffScreen)
     {
         SpriteFrames animation = Animation;
         if (animation == null)
@@ -36,6 +43,10 @@ public abstract class Enemy : Actor
         }
     }
 
+    /// <summary>
+    /// Selects a target. Mainly used in <see cref="ProcessAI"/> to select targets when necessary. Can be overriden for custom targeting behavior.
+    /// </summary>
+    /// <returns>The <see cref="PartyMember"/> that will be targeted.</returns>
     protected virtual PartyMember SelectTarget()
     {
         if (HasStatModifier("Charm"))
@@ -50,17 +61,46 @@ public abstract class Enemy : Actor
         return taunting[GameManager.Instance.Random.RandiRange(0, taunting.Count - 1)].Actor;
     }
 
+    /// <summary>
+    /// Rolls a number between 0 and 100 (inclusive). Mainly a helper function for calculating skill chances in <see cref="ProcessAI"/>
+    /// </summary>
+    /// <returns></returns>
     protected int Roll()
     {
         return GameManager.Instance.Random.RandiRange(0, 100);
     }
 
+    /// <summary>
+    /// The enemy's stats.
+    /// </summary>
     protected abstract Stats Stats { get; }
+    /// <summary>
+    /// A list of skills that this enemy has equipped.
+    /// </summary>
     protected abstract string[] EquippedSkills { get; }
     public abstract SpriteFrames Animation { get; }
+    /// <summary>
+    /// Called right before an enemy takes their turn.
+    /// </summary>
+    /// <returns>The <see cref="BattleCommand"/> that the enemy will perform on their turn.</returns>
     public abstract BattleCommand ProcessAI();
+    /// <summary>
+    /// Whether or not the enemy falls off the screen when killed.
+    /// </summary>
+    /// <remarks>
+    /// Setting this value directly should be avoided as the player can set this manually in the preset settings.
+    /// </remarks>
     public bool FallsOffScreen = true;
+    /// <summary>
+    /// Called after an enemy finishes their action. Mainly used for boss events.
+    /// </summary>
     public virtual async Task ProcessBattleConditions() { await Task.CompletedTask; }
+    /// <summary>
+    /// Called at the very start of the turn.
+    /// </summary>
     public virtual async Task ProcessStartOfTurn() { await Task.CompletedTask; }
+    /// <summary>
+    /// Called at the very end of the turn, but before it officially ends.
+    /// </summary>
     public virtual async Task ProcessEndOfTurn() { await Task.CompletedTask; }
 }

@@ -1,8 +1,12 @@
 using Godot;
 using Newtonsoft.Json;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Editor;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+
+namespace OmoriSandbox.Modding;
 
 internal partial class ModManager : Node
 {

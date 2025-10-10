@@ -1,6 +1,13 @@
 using System;
+using OmoriSandbox.Actors;
+using OmoriSandbox.Animation;
 
-public class MrJawsumStatModifier : StatModifier
+namespace OmoriSandbox.Battle.Modifier;
+
+/// <summary>
+/// The modifier used by Mr. Jawsum to have his Gator Guys take the hit.
+/// </summary>
+public sealed class MrJawsumStatModifier : StatModifier
 {
     public override void OverrideDamage(ref float damage, Actor attacker, Actor defender, bool isAttacking)
     {

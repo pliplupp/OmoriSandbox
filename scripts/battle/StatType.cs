@@ -1,3 +1,8 @@
+namespace OmoriSandbox.Battle;
+
+/// <summary>
+/// A stat that an <see cref="Actor"/> can have.
+/// </summary>
 public enum StatType
 {
     HP,

@@ -1,7 +1,11 @@
 using Godot;
 using System.Threading.Tasks;
 
-public class Perfectheart : Enemy
+using OmoriSandbox.Battle;
+using OmoriSandbox.Animation;
+
+namespace OmoriSandbox.Actors;
+internal sealed class Perfectheart : Enemy
 {
     public override string Name => "PERFECTHEART";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/perfectheart.tres");

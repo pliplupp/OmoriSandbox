@@ -1,5 +1,9 @@
 using Godot;
 using System.Linq;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Modding;
+
+namespace OmoriSandbox.Actors;
 
 internal class ModdedEnemy : Enemy
 {

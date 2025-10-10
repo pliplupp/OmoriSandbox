@@ -1,6 +1,8 @@
 using Godot;
 
-public class Omori : PartyMember
+namespace OmoriSandbox.Actors;
+
+internal sealed class Omori : PartyMember
 {
     public override string Name => "Omori";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/omori.tres");

@@ -1,6 +1,8 @@
 using Godot;
+using OmoriSandbox.Battle;
 
-public class LostSproutMole : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class LostSproutMole : Enemy
 {
 	public override string Name => "LOST SPROUT MOLE";
 

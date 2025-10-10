@@ -1,7 +1,10 @@
 using Godot;
 using System.Threading.Tasks;
 
-public class NefariousChip : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class NefariousChip : Enemy
 {
     public override string Name => "NEFARIOUS CHIP";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/nefarious_chip.tres");

@@ -1,6 +1,8 @@
 using Godot;
+using OmoriSandbox.Battle;
 
-public class Creepypasta : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class Creepypasta : Enemy
 {
     public override string Name => "CREEPYPASTA";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/creepypasta.tres");

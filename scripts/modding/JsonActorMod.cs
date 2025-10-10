@@ -1,3 +1,5 @@
+namespace OmoriSandbox.Modding;
+
 internal struct JsonActorMod
 {
     public string Name { get; set; }

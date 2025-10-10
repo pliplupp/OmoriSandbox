@@ -1,7 +1,10 @@
 using Godot;
 using System.Threading.Tasks;
 
-public class SlimeGirls : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class SlimeGirls : Enemy
 {
 	public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/slimegirls.tres");
 

@@ -1,6 +1,8 @@
 using Godot;
+using OmoriSandbox.Battle;
 
-public class FearOfSpiders : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class FearOfSpiders : Enemy
 {
     public override string Name => "SOMETHING";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/fear_of_spiders.tres");

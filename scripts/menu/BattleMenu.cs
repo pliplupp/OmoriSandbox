@@ -1,6 +1,8 @@
 using Godot;
 
-public partial class BattleMenu : Menu
+namespace OmoriSandbox.Menu;
+
+internal partial class BattleMenu : Menu
 {
 	private Vector2I GridSize = new(2, 2);
 

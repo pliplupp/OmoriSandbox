@@ -1,7 +1,10 @@
 using Godot;
 using System.Threading.Tasks;
 
-public class Roboheart : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class Roboheart : Enemy
 {
     public override string Name => "ROBOHEART";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/roboheart.tres");

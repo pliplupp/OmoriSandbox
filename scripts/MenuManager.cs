@@ -1,15 +1,19 @@
 using Godot;
+using OmoriSandbox.Actors;
+using System;
 using System.Collections.Generic;
 
-public partial class MenuManager : Node
+namespace OmoriSandbox.Menu;
+
+internal partial class MenuManager : Node
 {
-	[Export] public PartyMenu PartyMenu;
-	[Export] public BattleMenu BattleMenu;
-	[Export] public SkillMenu SkillMenu;
-	[Export] public ItemMenu SnackMenu;
-	[Export] public ItemMenu ToyMenu;
-	[Export] public Sprite2D EnergyBar;
-	[Export] public Label EnergyText;
+	[Export] private PartyMenu PartyMenu;
+	[Export] private BattleMenu BattleMenu;
+	[Export] private SkillMenu SkillMenu;
+	[Export] private ItemMenu SnackMenu;
+	[Export] private ItemMenu ToyMenu;
+	[Export] private Sprite2D EnergyBar;
+	[Export] private Label EnergyText;
 	private Tween EnergyBarTween;
 
 	public static MenuManager Instance { get; private set; }
@@ -96,7 +100,10 @@ public partial class MenuManager : Node
 			else if (Input.IsActionJustPressed("MenuRight"))
 				CurrentMenu.OnInput(Vector2I.Right);
 		}
-	}
+
+        EnergyText.Text = $"{BattleManager.Instance.Energy:00}";
+        EnergyBar.RegionRect = new Rect2(0, (float)Math.Ceiling(BattleManager.Instance.Energy / 3f) * 45f, 362f, 49f);
+    }
 
 	public void Select()
 	{

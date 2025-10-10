@@ -1,6 +1,9 @@
 using Godot;
 
-public class YeOldSprout : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class YeOldSprout : Enemy
 {
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/ye_old_sprout.tres");
 

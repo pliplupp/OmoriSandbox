@@ -1,6 +1,12 @@
 using Godot;
+using OmoriSandbox.Actors;
 using System;
 
+namespace OmoriSandbox;
+
+/// <summary>
+/// The component attached to a party member <see cref="Node"/> in the scene.
+/// </summary>
 public partial class PartyMemberComponent : Node
 {
 	private PartyMember PartyMember;
@@ -18,14 +24,22 @@ public partial class PartyMemberComponent : Node
 	private float TargetHP;
 	private float TargetJuice;
 
-	public PartyMemberComponent() { }
+    /// <summary>
+    /// The <see cref="Actors.PartyMember"/> actor this component is attached to.
+    /// </summary>
+    public PartyMember Actor => PartyMember;
+	private Node2D FollowupBubbles;
+    /// <summary>
+    /// The position of the <see cref="Actors.PartyMember"/> in the party.<br/>
+	/// See <see cref="BattleManager.GetPartyMember(int)"/> for valid positions.
+    /// </summary>
+    public int Position { get; private set; }
+    /// <summary>
+    /// Whether or not the <see cref="Actors.PartyMember"/> has a followup.
+    /// </summary>
+    public bool HasFollowup => FollowupBubbles != null;
 
-	public PartyMember Actor => PartyMember;
-	public Node2D FollowupBubbles { get; private set; }
-	public int Position { get; private set; }
-	public bool HasFollowup => FollowupBubbles != null;
-
-	public void SetPartyMember(PartyMember partyMember, PackedScene followup, int position, string initialState, int level, string weapon, string charm, string[] skills)
+    internal void SetPartyMember(PartyMember partyMember, PackedScene followup, int position, string initialState, int level, string weapon, string charm, string[] skills)
 	{
 		PartyMember = partyMember;
 		AnimatedSprite2D face = GetNode<AnimatedSprite2D>("../Battlecard/Face");
@@ -98,19 +112,19 @@ public partial class PartyMemberComponent : Node
 		JuiceLabel.Text = $"{Mathf.RoundToInt(DisplayedJuice)}/{JuiceBar.MaxValue}";
 	}
 
-	public bool SelectionBoxVisible
+	internal bool SelectionBoxVisible
 	{
 		get { return SelectedBox.Visible; }
 		set { SelectedBox.Visible = value; }
 	}
 
-	public void FadeInFollowups(int energy)
+    internal void FadeInFollowups(int energy)
 	{
 		Tween tween = CreateTween();
 		tween.TweenProperty(FollowupBubbles, "modulate:a", energy > 2 ? 1f : 0.75f, 0.2f);
 	}
 
-	public void FadeOutFollowups()
+    internal void FadeOutFollowups()
 	{
 		Tween tween = CreateTween();
 		tween.TweenProperty(FollowupBubbles, "modulate:a", 0f, 0.2f);

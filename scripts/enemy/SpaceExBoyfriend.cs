@@ -1,7 +1,10 @@
 using Godot;
 using System.Threading.Tasks;
 
-public class SpaceExBoyfriend : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class SpaceExBoyfriend : Enemy
 {
     public override string Name => "SPACE EX-BOYFRIEND";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/space_ex_boyfriend.tres");

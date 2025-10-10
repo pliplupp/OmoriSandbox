@@ -1,6 +1,8 @@
 using Godot;
+using OmoriSandbox.Battle;
 
-public class LivingBread : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class LivingBread : Enemy
 {
     public override string Name => "LIVING BREAD";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/living_bread.tres");

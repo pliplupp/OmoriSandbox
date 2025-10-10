@@ -1,9 +1,15 @@
 using Godot;
 using Newtonsoft.Json;
+using OmoriSandbox.Actors;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+namespace OmoriSandbox.Animation;
+
+/// <summary>
+/// Handles all animation related functionality, including playing animations and screen shake.
+/// </summary>
 public partial class AnimationManager : Node
 {
 	[Signal]
@@ -150,6 +156,10 @@ public partial class AnimationManager : Node
 		ShakeDuration--;
 	}
 
+	/// <summary>
+	/// Initializes a new screenshake that will begin on the next valid frame.
+	/// Calling this method while a shake is already happening will stop the currently playing one.
+	/// </summary>
 	public void InitShake(Shake shake)
 	{
 		Battleback.Position = new Vector2(-640, 0);
@@ -168,17 +178,41 @@ public partial class AnimationManager : Node
 		ShakeDuration = 0;
 	}
 
+	/// <summary>
+	/// Plays an animation with the given <paramref name="id"/> centered on the given <paramref name="target"/>.<br/>
+	/// Use <see cref="WaitForAnimation(int, Actor, bool)"/> if you want to wait for the animation to finish.
+	/// </summary>
+	/// <param name="id">The animation ID to play. Uses the same ID numbers as OMORI for all vanilla animations.</param>
+	/// <param name="target">The <see cref="Actor"/> that this animation will play centered on.</param>
+	/// <param name="targetsEnemy">Whether or not this animation targets an enemy.<br/>
+	/// Mainly used for animation layering, such as skill animations that target enemies and need to display underneath the UI.</param>
 	public void PlayAnimation(int id, Actor target, bool targetsEnemy = true)
 	{
 		StartAnimation(id, target.CenterPoint, targetsEnemy);
 	}
 
-	public void PlayScreenAnimation(int id, bool targetsEnemy)
+    /// <summary>
+    /// Plays an animation with the given <paramref name="id"/> centered on the screen.<br/>
+    /// Use <see cref="WaitForScreenAnimation(int, bool)"/> if you want to wait for the animation to finish.
+    /// </summary>
+    /// <param name="id">The animation ID to play. Uses the same ID numbers as OMORI for all vanilla animations.</param>
+    /// <param name="targetsEnemy">Whether or not this animation targets an enemy.<br/>
+	/// Mainly used for animation layering, such as skill animations that target enemies and need to display underneath the UI.</param>
+    public void PlayScreenAnimation(int id, bool targetsEnemy)
 	{
 		StartAnimation(id, new Vector2(315, 240), targetsEnemy);
 	}
 
-	public Task WaitForAnimation(int id, Actor target, bool targetsEnemy = true)
+    /// <summary>
+    /// Plays an animation with the given <paramref name="id"/> centered on the given <paramref name="target"/>, and waits for it to finish.<br/>
+	/// Use <see cref="PlayAnimation(int, Actor, bool)"/> if you want the animation to play without waiting.
+    /// </summary>
+    /// <param name="id">The animation ID to play. Uses the same ID numbers as OMORI for all vanilla animations.</param>
+	/// <param name="target">The <see cref="Actor"/> that this animation will play centered on.</param>
+	/// <param name="targetsEnemy">Whether or not this animation targets an enemy.<br/>
+	/// Mainly used for animation layering, such as skill animations that target enemies and need to display underneath the UI.</param>
+    /// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
+    public Task WaitForAnimation(int id, Actor target, bool targetsEnemy = true)
 	{
 		TaskCompletionSource tcs = new();
 
@@ -193,7 +227,15 @@ public partial class AnimationManager : Node
 		return tcs.Task;
 	}
 
-	public Task WaitForScreenAnimation(int id, bool targetsEnemy)
+    /// <summary>
+    /// Plays an animation with the given <paramref name="id"/> centered on the screen, and waits for it to finish.<br/>
+    /// Use <see cref="PlayScreenAnimation(int, bool)"/> if you want the animation to play without waiting.
+    /// </summary>
+    /// <param name="id">The animation ID to play. Uses the same ID numbers as OMORI for all vanilla animations.</param>
+    /// <param name="targetsEnemy">Whether or not this animation targets an enemy.<br/>
+	/// Mainly used for animation layering, such as skill animations that target enemies and need to display underneath the UI.</param>
+    /// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
+    public Task WaitForScreenAnimation(int id, bool targetsEnemy)
 	{
 		TaskCompletionSource tcs = new();
 
@@ -208,7 +250,11 @@ public partial class AnimationManager : Node
 		return tcs.Task;
 	}
 
-	public Task WaitForReleaseEnergy()
+    /// <summary>
+    /// Plays the Omori version of the Release Energy animation, and waits for it to finish.
+    /// </summary>
+    /// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
+    public Task WaitForReleaseEnergy()
 	{
 		TaskCompletionSource tcs = new();
 		void Handle()
@@ -225,7 +271,11 @@ public partial class AnimationManager : Node
 		return tcs.Task;
 	}
 
-	public Task WaitForReleaseEnergyBasil()
+    /// <summary>
+    /// Plays the Basil version of the Release Energy animation, and waits for it to finish.
+    /// </summary>
+    /// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
+    public Task WaitForReleaseEnergyBasil()
 	{
 		TaskCompletionSource tcs = new();
 		void Handle()
@@ -247,7 +297,11 @@ public partial class AnimationManager : Node
 		return tcs.Task;
 	}
 
-	public Task WaitForRedHands()
+    /// <summary>
+    /// Plays the Red Hands skill animation, and waits for it to finish.
+    /// </summary>
+    /// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
+    public Task WaitForRedHands()
 	{
 		TaskCompletionSource tcs = new();
 		void Handle()
@@ -264,7 +318,11 @@ public partial class AnimationManager : Node
 		return tcs.Task;
 	}
 
-	public Task WaitForFlowerCrown()
+    /// <summary>
+    /// Plays the Flower Crown skill animation, and waits for it to finish.
+    /// </summary>
+    /// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
+    public Task WaitForFlowerCrown()
 	{
 		TaskCompletionSource tcs = new();
 		void Handle()
@@ -281,7 +339,8 @@ public partial class AnimationManager : Node
 		return tcs.Task;
 	}
 
-	public Task WaitForOmoriSpecialAnimation(string overlay, string effect)
+
+    internal Task WaitForOmoriSpecialAnimation(string overlay, string effect)
 	{
 		TaskCompletionSource tcs = new();
 
@@ -330,7 +389,7 @@ public partial class AnimationManager : Node
 		return tcs.Task;
 	}
 
-	public Task WaitForBasilSpecialAnimation(string effect, int animationId)
+    internal Task WaitForBasilSpecialAnimation(string effect, int animationId)
 	{
 		TaskCompletionSource tcs = new();
 
@@ -365,6 +424,9 @@ public partial class AnimationManager : Node
 		return tcs.Task;
 	}
 
+	/// <summary>
+	/// Plays the Photograph animation. Mainly used by Basil skills.
+	/// </summary>
 	public void PlayPhotograph()
 	{
 		Photograph.Visible = true;
@@ -377,7 +439,7 @@ public partial class AnimationManager : Node
 		}));
 	}
 
-	public Sprite2D SpawnPerfectheartOverlay(Vector2 position)
+	internal Sprite2D SpawnPerfectheartOverlay(Vector2 position)
 	{
 		Sprite2D sprite = PerfectheartOverlaySprite.Instantiate<Sprite2D>();
 		PerfectheartOverlayParent.AddChild(sprite);
@@ -388,7 +450,7 @@ public partial class AnimationManager : Node
 		return sprite;
 	}
 
-	public void DespawnAll()
+	internal void DespawnAll()
 	{
 		foreach (Node child in PerfectheartOverlayParent.GetChildren())
 			child.QueueFree();
@@ -431,14 +493,14 @@ public partial class AnimationManager : Node
 		PlayingAnimations.Add(playing);
 	}
 
-	public IEnumerable<RPGMAnimatedSprite> GetAllAnimations()
+	internal IEnumerable<RPGMAnimatedSprite> GetAllAnimations()
 	{
 		return Animations.Values;
 	}
 }
 
 #pragma warning disable CS0649
-class AnimationInfo
+internal class AnimationInfo
 {
 	public int Id;
 	public int Layer;
@@ -449,7 +511,7 @@ class AnimationInfo
 	public ShakeInfo[] Shake;
 }
 
-class SFXInfo
+internal class SFXInfo
 {
 	public int Frame;
 	public string Name;
@@ -457,7 +519,7 @@ class SFXInfo
 	public float Volume;
 }
 
-class ShakeInfo
+internal class ShakeInfo
 {
 	public int Frame;
 	public int Power;

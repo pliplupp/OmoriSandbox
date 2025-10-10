@@ -1,8 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using OmoriSandbox.Actors;
+using OmoriSandbox.Battle;
 
-public partial class SkillMenu : Menu
+namespace OmoriSandbox.Menu;
+
+internal partial class SkillMenu : Menu
 {
 	[Export] public Label[] SkillLabels;
 	[Export] public Label CostText;

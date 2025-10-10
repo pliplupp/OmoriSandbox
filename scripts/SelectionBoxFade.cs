@@ -1,6 +1,8 @@
 using Godot;
 
-public partial class SelectionBoxFade : TextureRect
+namespace OmoriSandbox;
+
+internal partial class SelectionBoxFade : TextureRect
 {
     public override void _Ready()
     {

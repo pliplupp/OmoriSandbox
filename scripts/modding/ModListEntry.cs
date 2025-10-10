@@ -1,5 +1,7 @@
 using Godot;
 
+namespace OmoriSandbox.Modding;
+
 public partial class ModListEntry : Control
 {
     [Export] private TextureRect Icon;

@@ -1,5 +1,10 @@
 using System;
 
+namespace OmoriSandbox.Battle.Modifier;
+
+/// <summary>
+/// A generic stat modifier that can provide a different <see cref="StatBonus"/> at each tier.
+/// </summary>
 public class TierStatModifier : StatModifier
 {
 	private int Tier;
@@ -8,12 +13,11 @@ public class TierStatModifier : StatModifier
 	public string FailureMessage { get; private set; }
 	public int CurrentTier => Tier;
 
-	/// <summary>
-	/// Represents a tiered stat bonus with no turn counter. Defaults to starting at tier 1.
-	/// Use <see cref="WithTier(int)"/> to modify the starting value.
-	/// </summary>
-	/// <param name="bonuses">A list of stat bonuses. Each index of is list is mapped to the stat to provide at that tier.</param>
-	public TierStatModifier(params StatBonus[] bonuses) : base(bonuses)
+    /// <summary>
+    /// A tiered stat bonus with no turn counter. Defaults to starting at tier 1.
+    /// </summary>
+    /// <param name="bonuses"></param>
+    public TierStatModifier(params StatBonus[] bonuses) : base(bonuses)
 	{
 		Tier = 1;
 		MaxTier = bonuses.Length;
@@ -30,6 +34,17 @@ public class TierStatModifier : StatModifier
 		MaxTier = bonuses.Length;
 	}
 
+	/// <summary>
+	/// Sets the messages that display in the battle log when the stat modifier is given or the tier is changed.
+	/// </summary>
+	/// <remarks>
+	/// Only requires the last portion of the sentence. As shown in the following example:
+	/// <code>
+	/// WithMessages("ATTACK rose!", "ATTACK cannot go any higher!");
+	/// </code>
+	/// </remarks>
+	/// <param name="success">The message to display on success.</param>
+	/// <param name="failure">The message to display on failure.</param>
 	public TierStatModifier WithMessages(string success, string failure)
 	{
 		SuccessMessage = success;
@@ -37,6 +52,11 @@ public class TierStatModifier : StatModifier
 		return this;
 	}
 
+	/// <summary>
+	/// Directly sets the tier of the stat modifier.
+	/// </summary>
+	/// <param name="tier">The tier to set this stat modifier to.</param>
+	/// <returns>If the change is successful.</returns>
 	public bool SetTier(int tier)
 	{
 		if (Tier == MaxTier)
@@ -45,12 +65,16 @@ public class TierStatModifier : StatModifier
 		return true;
 	}
 
-	public bool IncreaseTier()
+    /// <summary>
+    /// Increases the tier of this stat modifier by one. Also resets the turns left counter.
+    /// </summary>
+    /// <returns>If the increase is successful.</returns>
+    public bool IncreaseTier()
 	{
 		if (Tier < MaxTier)
 		{
 			Tier++;
-			TurnsLeft = 6;
+			TurnsLeft = MaxTurns;
 			return true;
 		}
 		return false;

@@ -1,1 +1,3 @@
+namespace OmoriSandbox.Modding;
+
 public record ModMetadata(string Id, string Name, string Description, string Author, string Version, string Icon);

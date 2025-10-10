@@ -1,6 +1,8 @@
 using Godot;
+using OmoriSandbox.Battle;
 
-public class ForestBunnyQuestion : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class ForestBunnyQuestion : Enemy
 {
     public override string Name => "FOREST BUNNY?";
 

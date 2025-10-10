@@ -1,8 +1,11 @@
+using OmoriSandbox.Actors;
 using System;
 using System.Threading.Tasks;
 
+namespace OmoriSandbox.Battle;
+
 /// <summary>
-/// Represents an item, including both Snacks and Toys.
+/// An item. Represents both Snacks and Toys.
 /// </summary>
 public class Item : BattleAction
 {
@@ -11,9 +14,6 @@ public class Item : BattleAction
 	/// </summary>
 	public bool IsToy { get; private set; }
 
-	/// <summary>
-	/// Creates a new item. Must be added to the <see cref="Database"/> in order for it to be usable in-game.
-	/// </summary>
 	public Item(string name, string description, SkillTarget target, Func<Actor, Actor, Task> effect, bool isToy = false)
 		: base(name, description, target, effect)
 	{

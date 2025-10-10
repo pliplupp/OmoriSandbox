@@ -1,14 +1,20 @@
 using Godot;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using OmoriSandbox.Actors;
 
+namespace OmoriSandbox;
+
+/// <summary>
+/// Handles displaying dialogue messages to the player. Mainly used for boss dialogue.
+/// </summary>
 public partial class DialogueManager : Node2D
 {
 	[Signal] public delegate void FinishedDialogueEventHandler();
 
-	[Export] public Label Text;
-	[Export] public Sprite2D SpeakerSprite;
-	[Export] public Sprite2D Cursor;
+	[Export] private Label Text;
+	[Export] private Sprite2D SpeakerSprite;
+	[Export] private Sprite2D Cursor;
 
 	private Queue<(string, Vector2, string)> MessageQueue = [];
 	private string CurrentMessage = "";
@@ -20,7 +26,11 @@ public partial class DialogueManager : Node2D
 	private int CharIndex = 0;
 	private int CharsTillSound = 2;
 
-	public bool DialogueDisabled = false;
+    /// <summary>
+    /// If dialogue is disabled in the current preset.<br/>
+    /// Setting this value should be avoided unless necessary, as it can override preset settings.
+    /// </summary>
+    public bool DialogueDisabled = false;
 	public static DialogueManager Instance { get; private set; }
 	public override void _EnterTree()
 	{
@@ -143,7 +153,14 @@ public partial class DialogueManager : Node2D
 		Cursor.Visible = true;
 	}
 
-	public Task WaitForDialogue()
+    /// <summary>
+    /// Waits for the current dialogue to finish and for the player to dismiss it.
+    /// </summary>
+	/// <remarks>
+	/// If this method is not called after <see cref="QueueMessage"/>, the battle will continue while the dialogue is still on screen.
+	/// </remarks>
+    /// <returns></returns>
+    public Task WaitForDialogue()
 	{
 		if (DialogueDisabled)
 			return Task.CompletedTask;
@@ -160,17 +177,33 @@ public partial class DialogueManager : Node2D
 		return tcs.Task;
 	}
 
+	/// <summary>
+	/// Queues a message to be displayed in the dialogue box.
+	/// </summary>
+	/// <param name="message">The message to display.</param>
 	public void QueueMessage(string message)
 	{
 		QueueMessage(null, Vector2.Zero, message);
 	}
 
-	public void QueueMessage(Enemy speaker, string message)
+    /// <summary>
+    /// Queues a message to be displayed in the dialogue box, with an <see cref="Enemy"/> name as the speaker.<br/>
+	/// The speaker arrow will point to the <see cref="Enemy"/>'s position on screen.
+    /// </summary>
+    /// <param name="speaker">The <see cref="Enemy"/> to show as the speaker.</param>
+    /// <param name="message">The message to display.</param>
+    public void QueueMessage(Enemy speaker, string message)
 	{
 		QueueMessage(speaker.Name, speaker.CenterPoint, message);
 	}
 
-	public void QueueMessage(string speaker, Vector2 speakerPos, string message)
+    /// <summary>
+    /// Queues a message to be displayed in the dialogue box, with a custom speaker name and position.<br/>
+    /// </summary>
+    /// <param name="speaker">The name of the speaker.</param>
+    /// <param name="speakerPos">The position on screen to use as the speaker target.</param>
+    /// <param name="message">The message to display.</param>
+    public void QueueMessage(string speaker, Vector2 speakerPos, string message)
 	{
 		if (DialogueDisabled)
 			return;

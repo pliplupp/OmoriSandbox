@@ -1,12 +1,23 @@
 using Godot;
+using OmoriSandbox.Actors;
+using OmoriSandbox.Animation;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Battle.Modifier;
+using OmoriSandbox.Editor;
+using OmoriSandbox.Menu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+namespace OmoriSandbox;
+
+/// <summary>
+/// Handles the bulk flow of battles.
+/// </summary>
 public partial class BattleManager : Node
 {
-	[Export] public Label EnergyText;
+	[Export] private Label EnergyText;
 	[Export] private Sprite2D EnergyBar;
 	[Export] private EnergyDots EnergyDots;
 	[Export] private HBoxContainer MenuButtonContainer;
@@ -25,6 +36,9 @@ public partial class BattleManager : Node
 	private Godot.Collections.Dictionary<string, int> Items = [];
 	private BattleAction SelectedAction;
 	private HashSet<Vector2> DamageNumbers = [];
+	/// <summary>
+	/// The amount of Energy the party currently has.
+	/// </summary>
 	public int Energy { get; private set; } = 0;
 	private bool FollowupActive = false;
 	private bool FollowupSelected = false;
@@ -33,7 +47,10 @@ public partial class BattleManager : Node
 	private bool UseBasilReleaseEnergy = false;
 	private bool UseBasilFollowups = false;
 
-	private bool IsBattling = false;
+    /// <summary>
+    /// Whether a battle is currently ongoing.
+    /// </summary>
+    public bool IsBattling { get; private set; } = false;
 
 	// TODO: This is a poor way to do this, should probably be improved
 	private bool ProcessedStartOfTurn = false;
@@ -110,7 +127,7 @@ public partial class BattleManager : Node
 		Instance = this;
 	}
 
-	public void Init(List<PartyMemberComponent> party, List<EnemyComponent> enemies, Godot.Collections.Dictionary<string, int> items, int followupTier, bool useBasilFollowups, bool useBasilReleaseEnergy)
+	internal void Init(List<PartyMemberComponent> party, List<EnemyComponent> enemies, Godot.Collections.Dictionary<string, int> items, int followupTier, bool useBasilFollowups, bool useBasilReleaseEnergy)
 	{
 		CurrentParty = party.OrderBy(x => x.Position).ToList();
 		Enemies = enemies;
@@ -187,9 +204,6 @@ public partial class BattleManager : Node
 		{
 			Enemies[i].ShowInfoBox(i == CurrentEnemyTarget);
 		}
-
-		MenuManager.Instance.EnergyText.Text = $"{Energy:00}";
-		MenuManager.Instance.EnergyBar.RegionRect = new Rect2(0, (float)Math.Ceiling(Energy / 3f) * 45f, 362f, 49f);
 
 		if (Input.IsActionJustPressed("Accept"))
 		{
@@ -339,14 +353,14 @@ public partial class BattleManager : Node
 		return -1;
 	}
 
-	public void OnFightSelected()
+	internal void OnFightSelected()
 	{
 		CurrentPartyMember++;
 		MenuManager.Instance.ShowMenu(MenuState.Battle, immediate: true);
 		SetPhase(BattlePhase.PlayerCommand);
 	}
 
-	public void Reset()
+	internal void Reset()
 	{
 		GameManager.Instance.DespawnAll();
 		AnimationManager.Instance.DespawnAll();
@@ -364,19 +378,19 @@ public partial class BattleManager : Node
 		IsBattling = false;
 	}
 
-	public void OnSelectAttack()
+    internal void OnSelectAttack()
 	{
 		SelectedAction = CurrentParty[CurrentPartyMember].Actor.Skills.Values.First();
 		SetPhase(BattlePhase.TargetSelection);
 	}
 
-	// idfk
-	public void OnSelectNotAttack()
+    // idfk
+    internal void OnSelectNotAttack()
 	{
 		SetPhase(BattlePhase.SkillSelection);
 	}
 
-	public void OnSelectSkill(Skill skill)
+    internal void OnSelectSkill(Skill skill)
 	{
 		SelectedAction = skill;
 		// TODO: handle emotion locked skills better
@@ -404,7 +418,7 @@ public partial class BattleManager : Node
 		SetPhase(BattlePhase.TargetSelection);
 	}
 
-	public void OnSelectItem(Item item)
+    internal void OnSelectItem(Item item)
 	{
 		SelectedAction = item;
 		if ((SelectedAction.Target == SkillTarget.DeadAlly || SelectedAction.Target == SkillTarget.AllDeadAllies) && !CurrentParty.Any(x => x.Actor.CurrentState == "toast"))
@@ -826,7 +840,13 @@ public partial class BattleManager : Node
 		return true;
 	}
 
-	public void ForceCommand(Actor self, Actor target, Skill skill)
+    /// <summary>
+    /// Forces a skill command to be executed after the current one.
+    /// </summary>
+    /// <param name="self">The actor that the command is being forced upon.</param>
+    /// <param name="target">The target of the command.</param>
+    /// <param name="skill">The skill that is being forced.</param>
+    public void ForceCommand(Actor self, Actor target, Skill skill)
 	{
 		if (self is PartyMember && skill.Name.EndsWith("Attack"))
 			// if the forced skill is an attack, hide the followup bubbles
@@ -888,7 +908,7 @@ public partial class BattleManager : Node
         SetPhase(BattlePhase.FightRun);
     }
 
-	public void OnBattleLogFinished()
+	internal void OnBattleLogFinished()
 	{
 		if (Phase == BattlePhase.WaitForBattleLog)
 			SetPhase(BattlePhase.PostCommand);
@@ -912,7 +932,10 @@ public partial class BattleManager : Node
 		SetPhase(BattlePhase.PreCommand);
 	}
 
-	public async void CheckBattleOver()
+    /// <summary>
+    /// Runs a check to see if the battle is over.
+    /// </summary>
+    public async void CheckBattleOver()
 	{
 		if (Enemies.Count == 0)
 		{
@@ -955,8 +978,24 @@ public partial class BattleManager : Node
 		foreach (EnemyComponent e in Enemies)
 			await e.Actor.OnEndOfBattle(victory);
 	}
-	
-	public int Damage(Actor self, Actor target, Func<float> damageFunc, bool neverMiss = true, float variance = 0.2f, bool guaranteeCrit = false, bool neverCrit = false)
+
+    /// <summary>
+    /// Calculates damage. Misses, critical hits, emotion effectiveness, sad juice loss, and stat modifiers are all taken into account.
+    /// </summary>
+	/// <remarks>
+	/// On top of calculating damage, this function also handles displaying damage numbers, playing sound effects, and queuing battle log messages for misses and critical hits.
+	/// </remarks>
+    /// <param name="self">The attacker.</param>
+    /// <param name="target">The target/defender.</param>
+    /// <param name="damageFunc">The damage function to use in the damage calculation.<br/><br/>
+	/// A common example is the calculation for basic attacks, as shown by this example:<br/>
+	/// <c>() => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }</c></param>
+    /// <param name="neverMiss">If this attack should never miss.</param>
+    /// <param name="variance">The damage variance. Damage will be multiplied between (1 - variance) and (1 + variance).</param>
+    /// <param name="guaranteeCrit">If this attack should guarantee a critical hit.</param>
+    /// <param name="neverCrit">If this attack should never be a critical hit.</param>
+    /// <returns>The final damage after all critical, emotion, juice loss, and stat modifications have been applied.</returns>
+    public int Damage(Actor self, Actor target, Func<float> damageFunc, bool neverMiss = true, float variance = 0.2f, bool guaranteeCrit = false, bool neverCrit = false)
 	{
 		if (!neverMiss)
 		{
@@ -1083,9 +1122,19 @@ public partial class BattleManager : Node
 		return rounded;
 	}
 
-	// some healing and juice skills are affected by emotion
+    // some healing and juice skills are affected by emotion
 
-	public void Heal(Actor self, Actor target, Func<float> healFunc, float variance = 0.2f)
+    /// <summary>
+    /// Calculates emotion-based healing to the <paramref name="target"/>.
+    /// </summary>
+    /// <remarks>
+    /// Some healing in OMORI is "bugged" and is influenced by emotion, which this method replicates.
+    /// </remarks>
+    /// <param name="self">The healer.</param>
+    /// <param name="target">The target being healed.</param>
+    /// <param name="healFunc">The function to use in the heal calculation.</param>
+    /// <param name="variance">The healing variance. Healed HP will be multiplied between (1 - variance) and (1 + variance).</param>
+    public void Heal(Actor self, Actor target, Func<float> healFunc, float variance = 0.2f)
 	{
 		float baseHealing = healFunc();
 		float healingVariance = GameManager.Instance.Random.RandfRange(1f - variance, 1f + variance);
@@ -1097,7 +1146,16 @@ public partial class BattleManager : Node
 		BattleLogManager.Instance.QueueMessage(self, target, $"[target] recovered {rounded} HEART!");
 	}
 
-	public void HealJuice(Actor self, Actor target, Func<float> healFunc)
+    /// <summary>
+    /// Calculates emotion-based juice healing to the <paramref name="target"/>.
+    /// </summary>
+	/// /// <remarks>
+    /// Some juice healing in OMORI is "bugged" and is influenced by emotion, which this method replicates.
+    /// </remarks>
+    /// <param name="self">The healer.</param>
+    /// <param name="target">The target being healed.</param>
+    /// <param name="healFunc">The healing variance. Healed Juice will be multiplied between (1 - variance) and (1 + variance).</param>
+    public void HealJuice(Actor self, Actor target, Func<float> healFunc)
 	{
 		float baseJuice = healFunc();
 		float finalJuice = CalculateEmotionModifiers(self.CurrentState, target.CurrentState, baseJuice, out _);
@@ -1179,6 +1237,10 @@ public partial class BattleManager : Node
 		};
 	}
 
+	/// <summary>
+	/// Gives the provided <see cref="Actor"/> a random emotion.<br/>If the actor already has that emotion, it will be upgraded.
+	/// </summary>
+	/// <param name="who"></param>
 	public void RandomEmotion(Actor who)
 	{
 		int roll = GameManager.Instance.Random.RandiRange(0, 2);
@@ -1232,7 +1294,18 @@ public partial class BattleManager : Node
 			who.SetState(state);
 	}
 
-	public void SpawnDamageNumber(int damage, Vector2 position, DamageType type = DamageType.Damage, bool critical = false)
+    /// <summary>
+    /// Spawns a damage number at the specified <paramref name="position"/>.
+    /// </summary>
+    /// <remarks>
+    /// If a damage number already exists at the given <paramref name="position"/>, it will be moved down until an empty space is found<br/>
+	/// This can be useful to spawn multiple damage numbers without having to calculate offsets yourself.
+    /// </remarks>
+    /// <param name="damage">The number to display.</param>
+    /// <param name="position">The screen position to spawn the damage number at.</param>
+    /// <param name="type">The <see cref="DamageType"/> of the damage. This value will modify the color of the damage number.</param>
+    /// <param name="critical">If true, the damage number will blink red when spawned.</param>
+    public void SpawnDamageNumber(int damage, Vector2 position, DamageType type = DamageType.Damage, bool critical = false)
 	{
 		DamageNumber dmg = new(damage, type, critical)
 		{
@@ -1254,7 +1327,16 @@ public partial class BattleManager : Node
 			DamageNumbers.Remove(position);
 		};
 	}
-
+	
+	/// <summary>
+	/// Spawns an enemy at the given screen <paramref name="position"/>.
+	/// </summary>
+	/// <param name="who">Which enemy to spawn.</param>
+	/// <param name="position">The screen position to spawn the enemy at. The enemy will spawn centered at this position.</param>
+	/// <param name="startingEmotion">The enemy's starting emotion.</param>
+	/// <param name="fallsOffScreen">Whether or not this enemy should fall off screen when defeated.</param>
+	/// <param name="layer">The layer to spawn this enemy on.</param>
+	/// <returns>The <see cref="EnemyComponent"/> of the spawned enemy.</returns>
 	public EnemyComponent SummonEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)
 	{
 		EnemyComponent enemy = GameManager.Instance.SpawnEnemy(who, position, startingEmotion, fallsOffScreen, layer);
@@ -1262,35 +1344,44 @@ public partial class BattleManager : Node
 		return enemy;
 	}
 
-	public void AddEnergy(int amount)
+    /// <summary>
+    /// Adds the given <paramref name="amount"/> to the energy bar, up to a maximum of 10.
+    /// </summary>
+    /// <param name="amount">The amount of energy to add.</param>
+    public void AddEnergy(int amount)
 	{
 		Energy = Math.Min(Energy + amount, 10);
 	}
 
-	public PartyMember GetRandomAlivePartyMember()
+    /// <returns>A random alive <see cref="PartyMember"/>.</returns>
+    public PartyMember GetRandomAlivePartyMember()
 	{
 		IEnumerable<PartyMemberComponent> alive = CurrentParty.Where(x => x.Actor.CurrentHP > 0);
 		return alive.ElementAt(GameManager.Instance.Random.RandiRange(0, alive.Count() - 1)).Actor;
 	}
 
-	public PartyMember GetRandomDeadPartyMember()
+    /// <returns>A random <see cref="PartyMember"/> that is toast.</returns>
+    public PartyMember GetRandomDeadPartyMember()
 	{
 		PartyMemberComponent result = CurrentParty.FirstOrDefault(x => x.Actor.CurrentHP <= 0);
 		return result?.Actor;
 	}
 
-	public Enemy GetRandomAliveEnemy()
+    /// <returns>A random alive <see cref="Enemy"/>.</returns>
+    public Enemy GetRandomAliveEnemy()
 	{
 		IEnumerable<EnemyComponent> alive = Enemies.Where(x => x.Actor.CurrentHP > 0);
 		return alive.ElementAt(GameManager.Instance.Random.RandiRange(0, alive.Count() - 1)).Actor;
 	}
 
-	public List<Enemy> GetAllEnemies()
+    /// <returns>All currently alive <see cref="Enemy"/>s.</returns>
+    public List<Enemy> GetAllEnemies()
 	{
 		return Enemies.Select(x => x.Actor).ToList();
 	}
 
-	public BattleCommand GetCurrentCommand()
+    /// <returns>The <see cref="BattleCommand"/> that is currently being processed.</returns>
+    public BattleCommand GetCurrentCommand()
 	{
 		if (CommandIndex < 0 || CommandIndex >= Commands.Count)
 			return null;
@@ -1298,17 +1389,17 @@ public partial class BattleManager : Node
 	}
 
 	/// <summary>
-	/// Gets all party members who are not toast.
+	/// Gets all <see cref="PartyMember"/>s who are not toast.
 	/// </summary>
 	public List<PartyMemberComponent> GetAlivePartyMembers()
 	{
 		return CurrentParty.Where(x => x.Actor.CurrentHP > 0).ToList();
 	}
 
-	/// <summary>
-	/// Gets all party members who are toast.
-	/// </summary>
-	public List<PartyMemberComponent> GetDeadPartyMembers()
+    /// <summary>
+    /// Gets all <see cref="PartyMember"/>s who are currently toast.
+    /// </summary>
+    public List<PartyMemberComponent> GetDeadPartyMembers()
 	{
 		return CurrentParty.Where(x => x.Actor.CurrentState == "toast").ToList();
 	}
@@ -1317,25 +1408,39 @@ public partial class BattleManager : Node
 	/// Gets all party members, including ones who are toast.
 	/// </summary>
 	/// <remarks>
-	/// Should NOT be used for skill logic in most situations, use <see cref="GetAlivePartyMembers"/> instead.
+	/// In most situations, such as skill logic, use <see cref="GetAlivePartyMembers"/> instead.
 	/// </remarks>
 	public List<PartyMemberComponent> GetAllPartyMembers()
 	{
 		return CurrentParty;
 	}
 
-	public PartyMember GetPartyMember(int index)
+    /// <summary>
+    /// Retrieves the <see cref="PartyMember"/> at the given <paramref name="index"/> in the party.
+    /// </summary>
+	/// <remarks>
+	/// Valid <paramref name="index"/> values include 0 (Bottom Left), 1 (Top Left), 2 (Bottom Right), and 3 (Top Right).
+	/// </remarks>
+    /// <param name="index"></param>
+    public PartyMember GetPartyMember(int index)
 	{
 		// eh who needs bounds checks these days
-		return CurrentParty[index].Actor;
+		return CurrentParty[Math.Clamp(index, 0, 3)].Actor;
 	}
 
-	public PartyMember GetCurrentPartyMember()
+    /// <summary>
+    /// Retrieves the <see cref="PartyMember"/> who is currently selecting their action.
+    /// </summary>
+    /// <returns></returns>
+    public PartyMember GetCurrentPartyMember()
 	{
 		return CurrentParty[CurrentPartyMember].Actor;
 	}
 
-	public List<(Item, int)> GetSnacks()
+    /// <summary>
+    /// Retrieves all snacks in the inventory, as well as their quantities.
+    /// </summary>
+    public List<(Item, int)> GetSnacks()
 	{
 		List<(Item, int)> result = [];
 		foreach (var entry in Items)
@@ -1350,7 +1455,10 @@ public partial class BattleManager : Node
 		return result;
 	}
 
-	public List<(Item, int)> GetToys()
+    /// <summary>
+    /// Retrieves all toys in the inventory, as well as their quantities.
+    /// </summary>
+    public List<(Item, int)> GetToys()
 	{
 		List<(Item, int)> result = [];
 		foreach (var entry in Items)
@@ -1366,7 +1474,7 @@ public partial class BattleManager : Node
 	}
 }
 
-public enum BattlePhase
+internal enum BattlePhase
 {
 	FightRun,
 	PlayerCommand,

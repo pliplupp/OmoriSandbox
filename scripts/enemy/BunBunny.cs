@@ -1,6 +1,8 @@
 using Godot;
+using OmoriSandbox.Battle;
 
-public class BunBunny : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class BunBunny : Enemy
 {
     public override string Name => "BUN BUNNY";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/bun_bunny.tres");

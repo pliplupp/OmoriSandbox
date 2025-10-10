@@ -2,7 +2,9 @@ using Godot;
 using System.Collections.Generic;
 using System.Linq;
 
-public class RPGMAnimatedSprite
+namespace OmoriSandbox.Animation;
+
+internal class RPGMAnimatedSprite
 {
 	public static readonly int SIZE = 192;
 	private const float DIVIDEND = 0.03529411764705882f;

@@ -1,3 +1,5 @@
+namespace OmoriSandbox.Modding;
+
 internal struct JsonModAnimationData
 {
     public string Emotion { get; set; }

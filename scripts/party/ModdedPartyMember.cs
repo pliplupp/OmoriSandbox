@@ -1,5 +1,7 @@
 using Godot;
+using OmoriSandbox.Modding;
 
+namespace OmoriSandbox.Actors;
 internal class ModdedPartyMember : PartyMember
 {
     private JsonActorMod JsonActor;

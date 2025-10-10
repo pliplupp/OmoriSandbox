@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-public class Mutantheart : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class Mutantheart : Enemy
 {
     public override string Name => "MUTANTHEART";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/mutantheart.tres");

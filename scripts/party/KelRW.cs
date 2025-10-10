@@ -1,6 +1,8 @@
 using Godot;
 
-public class KelRW : PartyMember
+namespace OmoriSandbox.Actors;
+
+internal sealed class KelRW : PartyMember
 {
     public override string Name => "Kel";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/kel_rw.tres");

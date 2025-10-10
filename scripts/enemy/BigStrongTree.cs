@@ -1,6 +1,8 @@
 using Godot;
+using OmoriSandbox.Battle;
 
-public class BigStrongTree : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class BigStrongTree : Enemy
 {
     public override string Name => "BIG STRONG TREE";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/big_strong_tree.tres");

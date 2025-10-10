@@ -1,9 +1,14 @@
 using Godot;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Extensions;
+using OmoriSandbox.Modding;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-public partial class MainMenuManager : Node
+namespace OmoriSandbox.Editor;
+
+internal partial class MainMenuManager : Node
 {
 	public override void _Ready()
 	{

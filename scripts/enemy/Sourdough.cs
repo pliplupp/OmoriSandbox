@@ -1,6 +1,9 @@
 using Godot;
 
-public class Sourdough : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class Sourdough : Enemy
 {
     public override string Name => "SOURDOUGH";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/sourdough.tres");

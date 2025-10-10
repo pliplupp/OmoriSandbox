@@ -1,6 +1,11 @@
 using Godot;
+using OmoriSandbox.Actors;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Extensions;
 
-public partial class EnemyEditorComponent : Control
+namespace OmoriSandbox.Editor;
+
+internal partial class EnemyEditorComponent : Control
 {
 	[Export]
 	public OptionButton EnemyDropdown { get; private set; }

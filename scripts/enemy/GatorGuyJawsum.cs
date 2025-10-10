@@ -1,6 +1,8 @@
 using Godot;
+using OmoriSandbox.Battle;
 
-public class GatorGuyJawsum : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class GatorGuyJawsum : Enemy
 {
     public override string Name => "GATOR GUY";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/gator_guy.tres");

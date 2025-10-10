@@ -1,13 +1,19 @@
 using Godot;
+using OmoriSandbox.Actors;
 using System.Collections.Generic;
 
+namespace OmoriSandbox;
+
+/// <summary>
+/// Handles displaying messages in the battle log during battles.
+/// </summary>
 public partial class BattleLogManager : Control
 {
 	[Signal] public delegate void FinishedLoggingEventHandler();
 
-	[Export] public PackedScene LogLine;
-	[Export] public Label ImmediateLabel;
-	[Export] public Font Font;
+	[Export] private PackedScene LogLine;
+	[Export] private Label ImmediateLabel;
+	[Export] private Font Font;
 
 	private readonly List<string> MessageQueue = [];
 	private readonly List<Control> ActiveLines = [];
@@ -20,12 +26,25 @@ public partial class BattleLogManager : Control
 		Instance = this;
 	}
 
-	public void QueueMessage(Actor self, Actor target, string message)
+    /// <summary>
+    /// Queues a message to be displayed in the battle log that shows the names of actors.
+    /// </summary>
+	/// <remarks>
+	/// You can use [actor] and [target] in the message string to replace them with <paramref name="self"/> and <paramref name="target"/> respectively.
+	/// </remarks>
+    /// <param name="self">The actor to replace [actor] with in the <paramref name="message"/>.</param>
+    /// <param name="target">The actor to replace [target] with in the <paramref name="message"/>.</param>
+    /// <param name="message">The message to display. Occurences of the \n character will split the message up into different logs.</param>
+    public void QueueMessage(Actor self, Actor target, string message)
 	{
 		QueueMessage(ParseMessage(self, target, message));
 	}
 
-	public void QueueMessage(string message)
+    /// <summary>
+    /// Queues a message to be displayed in the battle log.
+    /// </summary>
+    /// <param name="message">The message to display. Occurences of the \n character will split the message up into different logs.</param>
+    public void QueueMessage(string message)
 	{
 		MessageQueue.Add(message);
 
@@ -33,7 +52,12 @@ public partial class BattleLogManager : Control
 			ProcessMessage();
 	}
 
-	public void ShowMessage(string message)
+    /// <summary>
+    /// Immediately shows a message in the battle log, bypassing the queue.<br/>
+	/// Will automatically resize the font to fit the message in the box.
+    /// </summary>
+    /// <param name="message">The message to display.</param>
+    public void ShowMessage(string message)
 	{
 		ImmediateLabel.Text = message;
 		int fontSize = 24;
@@ -44,18 +68,37 @@ public partial class BattleLogManager : Control
 		ImmediateLabel.AddThemeFontSizeOverride("font_size", fontSize);
 	}
 
-	public void ClearAndShowMessage(string message)
+    /// <summary>
+    /// Immediately shows a message in the battle log, clearing any queued or active messages first.
+    /// </summary>
+    /// <param name="message">The message to display.</param>
+    public void ClearAndShowMessage(string message)
 	{
 		ClearBattleLog();
 		ShowMessage(message);
 	}
 
-	public void ClearAndShowMessage(Actor self, Actor target, string message)
+    /// <summary>
+    /// Immediately shows a message in the battle log, clearing any queued or active messages first.
+    /// </summary>
+    /// <remarks>
+	/// You can use [actor] and [target] in the message string to replace them with <paramref name="self"/> and <paramref name="target"/> respectively.
+	/// </remarks>
+    /// <param name="self">The actor representing the sender of the message.</param>
+    /// <param name="target">The actor representing the recipient of the message.</param>
+    /// <param name="message">The raw message to be formatted and displayed.</param>
+    public void ClearAndShowMessage(Actor self, Actor target, string message)
 	{
 		ClearAndShowMessage(ParseMessage(self, target, message));
 	}
 
-	public void ClearBattleLog()
+    /// <summary>
+    /// Clears the battle log of all queued and active messages.
+    /// </summary>
+	/// <remarks>
+	/// See <see cref="ClearAndShowMessage(string)"/> for a shorthand to clear the log and show a message.
+	/// </remarks>
+    public void ClearBattleLog()
 	{
 		MessageQueue.Clear();
 		ActiveLines.ForEach(x => x.QueueFree());
@@ -64,7 +107,7 @@ public partial class BattleLogManager : Control
 		IsProcessingMessage = false;
 	}
 
-	public static string ParseMessage(Actor self, Actor target, string message)
+	private string ParseMessage(Actor self, Actor target, string message)
 	{
 		return message.Replace("[actor]", self == null ? "" : self.Name.ToUpper()).Replace("[target]", target == null ? "" : target.Name.ToUpper());
 	}

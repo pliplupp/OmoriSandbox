@@ -1,7 +1,10 @@
 using Godot;
 using System.Threading.Tasks;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Animation;
 
-public class FearOfHeights : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class FearOfHeights : Enemy
 {
     public override string Name => "SOMETHING";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/fear_of_heights.tres");

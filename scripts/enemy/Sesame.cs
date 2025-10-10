@@ -1,6 +1,9 @@
 using Godot;
 
-public class Sesame : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class Sesame : Enemy
 {
     public override string Name => "SESAME";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/sesame.tres");

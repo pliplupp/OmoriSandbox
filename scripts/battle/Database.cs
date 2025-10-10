@@ -3,7 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-internal class Database
+using OmoriSandbox.Animation;
+using OmoriSandbox.Battle.Modifier;
+using OmoriSandbox.Actors;
+using OmoriSandbox.Modding;
+
+namespace OmoriSandbox.Battle;
+
+/// <summary>
+/// The database where all game related data is stored.
+/// </summary>
+public class Database
 {
 	// TODO: abstract these into different registries
 	private static readonly SortedDictionary<string, Func<PartyMember>> PartyMembers = [];
@@ -19,27 +29,51 @@ internal class Database
 		Init();
 	}
 
+	/// <summary>
+	/// Tries to get a <see cref="Skill"/> of the given <paramref name="name"/> from the database.
+	/// </summary>
+	/// <param name="name">The name of the skill to search for.</param>
+	/// <param name="skill">The returned skill, if a match is found.</param>
+	/// <returns>Whether or not the skill exists in the database.</returns>
 	public static bool TryGetSkill(string name, out Skill skill)
 	{
 		return Skills.TryGetValue(name, out skill);
 	}
 
-	public static bool TryGetItem(string name, out Item item)
+    /// <summary>
+    /// Tries to get an <see cref="Item"/> of the given <paramref name="name"/> from the database.
+    /// </summary>
+    /// <param name="name">The name of the item to search for.</param>
+    /// <param name="item">The returned item, if a match is found.</param>
+    /// <returns>Whether or not the item exists in the database.</returns>
+    public static bool TryGetItem(string name, out Item item)
 	{
 		return Items.TryGetValue(name, out item);
 	}
 
-	public static bool TryGetWeapon(string name, out Weapon weapon)
+    /// <summary>
+    /// Tries to get a <see cref="Weapon"/> of the given <paramref name="name"/> from the database.
+    /// </summary>
+    /// <param name="name">The name of the weapon to search for.</param>
+    /// <param name="weapon">The returned weapon, if a match is found.</param>
+    /// <returns>Whether or not the weapon exists in the database.</returns>
+    public static bool TryGetWeapon(string name, out Weapon weapon)
 	{
 		return Weapons.TryGetValue(name, out weapon);
 	}
 
-	public static bool TryGetCharm(string name, out Charm charm)
+    /// <summary>
+    /// Tries to get a <see cref="Charm"/> of the given <paramref name="name"/> from the database.
+    /// </summary>
+    /// <param name="name">The name of the charm to search for.</param>
+    /// <param name="charm">The returned charm, if a match is found.</param>
+    /// <returns>Whether or not the charm exists in the database.</returns>
+    public static bool TryGetCharm(string name, out Charm charm)
 	{
 		return Charms.TryGetValue(name, out charm);
 	}
 
-	public static void RegisterModdedPartyMember(JsonActorMod jsonActor, SpriteFrames builtFrames)
+	internal static void RegisterModdedPartyMember(JsonActorMod jsonActor, SpriteFrames builtFrames)
 	{
 		if (builtFrames == null)
 			return;
@@ -52,7 +86,7 @@ internal class Database
 		PartyMembers[jsonActor.Name] = () => new ModdedPartyMember(jsonActor, builtFrames);
 	}
 
-	public static void RegisterModdedEnemy(JsonEnemyMod jsonEnemy, SpriteFrames builtFrames)
+    internal static void RegisterModdedEnemy(JsonEnemyMod jsonEnemy, SpriteFrames builtFrames)
 	{
 		if (builtFrames == null)
 			return;
@@ -65,7 +99,7 @@ internal class Database
 		Enemies[jsonEnemy.Name] = () => new ModdedEnemy(jsonEnemy, builtFrames);
  	}
 
-	public static PartyMember CreatePartyMember(string who)
+	internal static PartyMember CreatePartyMember(string who)
 	{
 		if (!PartyMembers.TryGetValue(who, out Func<PartyMember> member))
 		{
@@ -75,7 +109,7 @@ internal class Database
 		return member();
 	}
 
-	public static Enemy CreateEnemy(string who)
+    internal static Enemy CreateEnemy(string who)
 	{
 		if (!Enemies.TryGetValue(who, out Func<Enemy> enemy))
 		{
@@ -85,7 +119,7 @@ internal class Database
 		return enemy();
 	}
 
-	public static StatModifier CreateModifier(string what)
+    internal static StatModifier CreateModifier(string what)
 	{
 		if (!Modifiers.TryGetValue(what, out Func<StatModifier> modifier))
 		{
@@ -94,32 +128,32 @@ internal class Database
 		return modifier();
 	}
 
-	public static IEnumerable<string> GetAllWeaponNames()
+    internal static IEnumerable<string> GetAllWeaponNames()
 	{
 		return Weapons.Keys;
 	}
 
-	public static IEnumerable<string> GetAllCharmNames()
+    internal static IEnumerable<string> GetAllCharmNames()
 	{
 		return Charms.Keys;
 	}
 
-	public static IEnumerable<string> GetAllItemNames()
+    internal static IEnumerable<string> GetAllItemNames()
 	{
 		return Items.Keys;
 	}
 
-	public static IEnumerable<string> GetAllPartyMemberNames()
+    internal static IEnumerable<string> GetAllPartyMemberNames()
 	{
 		return PartyMembers.Keys;
 	}
 
-	public static IEnumerable<string> GetAllEnemyNames()
+    internal static IEnumerable<string> GetAllEnemyNames()
 	{
 		return Enemies.Keys;
 	}
 
-	public static IEnumerable<string> GetAllSkillNames()
+    internal static IEnumerable<string> GetAllSkillNames()
 	{
 		return Skills.Keys;
 	}

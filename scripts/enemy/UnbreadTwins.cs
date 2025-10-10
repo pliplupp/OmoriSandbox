@@ -2,7 +2,10 @@ using Godot;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-public class UnbreadTwins : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class UnbreadTwins : Enemy
 {
     public override string Name => "UNBREAD TWINS";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/unbread_twins.tres");
