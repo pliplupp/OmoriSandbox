@@ -6,8 +6,27 @@ using System;
 
 namespace OmoriSandbox.Modding;
 
-public abstract partial class Mod : Node
+/// <summary>
+/// The base mod class that all mods must inherit from.
+/// </summary>
+public abstract class Mod
 {
+    /// <summary>
+    /// Fired whenever the mod is first loaded. Equivalent to Godot's _Ready function.
+    /// </summary>
+    public abstract void OnLoad();
+
+    /// <summary>
+    /// Fired whenever the game is about to close.
+    /// </summary>
+    public virtual void OnUnload() { }
+
+    /// <summary>
+    /// Fired whenever Godot's _Process function is called.
+    /// </summary>
+    /// <param name="delta">The delta time between this frame and the previous one.</param>
+    public virtual void OnProcess(double delta) { }
+
     /// <summary>
     /// Registers a new <see cref="PartyMember"/> to the database.
     /// </summary>

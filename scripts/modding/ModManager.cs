@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 
 namespace OmoriSandbox.Modding;
 
@@ -15,13 +16,10 @@ internal partial class ModManager : Node
 	public static ModManager Instance;
 	private const int ACTOR_SIZE = 106;
 
-	[Export]
-	private Node ModParent;
-
 	public readonly Dictionary<string, Texture2D> Battlebacks = new();
 	public readonly List<ModMetadata> LoadedMods = new();
 
-	public override void _Ready()
+    public override void _Ready()
 	{
 		Instance = this;
 
@@ -77,7 +75,7 @@ internal partial class ModManager : Node
 
 		foreach (string modDll in DirAccess.GetFilesAt("user://mods/" + dirName).Where(x => x.EndsWith(".dll")))
 		{
-			if (!LoadModAssembly(modDll))
+			if (!LoadModAssembly($"{dirName}/{modDll}"))
 				return false;
         }
 
@@ -122,7 +120,10 @@ internal partial class ModManager : Node
 	{
 		try
 		{
-			Assembly asm = Assembly.LoadFile(ProjectSettings.GlobalizePath("user://mods/" + path));
+			AssemblyLoadContext context = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
+			if (context == null)
+				return false;
+            Assembly asm = context.LoadFromAssemblyPath(ProjectSettings.GlobalizePath("user://mods/" + path));
 			var type = asm.GetTypes().FirstOrDefault(t => t.IsSubclassOf(typeof(Mod)) && !t.IsAbstract);
 			if (type == null)
 			{
@@ -136,12 +137,13 @@ internal partial class ModManager : Node
 				return false;
 			}
 
-			ModParent.AddChild(instance);
+            AddChild(new ModContainer(instance));
 			return true;
 		}
-		catch
+		catch (Exception ex)
 		{
-			return false;
+			GD.PrintErr("Failed to load assembly " + path + ": " + ex);
+            return false;
 		}
     }
 
