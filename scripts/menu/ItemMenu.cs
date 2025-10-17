@@ -11,18 +11,47 @@ internal partial class ItemMenu : Menu
 	[Export] public Label CostText;
 	private readonly List<(Item, int)> Items = [];
 	private List<(Item, int)> DisplayedItems = [];
-	private int Page = 0;
+	public int Page { get; private set; } = 0;
 	private List<Vector2I> Positions = [new Vector2I(-145, 5), new Vector2I(25, 5), new Vector2I(-145, 25), new Vector2I(25, 25)];
 
 	private Vector2I GridSize = new(2, 2);
+
+	public override void OnOpen(SelectionMemory memory)
+	{
+		// make sure our previous selection is in-bounds
+		// if an item gets removed due to running out of stock, the previous data may be invalid
+		if (memory.SavedState == MenuState.Snack && 
+			Items.Count > 0 && 
+			!Items[0].Item1.IsToy &&
+			memory.SavedPage <= Mathf.CeilToInt((float)Items.Count / 4) - 1 &&
+			memory.SavedIndex < Items.Count)
+		{
+			CursorIndex = memory.SavedIndex;
+			Page = memory.SavedPage;
+        }
+		else if (memory.SavedState == MenuState.Toy && 
+			Items.Count > 0 && 
+			Items[0].Item1.IsToy &&
+            memory.SavedPage <= Mathf.CeilToInt((float)Items.Count / 4) - 1 &&
+            memory.SavedIndex < Items.Count)
+		{
+            CursorIndex = memory.SavedIndex;
+            Page = memory.SavedPage;
+        }
+		else
+		{
+			CursorIndex = 0;
+			Page = 0;
+        }
+		UpdatePage();
+        Show();
+	}
 
     public void Populate(bool toys)
 	{
 		Items.Clear();
 		Items.AddRange(toys ? BattleManager.Instance.GetToys() : BattleManager.Instance.GetSnacks());
 		Empty = Items.Count == 0;
-		Page = 0;
-		UpdatePage();
 	}
 
 	private void UpdatePage()
@@ -45,7 +74,6 @@ internal partial class ItemMenu : Menu
 			ItemLabels[i].Text = DisplayedItems[i].Item1.Name;
 		}
         CursorPositions = Positions.GetRange(0, DisplayedItems.Count);
-        CursorIndex = 0;
         UpdateCursor();
         ShowItemInfo();
 	}
@@ -56,13 +84,17 @@ internal partial class ItemMenu : Menu
 		if (direction.Y > 0 && Page < Mathf.CeilToInt((float)Items.Count / 4) - 1 && CursorIndex > 1)
 		{
 			Page++;
-			UpdatePage();
+			CursorIndex -= 2;
+            AudioManager.Instance.PlaySFX("SYS_move");
+            UpdatePage();
 			return;
 		}
 		if (direction.Y < 0 && Page > 0 && CursorIndex < 2)
 		{
 			Page--;
-			UpdatePage();
+			CursorIndex += 2;
+            AudioManager.Instance.PlaySFX("SYS_move");
+            UpdatePage();
 			return;
 		}
 

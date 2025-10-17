@@ -12,6 +12,22 @@ internal partial class BattleMenu : Menu
 		CursorPositions = [new Vector2I(-155, -20), new Vector2I(35, -20), new Vector2I(-155, 20), new Vector2I(35, 20)];
 	}
 
+    public override void OnOpen(SelectionMemory memory)
+    {
+		if (memory.SavedState == MenuState.Battle)
+			CursorIndex = memory.SavedIndex;
+		else if (memory.SavedState == MenuState.Skill)
+			CursorIndex = 1;
+		else if (memory.SavedState == MenuState.Snack)
+			CursorIndex = 2;
+		else if (memory.SavedState == MenuState.Toy)
+			CursorIndex = 3;
+        else
+			CursorIndex = 0;
+		UpdateCursor();
+		Show();
+    }
+
 	protected override void MoveCursor(Vector2I direction)
 	{
 		int x = CursorIndex % 2;
@@ -29,19 +45,15 @@ internal partial class BattleMenu : Menu
 		{
 			case "Attack":
 				BattleManager.Instance.OnSelectAttack();
-				MenuManager.Instance.ShowMenu(MenuState.None);
 				break;
 			case "Skill":
-				BattleManager.Instance.OnSelectNotAttack();
-				MenuManager.Instance.ShowMenu(MenuState.Skill);
+				BattleManager.Instance.OnSelectNotAttack(MenuState.Skill);
 				break;
 			case "Snack":
-				BattleManager.Instance.OnSelectNotAttack();
-				MenuManager.Instance.ShowMenu(MenuState.Snack);
+				BattleManager.Instance.OnSelectNotAttack(MenuState.Snack);
 				break;
 			case "Toy":
-				BattleManager.Instance.OnSelectNotAttack();
-				MenuManager.Instance.ShowMenu(MenuState.Toy);
+				BattleManager.Instance.OnSelectNotAttack(MenuState.Toy);
 				break;
 		}
 		AudioManager.Instance.PlaySFX("SYS_select");

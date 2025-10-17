@@ -137,6 +137,7 @@ public partial class AudioManager : Node
     internal bool LoadCustomBGM(string path)
 	{
 		AudioStreamOggVorbis stream = AudioStreamOggVorbis.LoadFromFile(path);
+		stream.Loop = true;
 		return BGMDictionary.TryAdd(path.GetFile().GetBaseName(), stream);
 	}
 

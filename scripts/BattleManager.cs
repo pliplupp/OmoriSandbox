@@ -169,7 +169,7 @@ public partial class BattleManager : Node
 
 		CallDeferred(MethodName.PreBattle);
 
-		MenuManager.Instance.ShowMenu(MenuState.None, immediate: true);
+		MenuManager.Instance.ShowMenu(MenuState.None, true);
 
 		IsBattling = true;
 	}
@@ -226,7 +226,7 @@ public partial class BattleManager : Node
 					if (CurrentPartyMember == 0)
 					{
 						AudioManager.Instance.PlaySFX("sys_cancel");
-						MenuManager.Instance.ShowMenu(MenuState.Party, immediate: true);
+						MenuManager.Instance.ShowMenu(MenuState.Party, true);
 						SetPhase(BattlePhase.FightRun);
 					}
 					else
@@ -243,7 +243,7 @@ public partial class BattleManager : Node
 						Commands.RemoveAt(Commands.Count - 1);
 						CurrentPartyMember--;
 						AudioManager.Instance.PlaySFX("sys_cancel");
-						MenuManager.Instance.ShowMenu(MenuState.Battle, false);
+						MenuManager.Instance.ShowMenu(MenuState.Battle);
 						SetPhase(BattlePhase.PlayerCommand);
 					}
 					break;
@@ -251,12 +251,12 @@ public partial class BattleManager : Node
 					AudioManager.Instance.PlaySFX("sys_cancel");
 					CurrentEnemyTarget = -1;
 					CurrentPartyMemberTarget = -1;
-					MenuManager.Instance.ShowMenu(MenuState.Battle, false);
+					MenuManager.Instance.ShowMenu(MenuState.Battle);
 					SetPhase(BattlePhase.PlayerCommand);
 					break;
 				case BattlePhase.SkillSelection:
 					AudioManager.Instance.PlaySFX("sys_cancel");
-					MenuManager.Instance.ShowMenu(MenuState.Battle, false);
+					MenuManager.Instance.ShowMenu(MenuState.Battle);
 					SetPhase(BattlePhase.PlayerCommand);
 					break;
 			}
@@ -356,7 +356,7 @@ public partial class BattleManager : Node
 	internal void OnFightSelected()
 	{
 		CurrentPartyMember++;
-		MenuManager.Instance.ShowMenu(MenuState.Battle, immediate: true);
+		MenuManager.Instance.ShowMenu(MenuState.Battle, true);
 		SetPhase(BattlePhase.PlayerCommand);
 	}
 
@@ -367,7 +367,8 @@ public partial class BattleManager : Node
 		CurrentParty.Clear();
 		Enemies.Clear();
 		Items.Clear();
-		MenuManager.Instance.ShowMenu(MenuState.None, immediate: true);
+		MenuManager.Instance.ShowMenu(MenuState.None, true);
+		MenuManager.Instance.ClearLastSelected();
 		EnergyBar.Visible = false;
 		BattleLogManager.Instance.ClearBattleLog();
 		BattleLogManager.Instance.Visible = false;
@@ -381,12 +382,15 @@ public partial class BattleManager : Node
     internal void OnSelectAttack()
 	{
 		SelectedAction = CurrentParty[CurrentPartyMember].Actor.Skills.Values.First();
+		MenuManager.Instance.SaveLastSelected(CurrentParty[CurrentPartyMember].Actor);
 		SetPhase(BattlePhase.TargetSelection);
 	}
 
     // idfk
-    internal void OnSelectNotAttack()
+    internal void OnSelectNotAttack(MenuState what)
 	{
+        MenuManager.Instance.SaveLastSelected(CurrentParty[CurrentPartyMember].Actor);
+        MenuManager.Instance.ShowMenu(what);
 		SetPhase(BattlePhase.SkillSelection);
 	}
 
@@ -415,7 +419,8 @@ public partial class BattleManager : Node
 			return;
 		}
 		AudioManager.Instance.PlaySFX("SYS_select");
-		SetPhase(BattlePhase.TargetSelection);
+        MenuManager.Instance.SaveLastSelected(CurrentParty[CurrentPartyMember].Actor);
+        SetPhase(BattlePhase.TargetSelection);
 	}
 
     internal void OnSelectItem(Item item)
@@ -439,7 +444,8 @@ public partial class BattleManager : Node
 			Items.Remove(name);
 
 		AudioManager.Instance.PlaySFX("SYS_select");
-		SetPhase(BattlePhase.TargetSelection);
+        MenuManager.Instance.SaveLastSelected(CurrentParty[CurrentPartyMember].Actor);
+        SetPhase(BattlePhase.TargetSelection);
 	}
 
 	private void SetPhase(BattlePhase phase)
@@ -685,11 +691,11 @@ public partial class BattleManager : Node
 				break;
 		}
 
-		CurrentEnemyTarget = -1;
+        CurrentEnemyTarget = -1;
 		CurrentPartyMemberTarget = -1;
 		CurrentPartyMember++;
 		SelectedAction = null;
-		if (CurrentPartyMember >= CurrentParty.Count)
+        if (CurrentPartyMember >= CurrentParty.Count)
 		{
 			BattleLogManager.Instance.ClearBattleLog();
 			PrepareCommandExecution();
@@ -1431,10 +1437,10 @@ public partial class BattleManager : Node
     /// <summary>
     /// Retrieves the <see cref="PartyMember"/> who is currently selecting their action.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The <see cref="PartyMember"/> who is currently selecting their action, otherwise null.</returns>
     public PartyMember GetCurrentPartyMember()
 	{
-		return CurrentParty[CurrentPartyMember].Actor;
+		return CurrentParty.ElementAtOrDefault(CurrentPartyMember)?.Actor;
 	}
 
     /// <summary>

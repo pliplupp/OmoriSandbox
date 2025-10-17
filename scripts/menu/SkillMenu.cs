@@ -72,9 +72,16 @@ internal partial class SkillMenu : Menu
 		BattleManager.Instance.OnSelectSkill(selected);
 	}
 
-	public override void OnOpen(bool reset)
+	public override void OnOpen(SelectionMemory memory)
 	{
-		base.OnOpen(reset);
+		if (memory.SavedState == MenuState.Skill)
+		{
+			CursorIndex = memory.SavedIndex;
+			Show();
+			UpdateCursor();
+		}
+		else
+			base.OnOpen(memory);
 		ShowSkillInfo();
     }
 }
