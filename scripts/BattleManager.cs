@@ -256,7 +256,7 @@ public partial class BattleManager : Node
 					break;
 				case BattlePhase.SkillSelection:
 					AudioManager.Instance.PlaySFX("sys_cancel");
-					MenuManager.Instance.ShowMenu(MenuState.Battle);
+					MenuManager.Instance.ShowMenu(MenuState.Battle, ignoreMemory: true);
 					SetPhase(BattlePhase.PlayerCommand);
 					break;
 			}
@@ -311,23 +311,12 @@ public partial class BattleManager : Node
 		}
 		if (Phase == BattlePhase.TargetSelection)
 		{
-			// TODO: enemy selection should move relative to visual enemy position and not by array position
-			if (SelectedAction.Target == SkillTarget.Enemy || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentEnemyTarget > -1) && Enemies.Count > 1)
+			if (SelectedAction.Target == SkillTarget.Enemy || 
+				(SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentEnemyTarget > -1)
+				&& Enemies.Count > 1
+				&& (direction == InputDirection.Left || direction == InputDirection.Right))
 			{
-				if (direction == InputDirection.Right)
-				{
-					AudioManager.Instance.PlaySFX("SYS_move");
-					CurrentEnemyTarget++;
-					if (CurrentEnemyTarget >= Enemies.Count)
-						CurrentEnemyTarget = 0;
-				}
-				else if (direction == InputDirection.Left)
-				{
-					AudioManager.Instance.PlaySFX("SYS_move");
-					CurrentEnemyTarget--;
-					if (CurrentEnemyTarget < 0)
-						CurrentEnemyTarget = Enemies.Count - 1;
-				}
+				CurrentEnemyTarget = SelectEnemy(CurrentEnemyTarget, direction);
 				return;
 			}
 			if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
@@ -341,6 +330,35 @@ public partial class BattleManager : Node
 			}
 		}
 	}
+
+	private int SelectEnemy(int current, InputDirection direction)
+	{
+		if (Enemies.Count < 2)
+			return current;
+
+		float currentX = Enemies[current].Actor.CenterPoint.X;
+
+		var left = Enemies
+			.Select((enemy, index) => new { Enemy = enemy, Index = index })
+			.Where(e => e.Index != current && e.Enemy.Actor.CenterPoint.X < currentX)
+			.OrderByDescending(e => e.Enemy.Actor.CenterPoint.X)
+			.ToList();
+
+		var right = Enemies
+            .Select((enemy, index) => new { Enemy = enemy, Index = index })
+            .Where(e => e.Index != current && e.Enemy.Actor.CenterPoint.X > currentX)
+            .OrderBy(e => e.Enemy.Actor.CenterPoint.X)
+            .ToList();
+
+		// sanity check
+		if (left.Count == 0 && right.Count == 0)
+			return current;
+
+		if (direction == InputDirection.Right)
+			return right.FirstOrDefault()?.Index ?? left.Last().Index;
+		else
+			return left.FirstOrDefault()?.Index ?? right.Last().Index;
+    }
 
 	private int SelectPartyMember(int current, InputDirection direction)
 	{
@@ -376,6 +394,8 @@ public partial class BattleManager : Node
 		Delay.QueueFree();
 		BattleLogManager.Instance.FinishedLogging -= OnBattleLogFinished;
 		Phase = BattlePhase.FightRun;
+		ProcessedStartOfTurn = false;
+		ProcessedEndOfTurn = false;
 		IsBattling = false;
 	}
 
@@ -1395,7 +1415,7 @@ public partial class BattleManager : Node
 	}
 
 	/// <summary>
-	/// Gets all <see cref="PartyMember"/>s who are not toast.
+	/// Gets the <see cref="PartyMemberComponent"/> of all party members who are not toast.
 	/// </summary>
 	public List<PartyMemberComponent> GetAlivePartyMembers()
 	{
@@ -1403,7 +1423,7 @@ public partial class BattleManager : Node
 	}
 
     /// <summary>
-    /// Gets all <see cref="PartyMember"/>s who are currently toast.
+    /// Gets the <see cref="PartyMemberComponent"/> of all party members who are currently toast.
     /// </summary>
     public List<PartyMemberComponent> GetDeadPartyMembers()
 	{

@@ -82,11 +82,13 @@ public abstract class PartyMember : Actor
 		return stats;
 	}
 
+	/// <inheritdoc/>
 	public override bool IsStateValid(string state)
 	{
 		return !(InvalidStates.Any(x => x == state) || (Charm != null && Charm.Name == "Paper Bag"));
 	}
 
+    /// <inheritdoc/>
     public override async Task OnStartOfBattle()
     {
         if (Weapon.Name == "LOL Sword")
@@ -97,7 +99,8 @@ public abstract class PartyMember : Actor
 		await Task.CompletedTask;
     }
 
-	public abstract SpriteFrames Animation { get; }
+    /// <inheritdoc/>
+    public abstract SpriteFrames Animation { get; }
 	/// <summary>
 	/// The party member's HP scaling, stat by level.
 	/// </summary>
@@ -130,6 +133,9 @@ public abstract class PartyMember : Actor
 	/// The party member's equipped weapon.
 	/// </summary>
 	public Weapon Weapon { get; private set; }
+	/// <summary>
+	/// A list of skills IDs that this actor has equipped.
+	/// </summary>
 	public string[] EquippedSkills { get; protected set; }
 	/// <summary>
 	/// A list of invalid states this party member cannot feel. Used in <see cref="IsStateValid(string)"/>

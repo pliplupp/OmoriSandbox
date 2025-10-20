@@ -2,7 +2,7 @@ using Godot;
 
 namespace OmoriSandbox.Modding;
 
-public partial class ModListEntry : Control
+internal partial class ModListEntry : Control
 {
     [Export] private TextureRect Icon;
     [Export] private Label NameVersion;

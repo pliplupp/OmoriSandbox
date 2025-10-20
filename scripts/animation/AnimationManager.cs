@@ -12,6 +12,9 @@ namespace OmoriSandbox.Animation;
 /// </summary>
 public partial class AnimationManager : Node
 {
+	/// <summary>
+	/// Fired whenever all animations finish playing.
+	/// </summary>
 	[Signal]
 	public delegate void AnimationFinishedEventHandler();
 

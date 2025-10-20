@@ -9,6 +9,9 @@ namespace OmoriSandbox;
 /// </summary>
 public partial class BattleLogManager : Control
 {
+	/// <summary>
+	/// Fired whenever the battle log has finished logging messages.
+	/// </summary>
 	[Signal] public delegate void FinishedLoggingEventHandler();
 
 	[Export] private PackedScene LogLine;
@@ -18,6 +21,9 @@ public partial class BattleLogManager : Control
 	private readonly List<string> MessageQueue = [];
 	private readonly List<Control> ActiveLines = [];
 	private const int HEIGHT = 26;
+	/// <summary>
+	/// Returns true when the battle log is busy with messages.
+	/// </summary>
 	public bool IsProcessingMessage { get; private set; } = false;
 	public static BattleLogManager Instance { get; private set; }
 

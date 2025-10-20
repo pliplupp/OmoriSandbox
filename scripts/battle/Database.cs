@@ -15,7 +15,6 @@ namespace OmoriSandbox.Battle;
 /// </summary>
 public class Database
 {
-	// TODO: abstract these into different registries
 	private static readonly SortedDictionary<string, Func<PartyMember>> PartyMembers = [];
 	private static readonly SortedDictionary<string, Func<Enemy>> Enemies = [];
 	private static readonly Dictionary<string, Skill> Skills = [];

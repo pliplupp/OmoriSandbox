@@ -9,8 +9,29 @@ public class TierStatModifier : StatModifier
 {
 	private int Tier;
 	private readonly int MaxTier;
-	public string SuccessMessage { get; private set; }
-	public string FailureMessage { get; private set; }
+    /// <summary>
+    /// The message to display on success.
+    /// </summary>
+	/// <remarks>
+	/// Only requires the last portion of the sentence. As shown in the following example:
+	/// <code>
+	/// "ATTACK rose!"
+	/// </code>
+	/// </remarks>
+    public string SuccessMessage { get; private set; }
+    /// <summary>
+    /// The message to display on failure.
+    /// </summary>
+    /// <remarks>
+    /// Only requires the last portion of the sentence. As shown in the following example:
+    /// <code>
+    /// "ATTACK cannot go any higher!"
+    /// </code>
+    /// </remarks>
+    public string FailureMessage { get; private set; }
+	/// <summary>
+	/// The current tier of this modifier.
+	/// </summary>
 	public int CurrentTier => Tier;
 
     /// <summary>
@@ -25,8 +46,9 @@ public class TierStatModifier : StatModifier
 
 	/// <summary>
 	/// Represents a tiered stat bonus with a turn counter. Defaults to starting at tier 1.
-	/// Use <see cref="WithTier(int)"/> and <see cref="WithTurnsLeft(int)"/> to modify these starting values.
+	/// Use <see cref="SetTier(int)"/> to modify the modifier's tier.
 	/// </summary>
+	/// <param name="turns">The number of turns to give this stat bonus for.</param>
 	/// <param name="bonuses">A list of stat bonuses. Each index of is list is mapped to the stat to provide at that tier.</param>
 	public TierStatModifier(int turns, params StatBonus[] bonuses) : base(turns, bonuses)
 	{
@@ -80,6 +102,7 @@ public class TierStatModifier : StatModifier
 		return false;
 	}
  
+	/// <inheritdoc/>
 	public override void ApplyStats(ref Stats stats)
 	{
 		StatBonus bonus = Bonuses[Tier - 1];

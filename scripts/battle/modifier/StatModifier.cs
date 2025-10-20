@@ -8,9 +8,18 @@ namespace OmoriSandbox.Battle.Modifier;
 /// </summary>
 public class StatModifier
 {
+    /// <summary>
+    /// The bonuses that this stat modifier provides.
+    /// </summary>
     protected StatBonus[] Bonuses;
 
+    /// <summary>
+    /// How many turns this stat bonus has remaining.
+    /// </summary>
     public int TurnsLeft { get; protected set; } = -1;
+    /// <summary>
+    /// The max number of turns this stat bonus can be applied for.
+    /// </summary>
 
     protected int MaxTurns = -1;
 

@@ -21,7 +21,7 @@ internal sealed class FearOfHeights : Enemy
         if (Roll() < 31)
             return new BattleCommand(this, SelectTarget(), Skills["FOHAttack"]);
         if (Roll() < 16)
-            return new BattleCommand(this, SelectTarget(), Skills["FOSDoNothing"]);
+            return new BattleCommand(this, SelectTarget(), Skills["FOHDoNothing"]);
         if (Roll() < 26)
             return new BattleCommand(this, null, Skills["FOHGrab"]);
         if (Roll() < 31)

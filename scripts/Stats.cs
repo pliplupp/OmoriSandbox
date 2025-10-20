@@ -7,6 +7,7 @@ namespace OmoriSandbox.Battle;
 /// </summary>
 public struct Stats
 {
+#pragma warning disable CS1591
     public int HP;
     public int MaxHP;
     public int Juice;
@@ -36,6 +37,7 @@ public struct Stats
         result.MaxJuice = a.Juice + b.Juice;
         return result;
     }
+#pragma warning restore CS1591
 
     /// <summary>
     /// Retrives the current value of the given <see cref="StatType"/>.

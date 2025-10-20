@@ -1,7 +1,7 @@
 namespace OmoriSandbox.Battle;
 
 /// <summary>
-/// A weapon that can be equipped by a <see cref="PartyMember"/>
+/// A weapon that can be equipped by a <see cref="Actors.PartyMember"/>
 /// </summary>
 /// <param name="name">The name of the weapon.</param>
 /// <param name="stats">The stats that this weapon provides.</param>

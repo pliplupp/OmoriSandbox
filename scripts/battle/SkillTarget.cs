@@ -5,6 +5,7 @@ namespace OmoriSandbox.Battle;
 /// </summary>
 public enum SkillTarget
 {
+#pragma warning disable CS1591
     Self,
     Ally,
     AllyNotSelf,
@@ -14,4 +15,5 @@ public enum SkillTarget
     AllyOrEnemy,
     DeadAlly,
     AllDeadAllies
+#pragma warning restore CS1591
 }

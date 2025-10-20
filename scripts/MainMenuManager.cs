@@ -165,7 +165,7 @@ internal partial class MainMenuManager : Node
 			else if (ModManager.Instance.Battlebacks.TryGetValue(battleback, out Texture2D texture))
 				BattlebackPreview.Texture = texture;
 			else
-				GD.PrintErr("Failed to load battleback: " + battleback);
+				GD.PrintErr("Failed to load battleback: " + battleback);			
 		};
 
 		PreviewButton.Pressed += () =>

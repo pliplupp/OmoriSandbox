@@ -56,7 +56,7 @@ internal partial class MenuManager : Node
 		}
 	}
 
-	public void ShowMenu(MenuState state, bool immediate = false)
+	public void ShowMenu(MenuState state, bool immediate = false, bool ignoreMemory = false)
 	{
 		if (CurrentState != MenuState.None)
 		{
@@ -84,7 +84,10 @@ internal partial class MenuManager : Node
 			item.Populate(CurrentState == MenuState.Toy);
 		}
 
-		if (currentPartyMember != null && LastSelected.TryGetValue(currentPartyMember, out var result))
+		if (ignoreMemory)
+			// this technically ignores the page number, but is only really ever used with the BattleMenu anyway
+			CurrentMenu.OnOpen(new(CurrentState, CurrentMenu.CursorIndex));
+		else if (currentPartyMember != null && LastSelected.TryGetValue(currentPartyMember, out var result))
 			CurrentMenu.OnOpen(result);
 		else
 			CurrentMenu.OnOpen(new(CurrentState, 0));
