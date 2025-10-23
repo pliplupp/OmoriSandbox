@@ -1,9 +1,13 @@
+using Godot;
 using System.Threading.Tasks;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Animation;
 
-public class FearOfHeights : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class FearOfHeights : Enemy
 {
     public override string Name => "SOMETHING";
-    public override string AnimationPath => "res://animations/fear_of_heights.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/fear_of_heights.tres");
     protected override Stats Stats => new(6000, 4000, 120, 100, 80, 10, 95);
     protected override string[] EquippedSkills => ["FOHAttack", "FOHDoNothing", "FOHGrab", "FOHHands", "FOHShove"];
 
@@ -17,7 +21,7 @@ public class FearOfHeights : Enemy
         if (Roll() < 31)
             return new BattleCommand(this, SelectTarget(), Skills["FOHAttack"]);
         if (Roll() < 16)
-            return new BattleCommand(this, SelectTarget(), Skills["FOSDoNothing"]);
+            return new BattleCommand(this, SelectTarget(), Skills["FOHDoNothing"]);
         if (Roll() < 26)
             return new BattleCommand(this, null, Skills["FOHGrab"]);
         if (Roll() < 31)

@@ -1,11 +1,21 @@
 using Godot;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Extensions;
+using OmoriSandbox.Modding;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-public partial class MainMenuManager : Node
+namespace OmoriSandbox.Editor;
+
+internal partial class MainMenuManager : Node
 {
 	public override void _Ready()
+	{
+		Instance = this;
+	}
+
+	public void Init()
 	{
 		AudioManager.Instance.PlayBGM("ow_cattail_fields");
 
@@ -14,15 +24,6 @@ public partial class MainMenuManager : Node
 			using DirAccess access = DirAccess.Open("user://");
 			access.MakeDir("presets");
 			GD.Print("Created user://presets directory");
-		}
-
-		if (!DirAccess.DirExistsAbsolute("user://custom"))
-		{
-			using DirAccess access = DirAccess.Open("user://");
-			access.MakeDir("custom");
-			access.MakeDir("custom/bgm");
-			access.MakeDir("custom/battlebacks");
-			GD.Print("Created user://custom directory");
 		}
 
 		PlayButton.Pressed += () =>
@@ -68,12 +69,26 @@ public partial class MainMenuManager : Node
 			}
 		};
 
-		CustomFolderButton.Pressed += () =>
+		ModFolderButton.Pressed += () =>
 		{
-			Error error = OS.ShellOpen(ProjectSettings.GlobalizePath("user://custom"));
+			Error error = OS.ShellOpen(ProjectSettings.GlobalizePath("user://mods"));
 			if (error != Error.Ok)
 			{
-				GD.PrintErr("Failed to open custom folder");
+				GD.PrintErr("Failed to open mods folder");
+			}
+		};
+
+		ShowModsButton.Pressed += () =>
+		{
+			if (ShowModsButton.Text == "View Mods")
+			{
+				ModListParent.Visible = true;
+				ShowModsButton.Text = "Hide Mods";
+			}
+			else
+			{
+				ModListParent.Visible = false;
+				ShowModsButton.Text = "View Mods";
 			}
 		};
 
@@ -122,39 +137,35 @@ public partial class MainMenuManager : Node
 		};
 
 		// load custom stuff first
-		foreach (string battleback in DirAccess.GetFilesAt("user://custom/battlebacks"))
-		{
-			// maybe not enforce this in the future
-			if (battleback.EndsWith(".png"))
-				BattlebackDropdown.AddItem(battleback);
-		}
-
-		foreach (string bgm in DirAccess.GetFilesAt("user://custom/bgm"))
-		{
-			// maybe not enforce this in the future
-			if (bgm.EndsWith(".ogg"))
-				BGMDropdown.AddItem(bgm);
-		}
-		
-		foreach (string battleback in ResourceLoader.ListDirectory("res://assets/battlebacks"))
+		foreach (string battleback in ModManager.Instance.Battlebacks.Keys)
 		{
 			BattlebackDropdown.AddItem(battleback);
 		}
 
-		foreach (string bgm in ResourceLoader.ListDirectory("res://audio/bgm"))
+		foreach (string bgm in AudioManager.Instance.GetAllBGM())
+		{
 			BGMDropdown.AddItem(bgm);
-		BGMDropdown.Selected = BGMDropdown.GetItemIndex("battle_vf.ogg");
+		}
 
-		BattlebackDropdown.Selected = BattlebackDropdown.GetItemIndex("battleback_vf_default.png");
+		foreach (string battleback in ResourceLoader.ListDirectory("res://assets/battlebacks"))
+		{
+			BattlebackDropdown.AddItem(StringExtensions.GetBaseName(battleback));
+		}
+
+		foreach (string bgm in ResourceLoader.ListDirectory("res://audio/bgm"))
+			BGMDropdown.AddItem(StringExtensions.GetBaseName(bgm));
+		BGMDropdown.Selected = BGMDropdown.GetItemIndex("battle_vf");
+
+		BattlebackDropdown.Selected = BattlebackDropdown.GetItemIndex("battleback_vf_default");
 		BattlebackDropdown.ItemSelected += (idx) =>
 		{
 			string battleback = BattlebackDropdown.GetItemText((int)idx);
-			if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback))
-				BattlebackPreview.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback);
-			else if (FileAccess.FileExists("user://custom/battlebacks/" + battleback))
-				BattlebackPreview.Texture = ImageTexture.CreateFromImage(Image.LoadFromFile("user://custom/battlebacks/" + battleback));
+			if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback + ".png"))
+				BattlebackPreview.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback + ".png");
+			else if (ModManager.Instance.Battlebacks.TryGetValue(battleback, out Texture2D texture))
+				BattlebackPreview.Texture = texture;
 			else
-				GD.PrintErr("Failed to load battleback: " + battleback);
+				GD.PrintErr("Failed to load battleback: " + battleback);			
 		};
 
 		PreviewButton.Pressed += () =>
@@ -221,8 +232,6 @@ public partial class MainMenuManager : Node
 		ResetButton.Pressed += PreResetToDefault;
 
 		ResetPresetDropdown();
-
-		Instance = this;
 	}
 
 	public void ReturnToTitle()
@@ -368,7 +377,7 @@ public partial class MainMenuManager : Node
 			ShowWindow("Error", "Preset file not found at: " + path);
 			return;
 		}
-		
+
 		using FileAccess file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
 		Variant json = Json.ParseString(file.GetAsText());
 
@@ -397,10 +406,10 @@ public partial class MainMenuManager : Node
 
 			// if nothing above throws a KeyNotFoundException, begin applying the preset
 			BattlebackDropdown.Selected = BattlebackDropdown.GetItemIndex(battleback);
-			if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback))
-				BattlebackPreview.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback);
-			else if (FileAccess.FileExists("user://custom/battlebacks/" + battleback))
-				BattlebackPreview.Texture = ImageTexture.CreateFromImage(Image.LoadFromFile("user://custom/battlebacks/" + battleback));
+			if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback + ".png"))
+				BattlebackPreview.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback + ".png");
+			else if (ModManager.Instance.Battlebacks.TryGetValue(battleback, out Texture2D texture))
+				BattlebackPreview.Texture = texture;
 			else
 				GD.PrintErr("Failed to load battleback: " + battleback);
 
@@ -447,7 +456,7 @@ public partial class MainMenuManager : Node
 				}
 			}
 			foreach (var entry in actors)
-			{        
+			{
 				try
 				{
 					string actorName = entry["name"].ToString();
@@ -653,7 +662,7 @@ public partial class MainMenuManager : Node
 			}
 		}
 
-		BattlebackDropdown.Selected = BattlebackDropdown.GetItemIndex("battleback_vf_default.png");
+		BattlebackDropdown.Selected = BattlebackDropdown.GetItemIndex("battleback_vf_default");
 		BattlebackDropdown.EmitSignal("item_selected", BattlebackDropdown.Selected);
 		BGMDropdown.Selected = 0;
 		FollowupTierSlider.Value = 1;
@@ -683,6 +692,20 @@ public partial class MainMenuManager : Node
 		dialog.Show();
 	}
 
+	public void AddModListEntry(ModMetadata data, Texture2D icon = null)
+	{
+		ModListEntry entry = ModListEntry.Instantiate<ModListEntry>();
+		entry.SetData(data);
+		if (icon != null)
+			entry.SetIcon(icon);
+		ModListParent.GetChild(0).AddChild(entry);
+	}
+
+	public void UpdateModsLoaded(int count)
+	{
+		ModsLoaded.Text = count + " mods loaded";
+	}
+
 	public static MainMenuManager Instance;
 	public string LastLoadedPreset { get; private set; } = "";
 
@@ -700,6 +723,15 @@ public partial class MainMenuManager : Node
 
 	[Export]
 	private PackedScene BattleCard;
+
+	[Export]
+	private PackedScene ModListEntry;
+
+	[Export]
+	private ScrollContainer ModListParent;
+
+	[Export]
+	private Button ShowModsButton;
 
 	[Export]
 	private TabContainer ActorTabs;
@@ -723,7 +755,10 @@ public partial class MainMenuManager : Node
 	private Button DataFolderButton;
 
 	[Export]
-	private Button CustomFolderButton;
+	private Button ModFolderButton;
+
+	[Export]
+	private Label ModsLoaded;
 
 	[Export]
 	private Button GithubButton;

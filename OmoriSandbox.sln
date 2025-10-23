@@ -1,12 +1,15 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36301.6
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OmoriSandbox", "OmoriSandbox.csproj", "{29CD3F4A-4C85-41BE-8BDC-5C7DC6F764B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-	Debug|Any CPU = Debug|Any CPU
-	ExportDebug|Any CPU = ExportDebug|Any CPU
-	ExportRelease|Any CPU = ExportRelease|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		ExportDebug|Any CPU = ExportDebug|Any CPU
+		ExportRelease|Any CPU = ExportRelease|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{29CD3F4A-4C85-41BE-8BDC-5C7DC6F764B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -15,5 +18,11 @@ Global
 		{29CD3F4A-4C85-41BE-8BDC-5C7DC6F764B1}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
 		{29CD3F4A-4C85-41BE-8BDC-5C7DC6F764B1}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
 		{29CD3F4A-4C85-41BE-8BDC-5C7DC6F764B1}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {901F178A-1981-4DE6-AA5C-0C52F99213AB}
 	EndGlobalSection
 EndGlobal

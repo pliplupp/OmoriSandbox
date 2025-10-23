@@ -1,7 +1,13 @@
 using System;
 
+namespace OmoriSandbox.Battle;
+
+/// <summary>
+/// Represets a set of stats an <see cref="Actors.Actor"/> can have.
+/// </summary>
 public struct Stats
 {
+#pragma warning disable CS1591
     public int HP;
     public int MaxHP;
     public int Juice;
@@ -31,7 +37,12 @@ public struct Stats
         result.MaxJuice = a.Juice + b.Juice;
         return result;
     }
+#pragma warning restore CS1591
 
+    /// <summary>
+    /// Retrives the current value of the given <see cref="StatType"/>.
+    /// </summary>
+    /// <param name="stat">The <see cref="StatType"/> to retrieve.</param>
     public int GetStat(StatType stat)
     {
         return stat switch
@@ -49,6 +60,11 @@ public struct Stats
         };
     }
 
+    /// <summary>
+    /// Sets the current value of the given <see cref="StatType"/>.
+    /// </summary>
+    /// <param name="stat">The <see cref="StatType"/> to set.</param>
+    /// <param name="value">The value to set the stat to.</param>"
     public void SetStat(StatType stat, int value)
     {
         switch (stat)

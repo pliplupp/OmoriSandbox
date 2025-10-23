@@ -1,4 +1,7 @@
 using Godot;
+
+namespace OmoriSandbox.Extensions;
+
 public static class OptionButtonExtension
 {
     /// <summary>

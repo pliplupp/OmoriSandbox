@@ -1,3 +1,5 @@
+namespace OmoriSandbox.Battle.Modifier;
+
 public class EmotionLockStatModifier : StatModifier
 {
     private string LockedEmotion;

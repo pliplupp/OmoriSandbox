@@ -1,7 +1,11 @@
-public class Omori : PartyMember
+using Godot;
+
+namespace OmoriSandbox.Actors;
+
+internal sealed class Omori : PartyMember
 {
     public override string Name => "Omori";
-    public override string AnimationPath => "res://animations/omori.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/omori.tres");
 
     public override int[] HPTree => new[] { 33, 36, 41, 49, 55, 59, 66, 71, 74, 81, 88, 94, 97, 106, 112, 120, 126, 131, 138, 141, 148, 153, 160, 166, 172, 177, 184, 189, 195, 205, 213, 219, 224, 231, 239, 246, 255, 260, 268, 276, 283, 294, 300, 310, 318, 324, 332, 342, 350, 360 };
     public override int[] JuiceTree => new[] { 20, 25, 29, 31, 35, 39, 41, 46, 50, 53, 57, 61, 64, 73, 75, 82, 83, 86, 90, 95, 96, 100, 103, 106, 110, 112, 116, 121, 127, 129, 137, 142, 146, 150, 151, 154, 158, 161, 166, 173, 179, 186, 194, 203, 210, 218, 226, 232, 239, 250 };

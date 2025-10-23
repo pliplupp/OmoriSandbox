@@ -1,15 +1,19 @@
 using Godot;
+using OmoriSandbox.Actors;
+using System;
 using System.Collections.Generic;
 
-public partial class MenuManager : Node
+namespace OmoriSandbox.Menu;
+
+internal partial class MenuManager : Node
 {
-	[Export] public PartyMenu PartyMenu;
-	[Export] public BattleMenu BattleMenu;
-	[Export] public SkillMenu SkillMenu;
-	[Export] public ItemMenu SnackMenu;
-	[Export] public ItemMenu ToyMenu;
-	[Export] public Sprite2D EnergyBar;
-	[Export] public Label EnergyText;
+	[Export] private PartyMenu PartyMenu;
+	[Export] private BattleMenu BattleMenu;
+	[Export] private SkillMenu SkillMenu;
+	[Export] private ItemMenu SnackMenu;
+	[Export] private ItemMenu ToyMenu;
+	[Export] private Sprite2D EnergyBar;
+	[Export] private Label EnergyText;
 	private Tween EnergyBarTween;
 
 	public static MenuManager Instance { get; private set; }
@@ -22,6 +26,7 @@ public partial class MenuManager : Node
 	private MenuState CurrentState = MenuState.None;
 	private Menu CurrentMenu;
 	private Dictionary<MenuState, Menu> Menus;
+	private Dictionary<PartyMember, SelectionMemory> LastSelected = [];
 
 	public override void _EnterTree()
 	{
@@ -51,7 +56,7 @@ public partial class MenuManager : Node
 		}
 	}
 
-	public void ShowMenu(MenuState state, bool reset = true, bool immediate = false)
+	public void ShowMenu(MenuState state, bool immediate = false, bool ignoreMemory = false)
 	{
 		if (CurrentState != MenuState.None)
 		{
@@ -68,17 +73,24 @@ public partial class MenuManager : Node
 		}
 
 		CurrentMenu = Menus[CurrentState];
+		PartyMember currentPartyMember = BattleManager.Instance.GetCurrentPartyMember();
 
-		if (CurrentMenu is SkillMenu skill)
+        if (CurrentMenu is SkillMenu skill)
 		{
-			skill.Populate(BattleManager.Instance.GetCurrentPartyMember());
+			skill.Populate(currentPartyMember);
 		}
 		else if (CurrentMenu is ItemMenu item)
 		{
 			item.Populate(CurrentState == MenuState.Toy);
 		}
 
-		CurrentMenu.OnOpen(reset);
+		if (ignoreMemory)
+			// this technically ignores the page number, but is only really ever used with the BattleMenu anyway
+			CurrentMenu.OnOpen(new(CurrentState, CurrentMenu.CursorIndex));
+		else if (currentPartyMember != null && LastSelected.TryGetValue(currentPartyMember, out var result))
+			CurrentMenu.OnOpen(result);
+		else
+			CurrentMenu.OnOpen(new(CurrentState, 0));
 		CurrentMenu.MoveUp(immediate);
 		MoveEnergyBarUp(immediate);
 	}
@@ -96,17 +108,45 @@ public partial class MenuManager : Node
 			else if (Input.IsActionJustPressed("MenuRight"))
 				CurrentMenu.OnInput(Vector2I.Right);
 		}
-	}
+
+        EnergyText.Text = $"{BattleManager.Instance.Energy:00}";
+        EnergyBar.RegionRect = new Rect2(0, (float)Math.Ceiling(BattleManager.Instance.Energy / 3f) * 45f, 362f, 49f);
+    }
 
 	public void Select()
 	{
 		if (CurrentState != MenuState.None)
-		{
-			CurrentMenu.OnInput(Vector2I.Zero);
+		{ 
+            CurrentMenu.OnInput(Vector2I.Zero);
 		}
 	}
 
-	private void MoveEnergyBarDown(bool immediate)
+	public void SaveLastSelected(PartyMember member)
+	{
+		if (LastSelected.ContainsKey(member))
+		{
+			// if we have a saved state for this actor, we don't want to overwrite the value when we select the button again
+			if (CurrentState == MenuState.Battle && CurrentMenu.CursorIndex > 0)
+				return;
+		}
+		if (CurrentMenu is ItemMenu itemMenu)
+		{
+			LastSelected[member] = new(CurrentState, itemMenu.CursorIndex, itemMenu.Page);
+            GD.Print($"Saved {member.Name} selection as {CurrentState} at index {CurrentMenu.CursorIndex}, page {itemMenu.Page}");
+        }
+		else
+		{
+			LastSelected[member] = new(CurrentState, CurrentMenu.CursorIndex);
+			GD.Print($"Saved {member.Name} selection as {CurrentState} at index {CurrentMenu.CursorIndex}");
+		}
+    }
+
+	public void ClearLastSelected()
+	{
+		LastSelected.Clear();
+	}
+
+    private void MoveEnergyBarDown(bool immediate)
 	{
 		if (immediate)
 		{

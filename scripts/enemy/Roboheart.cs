@@ -1,9 +1,13 @@
+using Godot;
 using System.Threading.Tasks;
 
-public class Roboheart : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class Roboheart : Enemy
 {
     public override string Name => "ROBOHEART";
-    public override string AnimationPath => "res://animations/roboheart.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/roboheart.tres");
     protected override Stats Stats => new(2500, 1250, 45, 40, 60, 10, 95);
     protected override string[] EquippedSkills => ["RHAttack", "RHDoNothing", "RHLaser", "RHSnack", "RHExplode"];
     public override bool IsStateValid(string state)
@@ -53,11 +57,11 @@ public class Roboheart : Enemy
                 goto snack;
         }
     attack:
-        return new BattleCommand(this, null, Skills["RHAttack"]);
+        return new BattleCommand(this, SelectTarget(), Skills["RHAttack"]);
     nothing:
         return new BattleCommand(this, null, Skills["RHDoNothing"]);
     laser:
-        return new BattleCommand(this, null, Skills["RHLaser"]);
+        return new BattleCommand(this, SelectTarget(), Skills["RHLaser"]);
     snack:
         return new BattleCommand(this, null, Skills["RHSnack"]);
     }

@@ -1,8 +1,11 @@
+using Godot;
 using System.Threading.Tasks;
+using OmoriSandbox.Battle;
 
-public class Boss : Enemy
+namespace OmoriSandbox.Actors;
+internal sealed class Boss : Enemy
 {
-    public override string AnimationPath => "res://animations/boss.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/boss.tres");
 
     public override string Name => "BOSS";
 

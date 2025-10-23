@@ -1,5 +1,11 @@
+using OmoriSandbox.Actors;
 using System;
 
+namespace OmoriSandbox.Battle;
+
+/// <summary>
+/// A Charm that can be equipped on a <see cref="PartyMember"/>
+/// </summary>
 public class Charm
 {
     /// <summary>

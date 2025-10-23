@@ -1,6 +1,8 @@
 using Godot;
+using OmoriSandbox.Editor;
 
-public partial class PartyMenu : Menu
+namespace OmoriSandbox.Menu;
+internal partial class PartyMenu : Menu
 {
 	public override void _Ready()
 	{

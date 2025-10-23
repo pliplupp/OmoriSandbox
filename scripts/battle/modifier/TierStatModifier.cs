@@ -1,19 +1,44 @@
 using System;
 
+namespace OmoriSandbox.Battle.Modifier;
+
+/// <summary>
+/// A generic stat modifier that can provide a different <see cref="StatBonus"/> at each tier.
+/// </summary>
 public class TierStatModifier : StatModifier
 {
 	private int Tier;
 	private readonly int MaxTier;
-	public string SuccessMessage { get; private set; }
-	public string FailureMessage { get; private set; }
+    /// <summary>
+    /// The message to display on success.
+    /// </summary>
+	/// <remarks>
+	/// Only requires the last portion of the sentence. As shown in the following example:
+	/// <code>
+	/// "ATTACK rose!"
+	/// </code>
+	/// </remarks>
+    public string SuccessMessage { get; private set; }
+    /// <summary>
+    /// The message to display on failure.
+    /// </summary>
+    /// <remarks>
+    /// Only requires the last portion of the sentence. As shown in the following example:
+    /// <code>
+    /// "ATTACK cannot go any higher!"
+    /// </code>
+    /// </remarks>
+    public string FailureMessage { get; private set; }
+	/// <summary>
+	/// The current tier of this modifier.
+	/// </summary>
 	public int CurrentTier => Tier;
 
-	/// <summary>
-	/// Represents a tiered stat bonus with no turn counter. Defaults to starting at tier 1.
-	/// Use <see cref="WithTier(int)"/> to modify the starting value.
-	/// </summary>
-	/// <param name="bonuses">A list of stat bonuses. Each index of is list is mapped to the stat to provide at that tier.</param>
-	public TierStatModifier(params StatBonus[] bonuses) : base(bonuses)
+    /// <summary>
+    /// A tiered stat bonus with no turn counter. Defaults to starting at tier 1.
+    /// </summary>
+    /// <param name="bonuses"></param>
+    public TierStatModifier(params StatBonus[] bonuses) : base(bonuses)
 	{
 		Tier = 1;
 		MaxTier = bonuses.Length;
@@ -21,8 +46,9 @@ public class TierStatModifier : StatModifier
 
 	/// <summary>
 	/// Represents a tiered stat bonus with a turn counter. Defaults to starting at tier 1.
-	/// Use <see cref="WithTier(int)"/> and <see cref="WithTurnsLeft(int)"/> to modify these starting values.
+	/// Use <see cref="SetTier(int)"/> to modify the modifier's tier.
 	/// </summary>
+	/// <param name="turns">The number of turns to give this stat bonus for.</param>
 	/// <param name="bonuses">A list of stat bonuses. Each index of is list is mapped to the stat to provide at that tier.</param>
 	public TierStatModifier(int turns, params StatBonus[] bonuses) : base(turns, bonuses)
 	{
@@ -30,6 +56,17 @@ public class TierStatModifier : StatModifier
 		MaxTier = bonuses.Length;
 	}
 
+	/// <summary>
+	/// Sets the messages that display in the battle log when the stat modifier is given or the tier is changed.
+	/// </summary>
+	/// <remarks>
+	/// Only requires the last portion of the sentence. As shown in the following example:
+	/// <code>
+	/// WithMessages("ATTACK rose!", "ATTACK cannot go any higher!");
+	/// </code>
+	/// </remarks>
+	/// <param name="success">The message to display on success.</param>
+	/// <param name="failure">The message to display on failure.</param>
 	public TierStatModifier WithMessages(string success, string failure)
 	{
 		SuccessMessage = success;
@@ -37,6 +74,11 @@ public class TierStatModifier : StatModifier
 		return this;
 	}
 
+	/// <summary>
+	/// Directly sets the tier of the stat modifier.
+	/// </summary>
+	/// <param name="tier">The tier to set this stat modifier to.</param>
+	/// <returns>If the change is successful.</returns>
 	public bool SetTier(int tier)
 	{
 		if (Tier == MaxTier)
@@ -45,17 +87,22 @@ public class TierStatModifier : StatModifier
 		return true;
 	}
 
-	public bool IncreaseTier()
+    /// <summary>
+    /// Increases the tier of this stat modifier by one. Also resets the turns left counter.
+    /// </summary>
+    /// <returns>If the increase is successful.</returns>
+    public bool IncreaseTier()
 	{
 		if (Tier < MaxTier)
 		{
 			Tier++;
-			TurnsLeft = 6;
+			TurnsLeft = MaxTurns;
 			return true;
 		}
 		return false;
 	}
  
+	/// <inheritdoc/>
 	public override void ApplyStats(ref Stats stats)
 	{
 		StatBonus bonus = Bonuses[Tier - 1];

@@ -1,8 +1,12 @@
-public class ForestBunnyQuestion : Enemy
+using Godot;
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class ForestBunnyQuestion : Enemy
 {
     public override string Name => "FOREST BUNNY?";
 
-    public override string AnimationPath => "res://animations/forest_bunny_alt.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/forest_bunny_alt.tres");
 
     protected override Stats Stats => new(110, 55, 13, 6, 11, 10, 95);
 

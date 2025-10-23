@@ -1,6 +1,7 @@
 using Godot;
 
-public partial class CursorBounce : Sprite2D
+namespace OmoriSandbox;
+internal partial class CursorBounce : Sprite2D
 {
 	public override void _Ready()
 	{

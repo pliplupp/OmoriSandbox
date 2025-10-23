@@ -1,8 +1,11 @@
-public class AubreyRW : PartyMember
+using Godot;
+
+namespace OmoriSandbox.Actors;
+internal sealed class AubreyRW : PartyMember
 {
     public override string Name => "Aubrey";
 
-    public override string AnimationPath => "res://animations/aubrey_rw.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/aubrey_rw.tres");
 
     public override int[] HPTree => [240];
 

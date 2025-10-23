@@ -1,7 +1,11 @@
-public class GatorGuyJawsum : Enemy
+using Godot;
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class GatorGuyJawsum : Enemy
 {
     public override string Name => "GATOR GUY";
-    public override string AnimationPath => "res://animations/gator_guy.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/gator_guy.tres");
     protected override Stats Stats => new(300, 150, 40, 10, 30, 10, 95);
     protected override string[] EquippedSkills => ["GGAttack", "GGDoNothing", "GGRoughUp"];
     public override bool IsStateValid(string state)

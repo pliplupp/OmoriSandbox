@@ -1,7 +1,11 @@
-public class LivingBread : Enemy
+using Godot;
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class LivingBread : Enemy
 {
     public override string Name => "LIVING BREAD";
-    public override string AnimationPath => "res://animations/living_bread.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/living_bread.tres");
     protected override Stats Stats => new(250, 75, 45, 15, 5, 10, 95);
     public override bool IsStateValid(string state)
     {

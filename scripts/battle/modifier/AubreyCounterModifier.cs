@@ -1,6 +1,12 @@
+using OmoriSandbox.Actors;
 using System.Linq;
 
-public class AubreyCounterModifier : StatModifier
+namespace OmoriSandbox.Battle.Modifier;
+
+/// <summary>
+/// The modifier used by the Counter skill.
+/// </summary>
+public sealed class AubreyCounterModifier : StatModifier
 {
     public AubreyCounterModifier(int turns) : base(turns) { }
     public override void OverrideDamage(ref float damage, Actor attacker, Actor defender, bool isAttacking)
