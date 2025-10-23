@@ -67,39 +67,37 @@ If `FallsOffScreen` is checked, the enemy will fall off the screen when defeated
 
 The `Visible` checkbox is useful for when there are multiple enemies on the screen, or when an enemy is blocking something you need to see. This checkbox has no effect in battle.
 
-## Customization
-The Sandbox currently supports customization via a `custom` folder, which can be accessed via the `Open Custom Folder` button on the title screen.
+## Modding
+As of update v0.8, official modding is now supported! You can read more about creating file driven, JSON, and fully fledged C# mods on the official [Modding Wiki](https://github.com/EBro912/OmoriSandbox/wiki).
 
-Custom battlebacks should be placed in the `custom/battlebacks` folder, and should be in `.png` format. (640x480 pixels recommended)
+If you are looking to port your custom battlebacks and BGM from an older version, you will need to create a basic "mod" in order to load these. This process is very similar to the old `/custom` folder system and requires no coding and minimal JSON configuration. See the above wiki for more info.
 
-Custom BGM should be placed in the `custom/bgm` folder, and should be in `.ogg` format.
-
-Custom assets will appear in their respetive dropdowns in the visual preset editor.
-
-As of writing, any other customization, such as custom party members, enemies, items, skills, etc. are not officially supported. The above system will eventually be replaced with official modding in a future release.
+**Important Note:**
+When it comes to loading C# mods, **OmoriSandbox does not perform any kind of sandboxing or malware checking when loading mods**, meaning a malicious actor can create a mod that may harm your system. When using C#/`.dll` driven mods, ensure that you trust the author. You can use a program such as [dnSpy](https://github.com/dnSpy/dnSpy) or [VirusTotal](https://www.virustotal.com/gui/) in order to read the mod code or check the file for viruses before loading it into OmoriSandbox.
 
 ## To-Dos
 The following features are currently missing and/or not fully functional in the Sandbox, and will be periodically added through updates. This list may shrink or grow at any time depending on updates and bug reports:
-### Missing
-- [X] Dots animation on the Energy Bar
-- [x] Tier 2 and 3 Followups
-- [x] Omori's special skills (Vertigo, Cripple, Suffocate)
+### Missing Completely
 - [ ] Some Screen Tint/Wave Effects
 - [ ] Faraway Town Snacks and Toys
 - [ ] Sales Tag, Chef's Hat, Contract, Abbi's Eye, Unused Charms
+### In Progress/Partially Functional
+- [ ] Boss-Specific Behavior
+- [ ] Game Over
+- [ ] General Refactoring and Code Improvements
+- [ ] Official Mod Support/Modding API + Documentation
+### Planned Changes/Additions
+- [ ] Porting more enemies and boss fights
+### Finished
+- [X] Dots animation on the Energy Bar
+- [x] Tier 2 and 3 Followups
+- [x] Omori's special skills (Vertigo, Cripple, Suffocate)
 - [X] In-Battle Dialogue
 - [X] Any skills that perform a Taunt
-### Partially Functional
 - [x] Afraid and Stressed Out
 - [X] Party sizes below 4
 - [x] Skills that use the `<Not User>` tag
-- [ ] Boss-Specific Behavior
-- [ ] Game Over
 - [X] Skill/Item descriptions that use character names
-- [ ] General Refactoring and Code Improvements
-### Planned Changes/Additions
-- [ ] Official Mod Support/Modding API + Documentation
-- [ ] Porting more enemies and boss fights
 - [X] Title Screen
 - [X] A GUI driven config system
 
