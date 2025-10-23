@@ -1,7 +1,11 @@
-public class Sunny : PartyMember
+using Godot;
+
+namespace OmoriSandbox.Actors;
+
+internal sealed class Sunny : PartyMember
 {
     public override string Name => "Sunny";
-    public override string AnimationPath => "res://animations/sunny.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/sunny.tres");
 
     public override int[] HPTree => [80];
 

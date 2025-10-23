@@ -1,6 +1,7 @@
 using Godot;
 
-public partial class StateAnimator : Node
+namespace OmoriSandbox;
+internal partial class StateAnimator : Node
 {
 	private Sprite2D StateSprite;
 	private Sprite2D FaceStateSprite;

@@ -1,7 +1,11 @@
-public class FearOfSpiders : Enemy
+using Godot;
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class FearOfSpiders : Enemy
 {
     public override string Name => "SOMETHING";
-    public override string AnimationPath => "res://animations/fear_of_spiders.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/fear_of_spiders.tres");
     protected override Stats Stats => new(7500, 3000, 115, 35, 110, 30, 95);
     protected override string[] EquippedSkills => ["FOSAttack", "FOSDoNothing", "FOSSpinWeb", "FOSAttackAll"];
 

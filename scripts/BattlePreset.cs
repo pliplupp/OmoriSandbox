@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using Godot;
 
-public struct BattlePreset
+namespace OmoriSandbox;
+
+internal struct BattlePreset
 {
     public string Name;
     public string Battleback;
@@ -13,7 +15,7 @@ public struct BattlePreset
     public List<BattlePresetActor> Actors;
     public List<BattlePresetEnemy> Enemies;
 
-    public BattlePreset(string name, string battleback, string bgm, int followupTier, bool basilFollowups, bool basilReleaseEnergy, List<(string ItemName, int Quantity)> startingItems, List<BattlePresetActor> actors, List<BattlePresetEnemy> enemies)
+    internal BattlePreset(string name, string battleback, string bgm, int followupTier, bool basilFollowups, bool basilReleaseEnergy, List<(string ItemName, int Quantity)> startingItems, List<BattlePresetActor> actors, List<BattlePresetEnemy> enemies)
     {
         Name = name;
         Battleback = battleback;
@@ -29,7 +31,7 @@ public struct BattlePreset
 
 
 
-public struct BattlePresetActor
+internal struct BattlePresetActor
 {
     public string Name;
     public int Level;
@@ -37,8 +39,8 @@ public struct BattlePresetActor
     public string Charm;
     public string Emotion;
     public List<string> Skills;
-    
-    public BattlePresetActor(string name, int level, string weapon, string charm, string emotion, List<string> skills)
+
+    internal BattlePresetActor(string name, int level, string weapon, string charm, string emotion, List<string> skills)
     {
         Name = name;
         Level = level;
@@ -49,12 +51,12 @@ public struct BattlePresetActor
     }
 }
 
-public struct BattlePresetEnemy
+internal struct BattlePresetEnemy
 {
     public string Name;
     public Vector2 Position;
     public string Emotion;
-    public BattlePresetEnemy(string name, Vector2 position, string emotion)
+    internal BattlePresetEnemy(string name, Vector2 position, string emotion)
     {
         Name = name;
         Position = position;

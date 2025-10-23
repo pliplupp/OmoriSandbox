@@ -1,7 +1,12 @@
-public class Slice : Enemy
+using Godot;
+
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class Slice : Enemy
 {
     public override string Name => "SLICE";
-    public override string AnimationPath => "res://animations/slice.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/slice.tres");
     protected override Stats Stats => new(344, 151, 35, 54, 40, 10, 95);
     public override bool IsStateValid(string state)
     {

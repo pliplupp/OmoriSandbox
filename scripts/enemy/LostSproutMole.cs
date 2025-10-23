@@ -1,10 +1,14 @@
-public class LostSproutMole : Enemy
+using Godot;
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class LostSproutMole : Enemy
 {
 	public override string Name => "LOST SPROUT MOLE";
 
-	public override string AnimationPath => "res://animations/sprout_mole.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/sprout_mole.tres");
 
-	protected override Stats Stats => new(170, 75, 22, 10, 13, 5, 95);
+    protected override Stats Stats => new(170, 75, 22, 10, 13, 5, 95);
 	protected override string[] EquippedSkills => ["LSMAttack", "LSMDoNothing", "LSMRunAround"];
 
 	public override bool IsStateValid(string state)

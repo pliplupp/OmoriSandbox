@@ -1,6 +1,8 @@
 using Godot;
 
-public partial class EnergyDots : Sprite2D
+namespace OmoriSandbox;
+
+internal partial class EnergyDots : Sprite2D
 {
     [Export]
     private double Speed = 20f;

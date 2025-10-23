@@ -1,7 +1,12 @@
-public class TheEarth : Enemy
+using Godot;
+
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class TheEarth : Enemy
 {
     public override string Name => "THE EARTH";
-    public override string AnimationPath => "res://animations/earth.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/earth.tres");
     protected override Stats Stats => new(425, 210, 20, 15, 15, 10, 95);
 
     protected override string[] EquippedSkills => ["TEAttack", "TEDoNothing", "TECruel", "TEProtect"];
@@ -45,10 +50,10 @@ public class TheEarth : Enemy
                 goto cruel;
         }
     attack:
-        return new BattleCommand(this, null, Skills["TEAttack"]);
+        return new BattleCommand(this, SelectTarget(), Skills["TEAttack"]);
     nothing:
         return new BattleCommand(this, null, Skills["TENothing"]);
     cruel:
-        return new BattleCommand(this, null, Skills["TECruel"]);
+        return new BattleCommand(this, SelectTarget(), Skills["TECruel"]);
     }
 }

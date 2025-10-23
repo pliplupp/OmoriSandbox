@@ -1,4 +1,6 @@
-public enum MenuState
+namespace OmoriSandbox.Menu;
+
+internal enum MenuState
 {
     None,
     Party,

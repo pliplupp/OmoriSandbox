@@ -2,10 +2,13 @@ using Godot;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-public class MrJawsum : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class MrJawsum : Enemy
 {
     public override string Name => "MR. JAWSUM";
-    public override string AnimationPath => "res://animations/mr_jawsum.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/mr_jawsum.tres");
     protected override Stats Stats => new(500, 250, 999, 20, 1, 10, 95);
     protected override string[] EquippedSkills => ["MJSummonGator", "MJAttackOrder"];
 

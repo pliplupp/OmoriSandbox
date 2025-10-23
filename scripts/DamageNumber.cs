@@ -1,6 +1,9 @@
 using Godot;
 using System.Linq;
-public partial class DamageNumber : Node2D
+
+namespace OmoriSandbox;
+
+internal partial class DamageNumber : Node2D
 {
     private int[] Digits;
     private DamageType DamageType;

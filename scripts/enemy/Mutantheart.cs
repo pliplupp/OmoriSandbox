@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-public class Mutantheart : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class Mutantheart : Enemy
 {
     public override string Name => "MUTANTHEART";
-    public override string AnimationPath => "res://animations/mutantheart.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/mutantheart.tres");
     protected override Stats Stats => new(7000, 3500, 75, 1, 50, 25, 95);
 
     protected override string[] EquippedSkills => ["MHWink", "MHCry", "MHInsult", "MHInstakill"];

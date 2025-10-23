@@ -1,7 +1,11 @@
-public class HumphreyUvula : Enemy
+using Godot;
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class HumphreyUvula : Enemy
 {
     public override string Name => "HUMPHREY";
-    public override string AnimationPath => "res://animations/uvula.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/uvula.tres");
     protected override Stats Stats => new(1, 1, 1, 1, 900, 1, 95);
     protected override string[] EquippedSkills => [];
 

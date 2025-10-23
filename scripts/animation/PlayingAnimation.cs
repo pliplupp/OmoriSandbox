@@ -1,5 +1,8 @@
 using Godot;
-public partial class PlayingAnimation : Node2D
+
+namespace OmoriSandbox.Animation;
+
+internal partial class PlayingAnimation : Node2D
 {
     public int CurrentFrame { get; private set; } = 0;
     public readonly RPGMAnimatedSprite Animation;

@@ -1,24 +1,29 @@
+using Discord;
 using Godot;
+using OmoriSandbox.Actors;
+using OmoriSandbox.Animation;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Editor;
+using OmoriSandbox.Modding;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-public partial class GameManager : Node
+namespace OmoriSandbox;
+
+internal partial class GameManager : Node
 {
-	[Export] public PackedScene BattlecardUI;
-	[Export] public PackedScene EnemyUI;
-	[Export] public TextureRect BattlebackParent;
-	[Export] public Label FPSLabel;
-	[Export] public Node Party;
+	[Export] private PackedScene BattlecardUI;
+	[Export] private PackedScene EnemyUI;
+	[Export] private TextureRect BattlebackParent;
+	[Export] private Label FPSLabel;
+	[Export] private Node Party;
 
-	[Export] public PackedScene[] Followups;
+	[Export] private PackedScene[] Followups;
 
-	public RandomNumberGenerator Random = new();
-	public DiscordManager DiscordManager { get; private set; }
-
-	public string CustomDataPath = "user://custom/";
-
+    public RandomNumberGenerator Random = new();
+	internal DiscordManager DiscordManager { get; private set; }
 	public static GameManager Instance { get; private set; }
 
 	public override void _PhysicsProcess(double delta)
@@ -38,16 +43,18 @@ public partial class GameManager : Node
 
 		DiscordManager = new();
 
-        AnimationManager.Instance.Init();
-        AudioManager.Instance.Init();
+		AnimationManager.Instance.Init();
+		AudioManager.Instance.Init();
+		ModManager.Instance.LoadMods();
+		MainMenuManager.Instance.Init();
 	}
 
-    public override void _ExitTree()
-    {
+	public override void _ExitTree()
+	{
 		DiscordManager.Shutdown();
-    }
+	}
 
-	public void LoadBattlePreset(Godot.Collections.Dictionary<string, Variant> data)
+	internal void LoadBattlePreset(Godot.Collections.Dictionary<string, Variant> data)
 	{
 		List<PartyMemberComponent> party = [];
 		List<EnemyComponent> enemy = [];
@@ -62,10 +69,10 @@ public partial class GameManager : Node
 			DisableDialogue = value.AsBool();
 
 		string battleback = data["battleback"].AsString();
-		if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback))
-			BattlebackParent.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback);
-		else if (FileAccess.FileExists(CustomDataPath + "/battlebacks/" + battleback))
-			BattlebackParent.Texture = ImageTexture.CreateFromImage(Image.LoadFromFile(CustomDataPath + "/battlebacks/" + battleback));
+		if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback + ".png"))
+			BattlebackParent.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback + ".png");
+		else if (ModManager.Instance.Battlebacks.TryGetValue(battleback, out Texture2D texture))
+			BattlebackParent.Texture = texture;
 		else
 			GD.PrintErr("Failed to load battleback: " + battleback);
 
@@ -115,9 +122,9 @@ public partial class GameManager : Node
 			string positionStr = entry["position"].ToString();
 			string[] positionArr = positionStr.Substring(1, positionStr.Length - 2).Split(',');
 			Vector2 position = new(float.Parse(positionArr[0], CultureInfo.InvariantCulture), float.Parse(positionArr[1], CultureInfo.InvariantCulture));
-            if (!entry.TryGetValue("layer", out Variant layer))
-                layer = 0;
-            EnemyComponent en = SpawnEnemy(
+			if (!entry.TryGetValue("layer", out Variant layer))
+				layer = 0;
+			EnemyComponent en = SpawnEnemy(
 					entry["name"].ToString(),
 					position,
 					entry["emotion"].ToString(),
@@ -134,7 +141,7 @@ public partial class GameManager : Node
 		BattleManager.Instance.Init(party, enemy, items, FollowupTier, UseBasilFollowups, UseBasilReleaseEnergy);
 	}
 
-	public void DespawnAll()
+	internal void DespawnAll()
 	{
 		foreach (Node child in Party.GetChildren())
 		{
@@ -148,7 +155,7 @@ public partial class GameManager : Node
 		}
 	}
 
-	public EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)
+	internal EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)
 	{
 		Enemy instance = Database.CreateEnemy(who);
 		Node2D node = EnemyUI.Instantiate<Node2D>();
@@ -162,7 +169,7 @@ public partial class GameManager : Node
 		return component;
 	}
 
-	private PartyMemberComponent SpawnPartyMember(string who, PackedScene followup, int position, string weapon, string charm, string[] skills, int level = 1, string startingEmotion = "neutral")
+    internal PartyMemberComponent SpawnPartyMember(string who, PackedScene followup, int position, string weapon, string charm, string[] skills, int level = 1, string startingEmotion = "neutral")
 	{
 		PartyMember instance = Database.CreatePartyMember(who);
 		if (instance == null)
@@ -178,11 +185,11 @@ public partial class GameManager : Node
 				card.Position = new Vector2(20, 5);
 				break;
 			case 2:
-                card.Position = new Vector2(506, 306);
+				card.Position = new Vector2(506, 306);
 				break;
 			case 3:
-                card.Position = new Vector2(506, 5);
-                break;
+				card.Position = new Vector2(506, 5);
+				break;
 		}
 		PartyMemberComponent component = new();
 		card.AddChild(component);

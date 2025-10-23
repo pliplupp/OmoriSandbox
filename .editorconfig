@@ -2,3 +2,6 @@ root = true
 
 [*]
 charset = utf-8
+
+# IDE0160: Convert to block scoped namespace
+dotnet_diagnostic.IDE0160.severity = silent

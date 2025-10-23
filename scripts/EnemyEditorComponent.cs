@@ -1,6 +1,11 @@
 using Godot;
+using OmoriSandbox.Actors;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Extensions;
 
-public partial class EnemyEditorComponent : Control
+namespace OmoriSandbox.Editor;
+
+internal partial class EnemyEditorComponent : Control
 {
 	[Export]
 	public OptionButton EnemyDropdown { get; private set; }
@@ -91,7 +96,7 @@ public partial class EnemyEditorComponent : Control
 		Name = who;
 		Enemy enemy = Database.CreateEnemy(who);
 
-		SpriteFrames animation = ResourceLoader.Load<SpriteFrames>(enemy.AnimationPath);
+		SpriteFrames animation = enemy.Animation;
 		if (animation == null)
 		{
 			GD.PrintErr("Failed to load animations for Enemy: " + Name);

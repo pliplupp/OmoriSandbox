@@ -1,23 +1,30 @@
-[gd_scene load_steps=9 format=3 uid="uid://dxm1fg4428tk"]
+[gd_scene load_steps=11 format=3 uid="uid://dxm1fg4428tk"]
 
 [ext_resource type="Texture2D" uid="uid://bkfc0aptec36b" path="res://assets/logo.png" id="1_l6cm7"]
 [ext_resource type="Script" uid="uid://b1cjgogphng5l" path="res://scripts/MainMenuManager.cs" id="1_wu84c"]
 [ext_resource type="FontFile" uid="uid://bdh481cgsv8wf" path="res://fonts/OMORI_GAME2.ttf" id="2_ekxnf"]
 [ext_resource type="PackedScene" uid="uid://d1q22va25i15g" path="res://scenes/enemy_editor_component.tscn" id="3_oa1go"]
 [ext_resource type="PackedScene" uid="uid://5jek8whi4if3" path="res://scenes/party_member_editor_component.tscn" id="4_8ln24"]
+[ext_resource type="PackedScene" uid="uid://bafxyc8q2lavr" path="res://scenes/mod_list_entry.tscn" id="5_jk1qb"]
 [ext_resource type="PackedScene" uid="uid://d32syyvyr6iwr" path="res://scenes/party_member.tscn" id="5_rtw2f"]
 [ext_resource type="Texture2D" uid="uid://cmbljlf76y4r6" path="res://assets/title_screen.png" id="5_tbmy8"]
 [ext_resource type="Texture2D" uid="uid://d36ge2cnq6lkj" path="res://assets/battlebacks/battleback_vf_default.png" id="8_tbmy8"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tbmy8"]
+bg_color = Color(0.14, 0.14, 0.14, 0.784314)
+
 [node name="MainMenu" type="CanvasLayer"]
 
-[node name="MainMenuManager" type="Node" parent="." node_paths=PackedStringArray("AddActorControls", "AddEnemyControl", "ActorTabs", "EnemyTabs", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "DataFolderButton", "CustomFolderButton", "GithubButton", "TitlePresetDropdown", "BattlebackPreview", "BattlebackDropdown", "BGMDropdown", "PreviewButton", "FollowupTierSlider", "FollowupTierValue", "BasilFollowupsCheckbox", "BasilReleaseEnergyCheckbox", "DisableDialogue", "AddItemButton", "ItemContainer", "SearchInput", "SearchButton", "Results", "SavePresetButton", "PresetInput", "LoadPresetButton", "DeletePresetButton", "PresetDropdown", "ResetButton", "ReturnButton")]
+[node name="MainMenuManager" type="Node" parent="." node_paths=PackedStringArray("AddActorControls", "AddEnemyControl", "ModListParent", "ShowModsButton", "ActorTabs", "EnemyTabs", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "DataFolderButton", "ModFolderButton", "ModsLoaded", "GithubButton", "TitlePresetDropdown", "BattlebackPreview", "BattlebackDropdown", "BGMDropdown", "PreviewButton", "FollowupTierSlider", "FollowupTierValue", "BasilFollowupsCheckbox", "BasilReleaseEnergyCheckbox", "DisableDialogue", "AddItemButton", "ItemContainer", "SearchInput", "SearchButton", "Results", "SavePresetButton", "PresetInput", "LoadPresetButton", "DeletePresetButton", "PresetDropdown", "ResetButton", "ReturnButton")]
 script = ExtResource("1_wu84c")
 AddActorControls = [NodePath("../Editor/Actors/AddActor1"), NodePath("../Editor/Actors/AddActor2"), NodePath("../Editor/Actors/AddActor3"), NodePath("../Editor/Actors/AddActor4")]
 AddEnemyControl = NodePath("../Editor/Actors/AddEnemy")
 PartyMemberEditor = ExtResource("4_8ln24")
 EnemyEditor = ExtResource("3_oa1go")
 BattleCard = ExtResource("5_rtw2f")
+ModListEntry = ExtResource("5_jk1qb")
+ModListParent = NodePath("../Main/ModsLoadedList")
+ShowModsButton = NodePath("../Main/ShowModsButton")
 ActorTabs = NodePath("../Editor/SettingsTabs/Actors/VBoxContainer/ActorTabs")
 EnemyTabs = NodePath("../Editor/SettingsTabs/Enemies/VBoxContainer/EnemyTabs")
 MainMenu = NodePath("../Main")
@@ -25,7 +32,8 @@ Editor = NodePath("../Editor")
 PlayButton = NodePath("../Main/VBoxContainer/Play")
 ConfigureButton = NodePath("../Main/VBoxContainer/Configure")
 DataFolderButton = NodePath("../Main/VBoxContainer/HBoxContainer2/DataFolder")
-CustomFolderButton = NodePath("../Main/VBoxContainer/HBoxContainer2/CustomFolder")
+ModFolderButton = NodePath("../Main/VBoxContainer/HBoxContainer2/ModFolder")
+ModsLoaded = NodePath("../Main/ModsLoaded")
 GithubButton = NodePath("../Main/Github")
 TitlePresetDropdown = NodePath("../Main/VBoxContainer/HBoxContainer/PresetDropdown")
 BattlebackPreview = NodePath("../Editor/BattlebackPreview")
@@ -88,7 +96,44 @@ offset_bottom = -3.0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 14
-text = "OmoriSandbox v0.7.0"
+text = "OmoriSandbox v0.8.0"
+
+[node name="ModsLoaded" type="Label" parent="Main"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = -30.0
+offset_right = 98.0
+offset_bottom = -16.0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 14
+text = "0 mods loaded"
+
+[node name="ShowModsButton" type="Button" parent="Main"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = -57.0
+offset_right = 68.0
+offset_bottom = -33.0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_ekxnf")
+text = "View Mods"
+
+[node name="ModsLoadedList" type="ScrollContainer" parent="Main"]
+visible = false
+z_index = 1
+custom_minimum_size = Vector2(175, 400)
+offset_right = 278.0
+offset_bottom = 400.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_tbmy8")
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Main/ModsLoadedList"]
+layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Main"]
 anchors_preset = 7
@@ -146,11 +191,11 @@ theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 20
 text = "Open Preset Folder"
 
-[node name="CustomFolder" type="Button" parent="Main/VBoxContainer/HBoxContainer2"]
+[node name="ModFolder" type="Button" parent="Main/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 20
-text = "Open Custom Folder"
+text = "Open Mods Folder"
 
 [node name="Credits" type="Label" parent="Main"]
 anchors_preset = 3

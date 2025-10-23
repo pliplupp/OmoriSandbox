@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using Godot;
 
-public abstract partial class Menu : Sprite2D
+namespace OmoriSandbox.Menu;
+
+internal abstract partial class Menu : Sprite2D
 {
 	[Export] protected Sprite2D CursorSprite;
 	protected List<string> Options = [];
 	protected List<Vector2I> CursorPositions = [];
-	protected int CursorIndex = 0;
+	public int CursorIndex { get; protected set; } = 0;
 	protected bool Empty = false;
 	protected Tween Tween;
 
@@ -35,11 +37,10 @@ public abstract partial class Menu : Sprite2D
 	}
 
 	protected abstract void OnSelect();
-	public virtual void OnOpen(bool reset) 
-	{ 
+	public virtual void OnOpen(SelectionMemory memory) 
+	{
+		CursorIndex = 0;
 		Show();
-		if (reset)
-			CursorIndex = 0;
 		UpdateCursor();
 	}
 	public virtual void OnClose() 

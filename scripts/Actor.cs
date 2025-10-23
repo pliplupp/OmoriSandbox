@@ -1,27 +1,71 @@
 using Godot;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Battle.Modifier;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
+namespace OmoriSandbox.Actors;
+
+/// <summary>
+/// An generic actor. See <see cref="PartyMember"/> and <see cref="Enemy"/>.
+/// </summary>
 public abstract class Actor
 {
+	/// <summary>
+	/// Fired whenever the actor's state (emotion) changes.
+	/// </summary>
 	public event EventHandler OnStateChanged;
+	/// <summary>
+	/// Fired whenever the actor's HP changes.
+	/// </summary>
 	public event EventHandler OnHPChanged;
+	/// <summary>
+	/// Fired whenever the actor's Juice changes.
+	/// </summary>
 	public event EventHandler OnJuiceChanged;
 
+	/// <summary>
+	/// The name of the actor.
+	/// </summary>
 	public abstract string Name { get; }
+	/// <summary>
+	/// The actor's sprite.
+	/// </summary>
 	public AnimatedSprite2D Sprite;
+	/// <summary>
+	/// The center point of the actor, calculated by the center of its sprite.
+	/// </summary>
 	public Vector2 CenterPoint = Vector2.Zero;
+	/// <summary>
+	/// The actor's current state (emotion).
+	/// </summary>
 	public string CurrentState;
+	/// <summary>
+	/// The skills the actor has equipped.
+	/// </summary>
 	public Dictionary<string, Skill> Skills = [];
-	public bool IsHurt = false;
-	public int Level = 1;
 
 	public Stats BaseStats;
 
+    /// <summary>
+    /// The actor's level. Mainly only used for <see cref="PartyMember"/>s.
+    /// </summary>
+    public int Level { get; protected set; } = 1;
+
+	/// <summary>
+	/// The <see cref="StatModifier"/>s the actor currently has.
+	/// </summary>
 	public Dictionary<string, StatModifier> StatModifiers = [];
+	/// <summary>
+	/// The <see cref="StatModifier"/> that the actor's emotion gives.
+	/// </summary>
 	public StatModifier StateStatModifier { get; private set; } = new StatModifier([]);
 
 	private int _CurrentHP = 0;
+	/// <summary>
+	/// The actor's current HP. Updating this value will fire <see cref="OnHPChanged"/>.
+	/// </summary>
 	public int CurrentHP
 	{
 		get { return _CurrentHP; }
@@ -33,7 +77,10 @@ public abstract class Actor
 	} 
 
 	private int _CurrentJuice = 0;
-	public int CurrentJuice
+    /// <summary>
+    /// The actor's current Juice. Updating this value will fire <see cref="OnJuiceChanged"/>.
+    /// </summary>
+    public int CurrentJuice
 	{
 		get { return _CurrentJuice; }
 		set
@@ -43,10 +90,14 @@ public abstract class Actor
 		}
 	}
 
+	/// <summary>
+	/// The actor's base stats without any modifiers.
+	/// </summary>
+	/// <returns></returns>
 	protected virtual Stats GetBaseStats() { return BaseStats; }
 
 	/// <summary>
-	/// The Actor's base stats, any adjusted stats from weapons or buffs, and emotion stats.
+	/// The Actor's base stats, any adjusted stats from equips or modifiers, and emotion stats.
 	/// </summary>
 	public Stats CurrentStats
 	{
@@ -65,6 +116,11 @@ public abstract class Actor
 		}
 	}
 
+	/// <summary>
+	/// Adds a new <see cref="StatModifier"/> to this actor.
+	/// </summary>
+	/// <param name="modifier">The name of the modifier to add.</param>
+	/// <param name="silent">If true, success/failure messages will not be logged.</param>
 	public void AddStatModifier(string modifier, bool silent = false)
 	{
 		if (StatModifiers.TryGetValue(modifier, out StatModifier m))
@@ -97,7 +153,14 @@ public abstract class Actor
 		}
 	}
 
-	public void AddTierStatModifier(string modifier, int tier = 1, int turns = 6, bool silent = false)
+    /// <summary>
+    /// Adds a new <see cref="TierStatModifier"/> to this actor.
+    /// </summary>
+    /// <param name="modifier">The name of the tier modifier to add.</param>
+    /// <param name="tier">The tier that this modifier will start at.</param>
+    /// <param name="turns">The number of turns left the modifier will start at.</param>
+    /// <param name="silent">If true, success/failure messages will not be logged.</param>
+    public void AddTierStatModifier(string modifier, int tier = 1, int turns = 6, bool silent = false)
 	{
 		StatModifier mod = Database.CreateModifier(modifier);
 		if (mod is not TierStatModifier t)
@@ -130,10 +193,18 @@ public abstract class Actor
 			ShowStatMessage(t.SuccessMessage);
 	}
 
+	/// <summary>
+	/// Removes a <see cref="StatModifier"/> of the given name from this actor.
+	/// </summary>
+	/// <param name="modifier">The name of the modifier to remove.</param>
 	public void RemoveStatModifier(string modifier)
 	{
 		StatModifiers.Remove(modifier);
 	}
+
+	/// <summary>
+	/// Removes all <see cref="StatModifier"/>s from this actor.
+	/// </summary>
 	public void RemoveAllStatModifiers()
 	{
 		StatModifiers.Clear();
@@ -144,7 +215,7 @@ public abstract class Actor
 		BattleLogManager.Instance.QueueMessage($"{Name.ToUpper()}'s {message}");
 	}
 
-	public void DecreaseStatTurnCounter()
+	internal void DecreaseStatTurnCounter()
 	{
 		foreach (var mod in StatModifiers)
 		{
@@ -169,18 +240,37 @@ public abstract class Actor
 
 	}
 
+	/// <summary>
+	/// Checks if this actor has a certain <see cref="StatModifier"/>.
+	/// </summary>
+	/// <param name="modifier">The name of the modifier to check for.</param>
+	/// <returns>True if the actor has the given <paramref name="modifier"/>.</returns>
 	public bool HasStatModifier(string modifier)
 	{
 		return StatModifiers.ContainsKey(modifier);
 	}
 
+	/// <summary>
+	/// Checks if this actor currently has a locked emotion.
+	/// </summary>
+	/// <returns>True if the actor's <see cref="StateStatModifier"/> is a <see cref="EmotionLockStatModifier"/>.</returns>
 	public bool HasLockedEmotion()
 	{
 		return StateStatModifier is EmotionLockStatModifier;
 	}
 
+	/// <summary>
+	/// Damages this actor by the given amount.
+	/// </summary>
+	/// <remarks>
+	/// Negative values should not be used. See <see cref="Heal(int)"/> for healing actors.
+	/// </remarks>
+	/// <param name="damage">The amount of damage to deal to this actor.</param>
 	public void Damage(int damage)
 	{
+		if (damage < 0)
+			return;
+
 		CurrentHP -= damage;
 		if (CurrentHP < 0)
 			CurrentHP = 0;
@@ -199,6 +289,10 @@ public abstract class Actor
 		}
 	}
 
+	/// <summary>
+	/// Heals this actor by the given amount.
+	/// </summary>
+	/// <param name="health">The amount of health to heal.</param>
 	public void Heal(int health)
 	{
 		CurrentHP += health;
@@ -206,6 +300,10 @@ public abstract class Actor
 			CurrentHP = CurrentStats.MaxHP;
 	}
 
+	/// <summary>
+	/// Heals this actor's juice by the given amount.
+	/// </summary>
+	/// <param name="juice">The amount of juice to heal.</param>
 	public void HealJuice(int juice)
 	{
 		CurrentJuice += juice;
@@ -213,16 +311,29 @@ public abstract class Actor
 			CurrentJuice = CurrentStats.MaxJuice;
 	}
 
-
+	/// <summary>
+	/// Makes this actor appear visually hurt. Removed at the end of turn.
+	/// </summary>
+	/// <param name="hurt">Whether or not this actor should appear hurt.</param>
 	public void SetHurt(bool hurt)
 	{
 		Sprite.Animation = hurt ? "hurt" : CurrentState;
-		IsHurt = hurt;
 	}
 
+	/// <summary>
+	/// Checks if this actor can feel the given state (emotion).
+	/// </summary>
+	/// <param name="state">The emotion to check.</param>
+	/// <returns>True if this actor can feel the given <paramref name="state"/>.</returns>
 	public virtual bool IsStateValid(string state) { return true; }
 
-	public void SetState(string state, bool silent = false)
+    /// <summary>
+    /// Sets this actor's state to the given state (emotion). Will fail and log a battle message if the actor cannot feel the given <paramref name="state"/>.<br/>
+    /// See <see cref="IsStateValid(string)"/>.
+    /// </summary>
+    /// <param name="state">The emotion to set this actor to.</param>
+    /// <param name="silent">If true, success/failure messages will not be logged.</param>
+    public void SetState(string state, bool silent = false)
 	{
 		if (IsStateValid(state))
 		{
@@ -256,8 +367,11 @@ public abstract class Actor
 	}
 
 
-	// forces a state without any validity checks
-	// mainly used for bosses like Sweetheart
+	/// <summary>
+	/// Forces this actor to have a state (emotion) without any validity checks. Mainly used for bosses like Sweetheart. Should be used sparingly.
+	/// </summary>
+	/// <param name="state">The emotion to force this actor to have.</param>
+	/// <param name="fakeState">If set, the actor will feel the <paramref name="fakeState"/> but use the stats of the <paramref name="state"/>.</param>
 	public void ForceState(string state, string fakeState = null)
 	{
 		// TODO: attach emotion/animation info to non-emotion modifiers, like boss specific emotions
@@ -277,7 +391,14 @@ public abstract class Actor
 			StateStatModifier = mod;
 		}
 	}
+	/// <summary>
+	/// Called at the very start of the battle.
+	/// </summary>
 	public virtual async Task OnStartOfBattle() { await Task.CompletedTask; }
+	/// <summary>
+	/// Called when the battle is over, but before the victory screen.
+	/// </summary>
+	/// <param name="victory">Whether or not the battle was won by the player.</param>
 	public virtual async Task OnEndOfBattle(bool victory) { await Task.CompletedTask; }
 
 	private string Capitalize(string s)

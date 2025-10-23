@@ -1,7 +1,11 @@
-public class KelRW : PartyMember
+using Godot;
+
+namespace OmoriSandbox.Actors;
+
+internal sealed class KelRW : PartyMember
 {
     public override string Name => "Kel";
-    public override string AnimationPath => "res://animations/kel_rw.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/kel_rw.tres");
 
     public override int[] HPTree => [130];
 

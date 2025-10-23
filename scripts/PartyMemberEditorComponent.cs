@@ -1,7 +1,11 @@
 using Godot;
+using OmoriSandbox.Actors;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Extensions;
 using System.Linq;
 
-public partial class PartyMemberEditorComponent : Control
+namespace OmoriSandbox.Editor;
+internal partial class PartyMemberEditorComponent : Control
 {
 	[Export]
 	public OptionButton ActorDropdown { get; private set; }
@@ -39,7 +43,7 @@ public partial class PartyMemberEditorComponent : Control
 
 	public int ActorPosition { get; private set; }
 
-	private readonly string[] States = ["neutral", "happy", "sad", "angry", "ecstatic", "depressed", "furious", "manic", "miserable", "furious", "manic", "afraid", "stressed"];
+	private readonly string[] States = ["neutral", "happy", "sad", "angry", "ecstatic", "depressed", "furious", "manic", "miserable", "furious", "manic", "afraid", "stressed", "hurt", "toast", "victory"];
 
 	public override void _Ready()
 	{
@@ -125,7 +129,7 @@ public partial class PartyMemberEditorComponent : Control
 		if (Database.TryGetSkill(attackSkill, out _))
 			AttackSkill.Text = attackSkill;
 
-		SpriteFrames animation = ResourceLoader.Load<SpriteFrames>(member.AnimationPath);
+		SpriteFrames animation = member.Animation;
 		if (animation == null)
 		{
 			GD.PrintErr("Failed to load Face animations for PartyMember: " + Name);
@@ -133,8 +137,7 @@ public partial class PartyMemberEditorComponent : Control
 		}
 
 		Face.SpriteFrames = animation;
-		Face.Animation = "neutral";
-		Face.Play();
+		Face.Play("neutral");
 		Animator.SetState("neutral");
 
 		LevelSlider.Value = 1;
@@ -150,6 +153,7 @@ public partial class PartyMemberEditorComponent : Control
 	public void UpdateState(string state)
 	{
 		Face.Animation = state;
-		Animator.SetState(state);
+		if (state != "hurt")
+			Animator.SetState(state);
 	}
 }

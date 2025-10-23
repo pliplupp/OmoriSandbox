@@ -1,4 +1,6 @@
-public enum InputDirection
+namespace OmoriSandbox;
+
+internal enum InputDirection
 {
     Neutral,
     Up,

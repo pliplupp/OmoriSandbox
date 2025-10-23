@@ -1,7 +1,11 @@
 using Godot;
+using OmoriSandbox;
+using OmoriSandbox.Battle;
 using System.Collections.Generic;
 
-public partial class BattleSettings : Control
+namespace OmoriSandbox;
+
+internal partial class BattleSettings : Control
 {
 	public override void _Ready()
 	{

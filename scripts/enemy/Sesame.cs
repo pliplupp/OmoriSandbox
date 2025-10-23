@@ -1,7 +1,12 @@
-public class Sesame : Enemy
+using Godot;
+
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class Sesame : Enemy
 {
     public override string Name => "SESAME";
-    public override string AnimationPath => "res://animations/sesame.tres";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/sesame.tres");
     protected override Stats Stats => new(288, 197, 51, 43, 91, 10, 95);
     public override bool IsStateValid(string state)
     {

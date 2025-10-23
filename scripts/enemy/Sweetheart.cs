@@ -1,9 +1,13 @@
 using System.Threading.Tasks;
+using Godot;
 
-public class Sweetheart : Enemy
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+internal sealed class Sweetheart : Enemy
 {
 	public override string Name => "SWEETHEART";
-	public override string AnimationPath => "res://animations/sweetheart.tres";
+	public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/sweetheart.tres");
 	protected override Stats Stats => new(3300, 1650, 30, 25, 40, 10, 90);
 
 	protected override string[] EquippedSkills => ["SHAttack", "SharpInsult", "SwingMace", "Brag"];
