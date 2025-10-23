@@ -1,6 +1,7 @@
 using Godot;
 using OmoriSandbox.Actors;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OmoriSandbox;
 
@@ -130,20 +131,22 @@ public partial class BattleLogManager : Control
 		IsProcessingMessage = true;
 		string next = MessageQueue[0];
 
-		// if text overruns the border of the log box
-		if (next.Length > 35)
+		List<string> lines = [];
+		foreach (string line in next.Split('\n'))
 		{
-			int lastSpace = next.LastIndexOf(' ');
-			// if there's no spaces in the message I guess we're fucked
-			if (lastSpace > -1)
+			// further split lines if they are longer than the log box
+			if (line.Length > 35)
 			{
-				char[] arr = next.ToCharArray();
-				arr[lastSpace] = '\n';
-				next = new string(arr);
+				int index = line.LastIndexOf(' ');
+				if (index > -1)
+				{
+					lines.Add(line[..index]);
+					lines.Add(line[index..]);
+					continue;
+				}
 			}
+			lines.Add(line);
 		}
-
-		string[] lines = next.Split('\n');
 
 		while (ActiveLines.Count >= 3)
 		{
@@ -151,7 +154,7 @@ public partial class BattleLogManager : Control
 			ActiveLines.RemoveAt(0);
 		}
 
-		for (int i = 1; i < lines.Length; i++)
+		for (int i = 1; i < lines.Count; i++)
 		{
 			// fixes a bug where some text like "cannot go any lower" would get split across messages if multiple messages are queued at once
 			if (MessageQueue.Count >= 2)

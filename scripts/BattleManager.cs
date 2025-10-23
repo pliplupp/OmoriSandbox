@@ -317,7 +317,8 @@ public partial class BattleManager : Node
 				&& (direction == InputDirection.Left || direction == InputDirection.Right))
 			{
 				CurrentEnemyTarget = SelectEnemy(CurrentEnemyTarget, direction);
-				return;
+                AudioManager.Instance.PlaySFX("SYS_move");
+                return;
 			}
 			if (SelectedAction.Target == SkillTarget.Ally || SelectedAction.Target == SkillTarget.AllyNotSelf || SelectedAction.Target == SkillTarget.DeadAlly || (SelectedAction.Target == SkillTarget.AllyOrEnemy && CurrentPartyMemberTarget > -1))
 			{

@@ -3847,7 +3847,7 @@ public class Database
 			  AnimationManager.Instance.PlayScreenAnimation(170, true);
 			  await Task.Delay(1000);
 			  foreach (PartyMemberComponent member in BattleManager.Instance.GetAlivePartyMembers())
-				  BattleManager.Instance.Damage(self, member.Actor, () => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; });
+				  BattleManager.Instance.Damage(self, member.Actor, () => { return self.CurrentStats.ATK * 2 - member.Actor.CurrentStats.DEF; });
 		  },
 		  hidden: true
 		);
@@ -4964,7 +4964,11 @@ public class Database
 		);
 	}
 
-	private static void MakeSad(Actor who)
+	/// <summary>
+	/// Makes the given <see cref="Actor"/> sad, if possible. Increases the tier if the actor is already sad.
+	/// </summary>
+	/// <param name="who">The <see cref="Actor"/> to make sad.</param>
+	public static void MakeSad(Actor who)
 	{
 		string state = "sad";
 		switch (who.CurrentState)
@@ -4985,7 +4989,11 @@ public class Database
 			BattleLogManager.Instance.QueueMessage(null, who, "[target] can't get SADDER!");
 	}
 
-	private static void MakeHappy(Actor who)
+    /// <summary>
+    /// Makes the given <see cref="Actor"/> happy, if possible. Increases the tier if the actor is already happy.
+    /// </summary>
+    /// <param name="who">The <see cref="Actor"/> to make happy.</param>
+    public static void MakeHappy(Actor who)
 	{
 		string state = "happy";
 		switch (who.CurrentState)
@@ -5006,7 +5014,11 @@ public class Database
 			BattleLogManager.Instance.QueueMessage(null, who, "[target] can't get HAPPIER!");
 	}
 
-	private static void MakeAngry(Actor who)
+    /// <summary>
+    /// Makes the given <see cref="Actor"/> angry, if possible. Increases the tier if the actor is already angry.
+    /// </summary>
+    /// <param name="who">The <see cref="Actor"/> to make angry.</param>
+    public static void MakeAngry(Actor who)
 	{
 		string state = "angry";
 		switch (who.CurrentState)
