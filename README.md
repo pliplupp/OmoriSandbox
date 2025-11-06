@@ -25,7 +25,7 @@ When the Sandbox opens for the first time, it may appear to hang for a couple of
 1. "Play" will run the currently selected battle preset.
 2. "Configure" will open the visual preset configuration GUI.
 3. "Open Preset Folder" will open the folder where your presets are stored. **You should only directly modify these files if you know what you're doing.**
-4. "Open Custom Folder" will open the folder where your customizations are stored. Customization is explained further below.
+4. "Open Mods Folder" will open the folder where your mods are stored. Modding is explained further below.
 
 ## Configuring Battles
 Battles can be configured via the visual editor accessed by clicking the "Configure" button on the title screen. There are five tabs at the top of the screen, and various buttons laid out across the screen. When you are satisfied with your edits, you can enter a preset name into the input box and click `Save Preset` to save your preset. The preset will then appear in the dropdown in the main menu. Selecting your newly created preset and clicking "Play" will begin the battle! During a battle, you can select "Run" to return back to the title screen. If you click "Play" again, the battle will restart from the beginning.
