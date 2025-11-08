@@ -1,6 +1,8 @@
 # OmoriSandbox
 ![OmoriSandbox Logo](./assets/logo.png)
 
+[Discord](https://discord.gg/3sc4waMg2F)
+
 A battle simulator/sandbox for Omori, written in C# for the Godot engine. It aims to recreate the battle system in the game as accurately as possible, allowing users to create any kind of battle scenario they desire. I started this project in my attempt to learn the Godot engine through recreating a game that I thorougly enjoy.
 ## Installation
 Simply download the latest release archive from the "Releases" section and extract the contents to any folder. There are two versions to choose from:
