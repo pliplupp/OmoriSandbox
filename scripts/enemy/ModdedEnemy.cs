@@ -54,10 +54,11 @@ internal class ModdedEnemy : Enemy
                 if (skill.Target == SkillTarget.AllEnemies ||
                     skill.Target == SkillTarget.AllAllies ||
                     skill.Target == SkillTarget.AllDeadAllies)
-                    return new BattleCommand(this, null, skill);
-                else if (skill.Target == SkillTarget.Self)
+                    return new BattleCommand(this, null, skill); 
+                if (skill.Target == SkillTarget.Self)
                     return new BattleCommand(this, this, skill);
-                else return new BattleCommand(this, SelectTarget(), skill);
+                // TODO: allow enemy target selection
+                return new BattleCommand(this, SelectTarget(), skill);
             }
         }
         GD.PrintErr($"Modded enemy {Name} ProcessAI failed due to an error.");

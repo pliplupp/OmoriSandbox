@@ -54,7 +54,6 @@ internal sealed class Perfectheart : Enemy
             RemoveAllStatModifiers();
             await Task.Delay(1000);
             SecondPhase = true;
-            return;
         }
 
         if (CurrentHP < 2500 && !HasSpoken)

@@ -28,7 +28,7 @@ public partial class PartyMemberComponent : Node
     /// The <see cref="Actors.PartyMember"/> actor this component is attached to.
     /// </summary>
     public PartyMember Actor => PartyMember;
-	private Node2D FollowupBubbles;
+	private FollowupBubbles FollowupBubbles;
     /// <summary>
     /// The position of the <see cref="Actors.PartyMember"/> in the party.<br/>
 	/// See <see cref="BattleManager.GetPartyMember(int)"/> for valid positions.
@@ -64,8 +64,7 @@ public partial class PartyMemberComponent : Node
 
 		if (followup != null)
 		{
-			Node2D bubbles = followup.Instantiate<Node2D>();
-			bubbles.Modulate = Colors.Transparent;
+            FollowupBubbles bubbles = followup.Instantiate<FollowupBubbles>();
 			GetParent().AddChild(bubbles);
 			FollowupBubbles = bubbles;
 		}
@@ -118,16 +117,14 @@ public partial class PartyMemberComponent : Node
 		set { SelectedBox.Visible = value; }
 	}
 
-    internal void FadeInFollowups(int energy)
+    internal void FadeInFollowups()
 	{
-		Tween tween = CreateTween();
-		tween.TweenProperty(FollowupBubbles, "modulate:a", energy > 2 ? 1f : 0.75f, 0.2f);
+		FollowupBubbles.ShowBubbles();
 	}
 
     internal void FadeOutFollowups()
 	{
-		Tween tween = CreateTween();
-		tween.TweenProperty(FollowupBubbles, "modulate:a", 0f, 0.2f);
+		FollowupBubbles.HideBubbles();
 	}
 
 }

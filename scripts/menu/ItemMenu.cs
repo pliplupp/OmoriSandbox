@@ -114,7 +114,7 @@ internal partial class ItemMenu : Menu
 	{
 		if (Empty) return;
 		(Item, int) i = DisplayedItems[CursorIndex];
-		CostText.Text = "x" + i.Item2.ToString();
+		CostText.Text = "x" + i.Item2;
 		BattleLogManager.Instance.ClearAndShowMessage($"{i.Item1.Name}\n{i.Item1.Description}");
 	}
 

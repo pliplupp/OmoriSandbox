@@ -16,7 +16,7 @@ internal partial class EnergyDots : Sprite2D
 
     public void Tick(double delta)
     {
-        RegionRect = new Rect2(363, BattleManager.Instance.Energy * 28, 290, 28);
+        RegionRect = new Rect2(363, BattleManager.Instance.Energy * 28, 285, 28);
 
         double sliceX = Shader.GetShaderParameter("slice_x").AsDouble();
         sliceX += Speed * delta;

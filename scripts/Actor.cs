@@ -90,6 +90,7 @@ public abstract class Actor
 		}
 	}
 
+
 	/// <summary>
 	/// The actor's base stats without any modifiers.
 	/// </summary>
@@ -268,7 +269,7 @@ public abstract class Actor
 	/// <param name="damage">The amount of damage to deal to this actor.</param>
 	public void Damage(int damage)
 	{
-		if (damage < 0)
+		if (damage <= 0)
 			return;
 
 		CurrentHP -= damage;
@@ -289,11 +290,29 @@ public abstract class Actor
 		}
 	}
 
-	/// <summary>
-	/// Heals this actor by the given amount.
-	/// </summary>
-	/// <param name="health">The amount of health to heal.</param>
-	public void Heal(int health)
+    /// <summary>
+    /// Damages this actor's juice by the given amount.
+    /// </summary>
+	/// <remarks>
+	/// Negative values should not be used. See <see cref="HealJuice(int)"/> for healing juice.<br/>
+	/// This will also not cause the actor to show the hurt animation.
+	/// </remarks>
+    /// <param name="damage">The amount of juice damage to deal to this actor.</param>
+    public void DamageJuice(int damage)
+	{
+		if (damage <= 0)
+			return;
+
+		CurrentJuice -= damage;
+		if (CurrentJuice < 0)
+			CurrentJuice = 0;
+    }
+
+    /// <summary>
+    /// Heals this actor by the given amount.
+    /// </summary>
+    /// <param name="health">The amount of health to heal.</param>
+    public void Heal(int health)
 	{
 		CurrentHP += health;
 		if (CurrentHP > CurrentStats.MaxHP)
@@ -315,7 +334,7 @@ public abstract class Actor
 	/// Makes this actor appear visually hurt. Removed at the end of turn.
 	/// </summary>
 	/// <param name="hurt">Whether or not this actor should appear hurt.</param>
-	public void SetHurt(bool hurt)
+	public virtual void SetHurt(bool hurt)
 	{
 		Sprite.Animation = hurt ? "hurt" : CurrentState;
 	}

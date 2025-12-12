@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -151,9 +152,9 @@ internal sealed class UnbreadTwins : Enemy
     {
         EnemyComponent enemy;
         if (SpawnedBread.Count == 0)
-            enemy = BattleManager.Instance.SummonEnemy(SpawnPool[GameManager.Instance.Random.RandiRange(0, SpawnPool.Length - 1)], new Vector2(CenterPoint.X - 270, CenterPoint.Y));
+            enemy = BattleManager.Instance.SummonEnemy(SpawnPool[GameManager.Instance.Random.RandiRange(0, SpawnPool.Length - 1)], new Vector2(CenterPoint.X - 270, CenterPoint.Y), layer: Math.Max(0, Layer - 1));
         else if (SpawnedBread.Count == 1)
-            enemy = BattleManager.Instance.SummonEnemy(SpawnPool[GameManager.Instance.Random.RandiRange(0, SpawnPool.Length - 1)], new Vector2(CenterPoint.X + 200, CenterPoint.Y));
+            enemy = BattleManager.Instance.SummonEnemy(SpawnPool[GameManager.Instance.Random.RandiRange(0, SpawnPool.Length - 1)], new Vector2(CenterPoint.X + 200, CenterPoint.Y), layer: Math.Max(0, Layer - 1));
         else
         {
             GD.PushWarning("Tried to summon more than 2 breads!");

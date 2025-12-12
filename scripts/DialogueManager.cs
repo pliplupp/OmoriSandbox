@@ -72,8 +72,7 @@ public partial class DialogueManager : Node2D
 			}
 		}
 	}
-
-	// TODO: Can probably use the `Visible Characters` property of a label instead of doing this manually
+	
 	private void TypeChar()
 	{
 		if (CharIndex >= CurrentMessage.Length)
@@ -209,10 +208,9 @@ public partial class DialogueManager : Node2D
 
 		MessageQueue.Enqueue((speaker, speakerPos, message));
 
-		if (!IsTyping && !WaitingForInput)
-		{
-			Visible = true;
-			BeginMessage();
-		}
+		if (IsTyping || WaitingForInput) 
+			return;
+		Visible = true;
+		BeginMessage();
 	}
 }

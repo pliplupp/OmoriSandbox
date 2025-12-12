@@ -25,8 +25,7 @@ internal abstract partial class Menu : Sprite2D
 
 	protected virtual void UpdateCursor()
 	{
-		if (CursorPositions.Count > CursorIndex)
-			CursorSprite.Position = CursorPositions[CursorIndex];
+		CursorSprite.Position = CursorPositions[CursorIndex];
 	}
 
 	public Vector2I GetCursorPosition()

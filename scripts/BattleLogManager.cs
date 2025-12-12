@@ -2,6 +2,8 @@ using Godot;
 using OmoriSandbox.Actors;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace OmoriSandbox;
 
@@ -19,9 +21,11 @@ public partial class BattleLogManager : Control
 	[Export] private Label ImmediateLabel;
 	[Export] private Font Font;
 
-	private readonly List<string> MessageQueue = [];
+	private readonly Queue<string> MessageQueue = [];
+	private readonly Queue<string> LineQueue = [];
 	private readonly List<Control> ActiveLines = [];
 	private const int HEIGHT = 26;
+	private const int MAX_WIDTH = 35;
 	/// <summary>
 	/// Returns true when the battle log is busy with messages.
 	/// </summary>
@@ -53,7 +57,7 @@ public partial class BattleLogManager : Control
     /// <param name="message">The message to display. Occurences of the \n character will split the message up into different logs.</param>
     public void QueueMessage(string message)
 	{
-		MessageQueue.Add(message);
+		MessageQueue.Enqueue(message);
 
 		if (!IsProcessingMessage)
 			ProcessMessage();
@@ -108,6 +112,7 @@ public partial class BattleLogManager : Control
     public void ClearBattleLog()
 	{
 		MessageQueue.Clear();
+		LineQueue.Clear();
 		ActiveLines.ForEach(x => x.QueueFree());
 		ActiveLines.Clear();
 		ImmediateLabel.Text = "";
@@ -121,72 +126,94 @@ public partial class BattleLogManager : Control
 
 	private async void ProcessMessage()
 	{
-		if (MessageQueue.Count == 0)
-		{
-			IsProcessingMessage = false;
-			EmitSignal(SignalName.FinishedLogging);
-			return;
-		}
-
 		IsProcessingMessage = true;
-		string next = MessageQueue[0];
-
-		List<string> lines = [];
-		foreach (string line in next.Split('\n'))
+		while (MessageQueue.Count > 0)
 		{
-			// further split lines if they are longer than the log box
-			if (line.Length > 35)
+			string next = MessageQueue.Dequeue();
+			List<string> wrapped = WordWrap(next);
+
+			// if the message was auto-wrapped, ignore \n
+			if (wrapped.Count > 1)
 			{
-				int index = line.LastIndexOf(' ');
-				if (index > -1)
-				{
-					lines.Add(line[..index]);
-					lines.Add(line[index..]);
-					continue;
-				}
+				foreach (string wrap in wrapped)
+					LineQueue.Enqueue(wrap.Replace('\n', ' '));
 			}
-			lines.Add(line);
-		}
-
-		while (ActiveLines.Count >= 3)
-		{
-			MoveOffScreen(ActiveLines[0]);
-			ActiveLines.RemoveAt(0);
-		}
-
-		for (int i = 1; i < lines.Count; i++)
-		{
-			// fixes a bug where some text like "cannot go any lower" would get split across messages if multiple messages are queued at once
-			if (MessageQueue.Count >= 2)
-				MessageQueue.Insert(i, lines[i]);
 			else
-				MessageQueue.Add(lines[i]);
-        }
-		MessageQueue.RemoveAt(0);
+			{
+				// otherwise, respect \n
+				foreach (string line in next.Split('\n'))
+					LineQueue.Enqueue(line);
+			}
 
-		Control newLine = LogLine.Instantiate<Control>();
-		newLine.GetNode<Label>("Label").Text = lines[0];
-		newLine.Position = new Vector2(11, ActiveLines.Count * HEIGHT);
-		newLine.Modulate = new Color(1f, 1f, 1f, 0f);
-		AddChild(newLine);
-		ActiveLines.Add(newLine);
-
-		Tween tween = GetTree().CreateTween();
-		tween.TweenProperty(newLine, "modulate:a", 1f, 0.15f);
-
-		for (int i = 0; i < ActiveLines.Count; i++)
-		{
-			Control line = ActiveLines[i];
-			Vector2 target = new(11, i * HEIGHT);
-			Tween repositionTween = GetTree().CreateTween();
-			repositionTween.TweenProperty(line, "position", target, 0.15f)
-						   .SetTrans(Tween.TransitionType.Sine);
+			await ProcessLines();
 		}
 
-		await ToSignal(GetTree().CreateTimer(0.4f), "timeout");
+        IsProcessingMessage = false;
+        EmitSignal(SignalName.FinishedLogging);
+    }
 
-		ProcessMessage();
-	}
+	private async Task ProcessLines()
+	{
+		while (LineQueue.Count > 0)
+		{
+			while (ActiveLines.Count >= 3)
+			{
+				MoveOffScreen(ActiveLines[0]);
+				ActiveLines.RemoveAt(0);
+			}
+
+			Control newLine = LogLine.Instantiate<Control>();
+			newLine.GetNode<Label>("Label").Text = LineQueue.Dequeue();
+			newLine.Position = new Vector2(11, ActiveLines.Count * HEIGHT);
+			newLine.Modulate = new Color(1f, 1f, 1f, 0f);
+			AddChild(newLine);
+			ActiveLines.Add(newLine);
+
+			Tween tween = GetTree().CreateTween();
+			tween.TweenProperty(newLine, "modulate:a", 1f, 0.15f);
+
+			for (int i = 0; i < ActiveLines.Count; i++)
+			{
+				Control line = ActiveLines[i];
+				Vector2 target = new(11, i * HEIGHT);
+				Tween repositionTween = GetTree().CreateTween();
+				repositionTween.TweenProperty(line, "position", target, 0.15f)
+							   .SetTrans(Tween.TransitionType.Sine);
+			}
+
+			await ToSignal(GetTree().CreateTimer(0.4f), "timeout");
+		}
+    }
+
+	private List<string> WordWrap(string text)
+	{
+		List<string> result = [];
+
+		if (string.IsNullOrWhiteSpace(text))
+		{
+			return result;
+		}
+
+		string[] words = text.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
+		StringBuilder line = new(words[0]);
+
+		for (int i = 1; i < words.Length; i++)
+		{
+			string word = words[i];
+			if ((line.Length + 1 + word.Length) <= MAX_WIDTH)
+			{
+				line.Append(' ').Append(word);
+			}
+			else
+			{
+				result.Add(line.ToString());
+				line.Clear();
+				line.Append(word);
+			}
+		}
+		result.Add(line.ToString());
+		return result;
+    }
 
 	private void MoveOffScreen(Control line)
 	{

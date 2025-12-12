@@ -1,0 +1,95 @@
+using System.Threading.Tasks;
+using Godot;
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+
+internal sealed class Pluto : Enemy
+{
+    public override string Name => "???";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/pluto.tres");
+    protected override string[] EquippedSkills => ["PLDoNothing", "PLBrag", "PLHeadbutt", "PLExpand"];
+    protected override Stats Stats => new(300, 150, 12, 10, 4, 10, 95);
+
+    public override bool IsStateValid(string state)
+    {
+        return state == "neutral" || state == "happy" || state == "sad"
+               || state == "angry" || state == "hurt" || state == "toast";
+    }
+
+    public override BattleCommand ProcessAI()
+    {
+        switch (CurrentState)
+        {
+            case "angry":
+                if (Roll() < 31)
+                    goto nothing;
+                if (Roll() < 81)
+                    goto headbutt;
+                goto brag;
+            case "sad":
+                if (Roll() < 81)
+                    goto nothing;
+                if (Roll() < 31)
+                    goto headbutt;
+                goto brag;
+            case "happy":
+                if (Roll() < 31)
+                    goto nothing;
+                goto headbutt;
+            default:
+                if (Roll() < 41)
+                    goto nothing;
+                if (Roll() < 61)
+                    goto headbutt;
+                goto brag;
+        }
+        nothing:
+        return new BattleCommand(this, null, Skills["PLDoNothing"]);
+        headbutt:
+        return new BattleCommand(this, SelectTarget(), Skills["PLHeadbutt"]);
+        brag:
+        return new BattleCommand(this, null, Skills["PLBrag"]);
+    }
+
+    private EnemyComponent LeftArm;
+    private EnemyComponent RightArm;
+    public override Task OnStartOfBattle()
+    {
+        LeftArm = BattleManager.Instance.SummonEnemy("LeftArm", CenterPoint - new Vector2(-140, 50), layer: Layer + 1);
+        RightArm = BattleManager.Instance.SummonEnemy("RightArm", CenterPoint - new Vector2(140, 50), layer: Layer + 1);
+        return Task.CompletedTask;
+    }
+
+    private bool HasExpanded = false;
+    public override async Task ProcessBattleConditions()
+    {
+        if (CurrentHP <= 0)
+        {
+            if (LeftArm != null)
+                LeftArm.Actor.CurrentHP = 0;
+            if (RightArm != null)
+                RightArm.Actor.CurrentHP = 0;
+            return;
+        }
+
+        if (CurrentHP < 150 && !HasExpanded)
+        {
+            DialogueManager.Instance.QueueMessage(this, "GWAH AHAHAH AHAHA!!!");
+            DialogueManager.Instance.QueueMessage(this, "What a splendid show of force!");
+            await DialogueManager.Instance.WaitForDialogue();
+            BattleManager.Instance.ForceCommand(this, null, Skills["PLExpand"]);
+            HasExpanded = true;
+        }
+        
+    }
+
+    public override async Task OnEndOfBattle(bool victory)
+    {
+        if (!victory)
+        {
+            DialogueManager.Instance.QueueMessage(this, "Hmph...@\nYou kids fought well...@ but you lack training.");
+            await DialogueManager.Instance.WaitForDialogue();
+        }
+    }
+}
