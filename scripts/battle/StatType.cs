@@ -6,9 +6,7 @@ namespace OmoriSandbox.Battle;
 public enum StatType
 {
 #pragma warning disable CS1591
-    HP,
     MaxHP,
-    Juice,
     MaxJuice,
     ATK,
     DEF,

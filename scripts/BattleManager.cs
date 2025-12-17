@@ -774,22 +774,57 @@ public partial class BattleManager : Node
 
 		BattleLogManager.Instance.ClearBattleLog();
 		GD.Print("Processing action " + currentAction.Action.Name);
-		List<Actor> resolvedTargets = currentAction.Targets.ToList();
-		// reassign targets if any are now dead
-		if (currentAction.Action.Target != SkillTarget.DeadAlly &&
-		    currentAction.Action.Target != SkillTarget.AllDeadAllies)
+		List<Actor> resolvedTargets = [];
+		switch (currentAction.Action.Target)
 		{
-			for (int i = resolvedTargets.Count - 1; i >= 0; i--)
-			{
-				if (resolvedTargets[i].CurrentHP != 0) 
-					continue;
-				if (resolvedTargets[i] is Enemy)
-					resolvedTargets[i] = GetRandomAliveEnemy();
+			case SkillTarget.AllAllies:
+				resolvedTargets.AddRange(currentAction.Targets.Where(x => x.CurrentHP > 0));
+				break;
+			case SkillTarget.AllEnemies:
+				foreach (Actor t in currentAction.Targets)
+				{
+					if (t.CurrentHP > 0)
+						resolvedTargets.Add(t);
+					else
+						resolvedTargets.Add(t is Enemy ? GetRandomAliveEnemy() : GetRandomAlivePartyMember());
+				}
+				break;
+			case SkillTarget.AllDeadAllies:
+			case SkillTarget.DeadAlly:	
+				resolvedTargets.AddRange(currentAction.Targets.Where(x => x.CurrentHP == 0));
+				break;
+			case SkillTarget.Ally:
+			case SkillTarget.Enemy:
+			case SkillTarget.AllyOrEnemy:	
+				if (currentAction.Targets[0].CurrentHP == 0)
+					resolvedTargets.Add(currentAction.Targets[0] is Enemy ? GetRandomAliveEnemy() : GetRandomAlivePartyMember());
 				else
-					resolvedTargets[i] = GetRandomAlivePartyMember();
-			}
+					resolvedTargets.Add(currentAction.Targets[0]);
+				break;
+			case SkillTarget.AllyNotSelf:
+				if (currentAction.Targets[0].CurrentHP == 0)
+				{
+					Actor newTarget = currentAction.Targets[0] is Enemy
+						? GetAllEnemies().FirstOrDefault(x => x.CurrentHP > 0 && x != currentAction.Targets[0])
+						: GetAllEnemies().FirstOrDefault(x => x.CurrentHP > 0 && x != currentAction.Targets[0]);
+					if (newTarget == null)
+					{
+						// if we can't find anyone other than ourselves to target, do nothing
+						// this may change in the future
+						BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + "'s skill did nothing.");
+						SetPhase(BattlePhase.WaitForBattleLog);
+						return;
+					}
+					resolvedTargets.Add(newTarget);
+				}
+				else
+					resolvedTargets.Add(currentAction.Targets[0]);
+				break;
+			default:
+				resolvedTargets.AddRange(currentAction.Targets);
+				break;
 		}
-
+		
 		if (currentAction.Action is Skill skill)
 		{
 			if (skill.Cost > 0)
@@ -800,10 +835,8 @@ public partial class BattleManager : Node
 					SetPhase(BattlePhase.WaitForBattleLog);
 					return;
 				}
-				else
-				{
-					currentAction.Actor.CurrentJuice -= skill.Cost;
-				}
+
+				currentAction.Actor.CurrentJuice -= skill.Cost;
 			}
 			if (currentAction.Actor is PartyMember && currentAction.Action.Name.EndsWith("Attack") && !(currentAction.Actor.CurrentState == "afraid" || currentAction.Actor.CurrentState == "stressed"))
 			{

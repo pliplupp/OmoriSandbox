@@ -47,9 +47,7 @@ public struct Stats
     {
         return stat switch
         {
-            StatType.HP => HP,
             StatType.MaxHP => MaxHP,
-            StatType.Juice => Juice,
             StatType.MaxJuice => MaxJuice,
             StatType.ATK => ATK,
             StatType.DEF => DEF,
@@ -69,9 +67,7 @@ public struct Stats
     {
         switch (stat)
         {
-            case StatType.HP: HP = value; break;
             case StatType.MaxHP: MaxHP = value; break;
-            case StatType.Juice: Juice = value; break;
             case StatType.MaxJuice: MaxJuice = value; break;
             case StatType.ATK: ATK = value; break;
             case StatType.DEF: DEF = value; break;

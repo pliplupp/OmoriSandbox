@@ -49,8 +49,8 @@ public abstract class PartyMember : Actor
 		if (initialState == "toast")
 			CurrentHP = 0;
 		else
-			CurrentHP = CurrentStats.HP;
-		CurrentJuice = CurrentStats.Juice;
+			CurrentHP = CurrentStats.MaxHP;
+		CurrentJuice = CurrentStats.MaxJuice;
 
 		EquippedSkills = skills;
 

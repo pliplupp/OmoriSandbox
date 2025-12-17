@@ -5335,7 +5335,7 @@ public class Database
 			{
 				BattleLogManager.Instance.QueueMessage(self, "[actor] uses RAIN CLOUD!");
 				foreach (Actor enemy in targets)
-					AnimationManager.Instance.PlayAnimation(278, self);
+					AnimationManager.Instance.PlayAnimation(278, enemy);
 				await Task.Delay(1000);		
 				foreach (Actor enemy in targets)
 					MakeSad(enemy);
@@ -6504,7 +6504,7 @@ public class Database
 		#region CHARMS
 		// TODO: missing charms (special behavior/unused): sales tag, chef's chat, abbi's eye, unused charms
 		Charms["3-leaf Clover"] = new Charm("3-leaf Clover", new StatBonus(StatType.LCK, 3));
-		Charms["4-leaf Clover"] = new Charm("4-leaf Clover", [new StatBonus(StatType.HP, 4), new StatBonus(StatType.LCK, 4)]);
+		Charms["4-leaf Clover"] = new Charm("4-leaf Clover", [new StatBonus(StatType.MaxHP, 4), new StatBonus(StatType.LCK, 4)]);
 		Charms["5-leaf Clover"] = new Charm("5-leaf Clover", () =>
 		{
 			return [new StatBonus(StatType.LCK, 2 + BattleManager.Instance.Energy)];
@@ -6512,19 +6512,19 @@ public class Database
 		Charms["Backpack"] = new Charm("Backpack", new StatBonus(StatType.DEF, 2));
 		Charms["Baseball Cap"] = new Charm("Baseball Cap", [new StatBonus(StatType.DEF, 10), new StatBonus(StatType.DEF, 15)]);
 		Charms["Binoculars"] = new Charm("Binoculars", [new StatBonus(StatType.DEF, 2), new StatBonus(StatType.HIT, 200)]);
-		Charms["Blanket"] = new Charm("Blanket", [new StatBonus(StatType.HP, 10), new StatBonus(StatType.DEF, 1)]);
+		Charms["Blanket"] = new Charm("Blanket", [new StatBonus(StatType.MaxHP, 10), new StatBonus(StatType.DEF, 1)]);
 		Charms["Bow Tie"] = new Charm("Bow Tie", new StatBonus(StatType.DEF, 4));
 		Charms["Bracelet"] = new Charm("Bracelet", new StatBonus(StatType.DEF, 1));
-		Charms["Breadphones"] = new Charm("Breadphones", [new StatBonus(StatType.HP, 10), new StatBonus(StatType.DEF, 5)]);
+		Charms["Breadphones"] = new Charm("Breadphones", [new StatBonus(StatType.MaxHP, 10), new StatBonus(StatType.DEF, 5)]);
 		Charms["Bubble Wrap"] = new Charm("Bubble Wrap", new StatBonus(StatType.DEF, 3));
 		Charms["Bunny Ears"] = new Charm("Bunny Ears", [new StatBonus(StatType.DEF, 3), new StatBonus(StatType.SPD, 12)]);
 		Charms["Cat Ears"] = new Charm("Cat Ears", [new StatBonus(StatType.DEF, 1), new StatBonus(StatType.SPD, 10)]);
 		Charms["Cellphone"] = new Charm("Cellphone", new StatBonus(StatType.DEF, 10));
 		Charms["Cool Glasses"] = new Charm("Cool Glasses", [new StatBonus(StatType.ATK, 5), new StatBonus(StatType.DEF, 5)]);
-		Charms["Cough Mask"] = new Charm("Cough Mask", [new StatBonus(StatType.HP, 25), new StatBonus(StatType.Juice, 25), 
+		Charms["Cough Mask"] = new Charm("Cough Mask", [new StatBonus(StatType.MaxHP, 25), new StatBonus(StatType.MaxJuice, 25), 
 			new StatBonus(StatType.ATK, 10), new StatBonus(StatType.DEF, 10), 
 			new StatBonus(StatType.SPD, 10), new StatBonus(StatType.LCK, 10)]);
-		Charms["Daisy"] = new Charm("Daisy", [new StatBonus(StatType.HP, 10)], (actor) =>
+		Charms["Daisy"] = new Charm("Daisy", [new StatBonus(StatType.MaxHP, 10)], (actor) =>
 		{
 			actor.SetState("happy", true);
 		});
@@ -6539,13 +6539,13 @@ public class Database
 		{
 			return [new StatBonus(StatType.SPD, 5 + (3 * BattleManager.Instance.Energy))];
 		});
-		Charms["Friendship Bracelet"] = new Charm("Friendship Bracelet",[new StatBonus(StatType.HP, 10), new StatBonus(StatType.Juice, 10)]);
+		Charms["Friendship Bracelet"] = new Charm("Friendship Bracelet",[new StatBonus(StatType.MaxHP, 10), new StatBonus(StatType.MaxJuice, 10)]);
 		Charms["Nerdy Glasses"] = new Charm("Nerdy Glasses", [new StatBonus(StatType.DEF, 5), new StatBonus(StatType.HIT, 200)]);
 		Charms["Gold Watch"] = new Charm("Gold Watch", new StatBonus(StatType.SPD, -10));
 		Charms["Hard Hat"] = new Charm("Hard Hat", new StatBonus(StatType.DEF, 6));
-		Charms["Headband"] = new Charm("Headband", [new StatBonus(StatType.Juice, 20), new StatBonus(StatType.ATK, 10), 
+		Charms["Headband"] = new Charm("Headband", [new StatBonus(StatType.MaxJuice, 20), new StatBonus(StatType.ATK, 10), 
 			new StatBonus(StatType.DEF, 3), new StatBonus(StatType.SPD, 15)]);
-		Charms["Heart String"] = new Charm("Heart String", [new StatBonus(StatType.HP, 30)], (actor) =>
+		Charms["Heart String"] = new Charm("Heart String", [new StatBonus(StatType.MaxHP, 30)], (actor) =>
 		{
 			actor.SetState("happy", true);
 		});
@@ -6562,10 +6562,10 @@ public class Database
 		{
 			BattleManager.Instance.RandomEmotion(actor);
 		});
-		Charms["Onion Ring"] = new Charm("Onion Ring", [new StatBonus(StatType.HP, 20), new StatBonus(StatType.Juice, 20)]);
-		Charms["Paper Bag"] = new Charm("Paper Bag", [new StatBonus(StatType.HP, 40), new StatBonus(StatType.DEF, 13)]);
+		Charms["Onion Ring"] = new Charm("Onion Ring", [new StatBonus(StatType.MaxHP, 20), new StatBonus(StatType.MaxJuice, 20)]);
+		Charms["Paper Bag"] = new Charm("Paper Bag", [new StatBonus(StatType.MaxHP, 40), new StatBonus(StatType.DEF, 13)]);
 		Charms["Hector"] = new Charm("Hector", []);
-		Charms["Pretty Bow"] = new Charm("Pretty Bow", [new StatBonus(StatType.HP, 50), new StatBonus(StatType.ATK, 10), new StatBonus(StatType.DEF, 3)]);
+		Charms["Pretty Bow"] = new Charm("Pretty Bow", [new StatBonus(StatType.MaxHP, 50), new StatBonus(StatType.ATK, 10), new StatBonus(StatType.DEF, 3)]);
 		Charms["Punching Bag"] = new Charm("Punching Bag",[], (actor) =>
 		{
 			actor.SetState("angry", true);
@@ -6581,7 +6581,7 @@ public class Database
 		});
 		Charms["Rubber Duck"] = new Charm("Rubber Duck", new StatBonus(StatType.DEF, 7));
 		Charms["Seer Goggles"] = new Charm("Seer Goggles", [new StatBonus(StatType.DEF, 1), new StatBonus(StatType.LCK, 3), new StatBonus(StatType.HIT, 200)]);
-		Charms["Top Hat"] = new Charm("Top Hat", [new StatBonus(StatType.HP, 13), new StatBonus(StatType.DEF, 13), new StatBonus(StatType.LCK, 13)]);
+		Charms["Top Hat"] = new Charm("Top Hat", [new StatBonus(StatType.MaxHP, 13), new StatBonus(StatType.DEF, 13), new StatBonus(StatType.LCK, 13)]);
 		Charms["Hector Jr."] = new Charm("Hector Jr.", () =>
 		{
 			int energy = BattleManager.Instance.Energy;
@@ -6591,31 +6591,31 @@ public class Database
 				new StatBonus(StatType.SPD, 1 + energy), new StatBonus(StatType.LCK, energy)
 			];
 		});
-		Charms["Wedding Ring"] = new Charm("Wedding Ring", [new StatBonus(StatType.HP, 10), new StatBonus(StatType.Juice, 10), 
+		Charms["Wedding Ring"] = new Charm("Wedding Ring", [new StatBonus(StatType.MaxHP, 10), new StatBonus(StatType.MaxJuice, 10), 
 			new StatBonus(StatType.ATK, 3), new StatBonus(StatType.DEF, 3), new StatBonus(StatType.SPD, 3), new StatBonus(StatType.LCK, 3)], (actor) =>
 		{
 			actor.SetState("happy", true);
 		});
 		Charms["Wishbone"] = new Charm("Wishbone", new StatBonus(StatType.LCK, 7));
-		Charms["Veggie Kid"] = new Charm("Veggie Kid", [new StatBonus(StatType.HP, 15), new StatBonus(StatType.Juice, 15)]);
-		Charms["Watering Pail"] = new Charm("Watering Pail", new StatBonus(StatType.Juice, 10));
-		Charms["Sunscreen"] = new Charm("Sunscreen", new StatBonus(StatType.HP, 15));
+		Charms["Veggie Kid"] = new Charm("Veggie Kid", [new StatBonus(StatType.MaxHP, 15), new StatBonus(StatType.MaxJuice, 15)]);
+		Charms["Watering Pail"] = new Charm("Watering Pail", new StatBonus(StatType.MaxJuice, 10));
+		Charms["Sunscreen"] = new Charm("Sunscreen", new StatBonus(StatType.MaxHP, 15));
 		Charms["Rake"] = new Charm("Rake", new StatBonus(StatType.ATK, 3));
 		Charms["Scarf"] = new Charm("Scarf", new StatBonus(StatType.DEF, 3));
 		Charms["Cotton Ball"] = new Charm("Cotton Ball", [new StatBonus(StatType.DEF, 1), new StatBonus(StatType.SPD, 3)]);
 		Charms["Flashlight"] = new Charm("Flashlight", new StatBonus(StatType.DEF, 4));
-		Charms["Universal Remote"] = new Charm("Universal Remote", [new StatBonus(StatType.HP, 10), new StatBonus(StatType.Juice, 10), 
+		Charms["Universal Remote"] = new Charm("Universal Remote", [new StatBonus(StatType.MaxHP, 10), new StatBonus(StatType.MaxJuice, 10), 
 			new StatBonus(StatType.ATK, 5), new StatBonus(StatType.DEF, 5), new StatBonus(StatType.SPD, 5), new StatBonus(StatType.LCK, 5)]);
-		Charms["TV Remote"] = new Charm("TV Remote", [new StatBonus(StatType.HP, 5), new StatBonus(StatType.DEF, 2)]);
-		Charms["Flower Crown"] = new Charm("Flower Crown", [new StatBonus(StatType.HP, 100), new StatBonus(StatType.Juice, 25)]);
-		Charms["Tulip Hairstick"] = new Charm("Tulip Hairstick", new StatBonus(StatType.HP, 50));
+		Charms["TV Remote"] = new Charm("TV Remote", [new StatBonus(StatType.MaxHP, 5), new StatBonus(StatType.DEF, 2)]);
+		Charms["Flower Crown"] = new Charm("Flower Crown", [new StatBonus(StatType.MaxHP, 100), new StatBonus(StatType.MaxJuice, 25)]);
+		Charms["Tulip Hairstick"] = new Charm("Tulip Hairstick", new StatBonus(StatType.MaxHP, 50));
 		Charms["Gladiolus Hairband"] = new Charm("Gladiolus Hairband", [new StatBonus(StatType.ATK, 10), new StatBonus(StatType.LCK, 10), new StatBonus(StatType.HIT, 100)]);
-		Charms["Cactus Hairclip"] = new Charm("Cactus Hairclip", [new StatBonus(StatType.DEF, 15), new StatBonus(StatType.HP, 15)]);
-		Charms["Rose Hairclip"] = new Charm("Rose Hairclip", [new StatBonus(StatType.HP, 15), new StatBonus(StatType.Juice, 15), 
+		Charms["Cactus Hairclip"] = new Charm("Cactus Hairclip", [new StatBonus(StatType.DEF, 15), new StatBonus(StatType.MaxHP, 15)]);
+		Charms["Rose Hairclip"] = new Charm("Rose Hairclip", [new StatBonus(StatType.MaxHP, 15), new StatBonus(StatType.MaxJuice, 15), 
 			new StatBonus(StatType.ATK, 5), new StatBonus(StatType.DEF, 5), new StatBonus(StatType.SPD, 5), new StatBonus(StatType.LCK, 5), new StatBonus(StatType.HIT, 100)]);
-		Charms["Seashell Necklace"] = new Charm("Seashell Necklace", [new StatBonus(StatType.HP, 25), new StatBonus(StatType.Juice, 25), new StatBonus(StatType.DEF, 5)]);
+		Charms["Seashell Necklace"] = new Charm("Seashell Necklace", [new StatBonus(StatType.MaxHP, 25), new StatBonus(StatType.MaxJuice, 25), new StatBonus(StatType.DEF, 5)]);
 		Charms["Contract"] = new Charm("Contract", [
-			new StatBonus(StatType.HP, 0.2f), new StatBonus(StatType.Juice, 0.2f),
+			new StatBonus(StatType.MaxHP, 0.2f), new StatBonus(StatType.MaxJuice, 0.2f),
 			new StatBonus(StatType.ATK, 20), new StatBonus(StatType.DEF, 20), new StatBonus(StatType.SPD, 20),
 			new StatBonus(StatType.LCK, 20)
 		]);
