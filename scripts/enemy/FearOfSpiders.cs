@@ -19,9 +19,9 @@ internal sealed class FearOfSpiders : Enemy
         if (Roll() < 26)
             return new BattleCommand(this, SelectTarget(), Skills["FOSAttack"]);
         if (Roll() < 16)
-            return new BattleCommand(this, null, Skills["FOSDoNothing"]);
+            return new BattleCommand(this, this, Skills["FOSDoNothing"]);
         if (Roll() < 19)
             return new BattleCommand(this, SelectTarget(), Skills["FOSSpinWeb"]);
-        return new BattleCommand(this, null, Skills["FOSAttackAll"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["FOSAttackAll"]);
     }
 }

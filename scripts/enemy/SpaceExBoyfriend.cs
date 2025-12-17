@@ -80,7 +80,7 @@ internal sealed class SpaceExBoyfriend : Enemy
     attack:
         return new BattleCommand(this, target, Skills["SEBAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["SEBDoNothing"]);
+        return new BattleCommand(this, this, Skills["SEBDoNothing"]);
     angsty:
         return new BattleCommand(this, target, Skills["AngstySong"]);
     angry:

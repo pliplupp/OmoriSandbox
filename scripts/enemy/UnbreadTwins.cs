@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -65,14 +66,13 @@ internal sealed class UnbreadTwins : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["UBTAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["UBTDoNothing"]);
+        return new BattleCommand(this, this, Skills["UBTDoNothing"]);
     bake:
-        return new BattleCommand(this, null, Skills["UBTBakeBread"]);
+        return new BattleCommand(this, this, Skills["UBTBakeBread"]);
     cheerup:
-        return new BattleCommand(this, null, Skills["UBTCheerUp"]);
+        return new BattleCommand(this, this, Skills["UBTCheerUp"]);
     cook:
-        Enemy target = BattleManager.Instance.GetRandomAliveEnemy();
-        return new BattleCommand(this, target, Skills["UBTCook"]);
+        return new BattleCommand(this, SelectEnemy(), Skills["UBTCook"]);
     }
 
     public override async Task ProcessBattleConditions()
@@ -151,9 +151,9 @@ internal sealed class UnbreadTwins : Enemy
     {
         EnemyComponent enemy;
         if (SpawnedBread.Count == 0)
-            enemy = BattleManager.Instance.SummonEnemy(SpawnPool[GameManager.Instance.Random.RandiRange(0, SpawnPool.Length - 1)], new Vector2(CenterPoint.X - 270, CenterPoint.Y));
+            enemy = BattleManager.Instance.SummonEnemy(SpawnPool[GameManager.Instance.Random.RandiRange(0, SpawnPool.Length - 1)], new Vector2(CenterPoint.X - 270, CenterPoint.Y), layer: Math.Max(0, Layer - 1));
         else if (SpawnedBread.Count == 1)
-            enemy = BattleManager.Instance.SummonEnemy(SpawnPool[GameManager.Instance.Random.RandiRange(0, SpawnPool.Length - 1)], new Vector2(CenterPoint.X + 200, CenterPoint.Y));
+            enemy = BattleManager.Instance.SummonEnemy(SpawnPool[GameManager.Instance.Random.RandiRange(0, SpawnPool.Length - 1)], new Vector2(CenterPoint.X + 200, CenterPoint.Y), layer: Math.Max(0, Layer - 1));
         else
         {
             GD.PushWarning("Tried to summon more than 2 breads!");
@@ -161,6 +161,6 @@ internal sealed class UnbreadTwins : Enemy
         }
         // in the Unbread Twins fight, the spawned enemy acts immediately after being spawned
         BattleCommand command = enemy.Actor.ProcessAI();
-        BattleManager.Instance.ForceCommand(enemy.Actor, command.Target, command.Action as Skill);
+        BattleManager.Instance.ForceCommand(enemy.Actor, command.Targets, command.Action as Skill);
     }
 }

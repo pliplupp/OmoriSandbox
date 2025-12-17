@@ -23,14 +23,14 @@ internal sealed class Boss : Enemy
     public override BattleCommand ProcessAI()
     {
         if (CurrentHP < 23)
-            return new BattleCommand(this, null, Skills["BSSDoNothing"]);
+            return new BattleCommand(this, this, Skills["BSSDoNothing"]);
 
         if (Roll() < 31)
             return new BattleCommand(this, SelectTarget(), Skills["BSSAttack"]);
 
         if (Roll() < 31)
-            return new BattleCommand(this, null, Skills["BSSAttackTwice"]);
-        return new BattleCommand(this, null, Skills["BSSDoNothing"]);
+            return new BattleCommand(this, SelectTargets(2), Skills["BSSAttackTwice"]);
+        return new BattleCommand(this, this, Skills["BSSDoNothing"]);
     }
 
     public override async Task ProcessBattleConditions()
@@ -45,7 +45,7 @@ internal sealed class Boss : Enemy
             DialogueManager.Instance.QueueMessage(this, "Body slam!!");
             await DialogueManager.Instance.WaitForDialogue();
             SetState("angry", true);
-            BattleManager.Instance.ForceCommand(this, null, Skills["BSSAttackAll"]);
+            BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["BSSAttackAll"]);
             Stage++;
         }
 

@@ -22,7 +22,7 @@ internal partial class GameManager : Node
 
 	[Export] private PackedScene[] Followups;
 
-    public RandomNumberGenerator Random = new();
+	public RandomNumberGenerator Random = new();
 	internal DiscordManager DiscordManager { get; private set; }
 	public static GameManager Instance { get; private set; }
 
@@ -77,7 +77,10 @@ internal partial class GameManager : Node
 			GD.PrintErr("Failed to load battleback: " + battleback);
 
 		string bgm = StringExtensions.GetBaseName(data["bgm"].AsString());
-		AudioManager.Instance.PlayBGM(bgm);
+		double bgmPitch = 1.0d;
+		if (data.TryGetValue("bgmPitch", out value))
+			bgmPitch =  value.AsDouble();
+		AudioManager.Instance.PlayBGM(bgm, 1f, (float)bgmPitch);
 
 		foreach (var entry in actors)
 		{
@@ -88,7 +91,6 @@ internal partial class GameManager : Node
 			}
 
 			PackedScene followup = null;
-			// TODO: improve setting basil followup
 			int position = entry["position"].AsInt32();
 			bool followupsDisabled = entry["followupsDisabled"].AsBool();
 			if (!followupsDisabled)
@@ -165,32 +167,25 @@ internal partial class GameManager : Node
 		EnemyComponent component = new();
 		node.AddChild(component);
 		node.ZIndex -= layer;
-		component.SetEnemy(instance, startingEmotion, fallsOffScreen);
+		component.SetEnemy(instance, startingEmotion, fallsOffScreen, layer);
 		return component;
 	}
 
-    internal PartyMemberComponent SpawnPartyMember(string who, PackedScene followup, int position, string weapon, string charm, string[] skills, int level = 1, string startingEmotion = "neutral")
+	internal PartyMemberComponent SpawnPartyMember(string who, PackedScene followup, int position, string weapon, string charm, string[] skills, int level = 1, string startingEmotion = "neutral")
 	{
 		PartyMember instance = Database.CreatePartyMember(who);
 		if (instance == null)
 			return null;
 		Control card = BattlecardUI.Instantiate<Control>();
 		Party.AddChild(card);
-		switch (position)
+		card.Position = position switch
 		{
-			case 0:
-				card.Position = new Vector2(20, 306);
-				break;
-			case 1:
-				card.Position = new Vector2(20, 5);
-				break;
-			case 2:
-				card.Position = new Vector2(506, 306);
-				break;
-			case 3:
-				card.Position = new Vector2(506, 5);
-				break;
-		}
+			0 => new Vector2(20, 306),
+			1 => new Vector2(20, 5),
+			2 => new Vector2(506, 306),
+			3 => new Vector2(506, 5),
+			_ => card.Position
+		};
 		PartyMemberComponent component = new();
 		card.AddChild(component);
 		component.SetPartyMember(instance, followup, position, startingEmotion, level, weapon, charm, skills);

@@ -45,8 +45,8 @@ internal sealed class BunBunny : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["BBAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["BBDoNothing"]);
+        return new BattleCommand(this, this, Skills["BBDoNothing"]);
     hide:
-        return new BattleCommand(this, null, Skills["BBHide"]);
+        return new BattleCommand(this, this, Skills["BBHide"]);
     }
 }

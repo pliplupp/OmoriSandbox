@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,20 +25,20 @@ internal sealed class MrJawsum : Enemy
     public override BattleCommand ProcessAI()
     {
         if (GatorGuys.Count == 0)
-            return new BattleCommand(this, null, Skills["MJSummonGator"]);
+            return new BattleCommand(this, this, Skills["MJSummonGator"]);
         if (Roll() < 21)
-            return new BattleCommand(this, null, Skills["MJAttackOrder"]);
+            return new BattleCommand(this, SelectAllEnemies(), Skills["MJAttackOrder"]);
         if (GatorGuys.Count < 2)
-            return new BattleCommand(this, null, Skills["MJSummonGator"]);
-        return new BattleCommand(this, null, Skills["MJAttackOrder"]);
+            return new BattleCommand(this, this, Skills["MJSummonGator"]);
+        return new BattleCommand(this, SelectAllEnemies(), Skills["MJAttackOrder"]);
     }
 
     public void SpawnGatorGuy()
     {
         if (GatorGuys.Count == 0)
-           GatorGuys.Add(BattleManager.Instance.SummonEnemy("GatorGuyJawsum", new Vector2(CenterPoint.X - 145, CenterPoint.Y + 65)));
+           GatorGuys.Add(BattleManager.Instance.SummonEnemy("GatorGuyJawsum", new Vector2(CenterPoint.X - 145, CenterPoint.Y + 65), layer: Math.Max(0, Layer - 1)));
         else if (GatorGuys.Count == 1)
-            GatorGuys.Add(BattleManager.Instance.SummonEnemy("GatorGuyJawsum", new Vector2(CenterPoint.X + 145, CenterPoint.Y + 65)));
+            GatorGuys.Add(BattleManager.Instance.SummonEnemy("GatorGuyJawsum", new Vector2(CenterPoint.X + 145, CenterPoint.Y + 65), layer: Math.Max(0, Layer - 1)));
         else
         {
             GD.PushWarning("Tried to summon more than 2 gator guys!");

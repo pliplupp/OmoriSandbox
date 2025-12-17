@@ -74,6 +74,8 @@ internal partial class ItemMenu : Menu
 			ItemLabels[i].Text = DisplayedItems[i].Item1.Name;
 		}
         CursorPositions = Positions.GetRange(0, DisplayedItems.Count);
+        if (CursorIndex >= DisplayedItems.Count)
+	        CursorIndex = DisplayedItems.Count - 1;
         UpdateCursor();
         ShowItemInfo();
 	}
@@ -114,8 +116,11 @@ internal partial class ItemMenu : Menu
 	{
 		if (Empty) return;
 		(Item, int) i = DisplayedItems[CursorIndex];
-		CostText.Text = "x" + i.Item2.ToString();
-		BattleLogManager.Instance.ClearAndShowMessage($"{i.Item1.Name}\n{i.Item1.Description}");
+		CostText.Text = "x" + i.Item2;
+		if (i.Item1.SpriteIndex > -1)
+			BattleLogManager.Instance.ClearAndShowMessageWithIcon($"{i.Item1.Name}\n{i.Item1.Description}", i.Item1.SpritesheetPath, i.Item1.SpriteIndex);
+		else
+			BattleLogManager.Instance.ClearAndShowMessage($"{i.Item1.Name}\n{i.Item1.Description}");
 	}
 
 	protected override void OnSelect()

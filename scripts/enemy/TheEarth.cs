@@ -20,7 +20,7 @@ internal sealed class TheEarth : Enemy
     public override BattleCommand ProcessAI()
     {
         if (CurrentHP < 85)
-            return new BattleCommand(this, null, Skills["TEProtect"]);
+            return new BattleCommand(this, SelectAllTargets(), Skills["TEProtect"]);
 
         switch (CurrentState)
         {
@@ -52,7 +52,7 @@ internal sealed class TheEarth : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["TEAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["TENothing"]);
+        return new BattleCommand(this, this, Skills["TENothing"]);
     cruel:
         return new BattleCommand(this, SelectTarget(), Skills["TECruel"]);
     }

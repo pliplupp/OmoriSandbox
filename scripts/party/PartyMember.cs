@@ -75,10 +75,7 @@ public abstract class PartyMember : Actor
 	protected override Stats GetBaseStats()
 	{
 		Stats stats = BaseStats + Weapon.Stats;
-		if (Charm != null)
-		{
-			stats += Charm.Apply();
-		}
+		Charm?.Apply(ref stats);
 		return stats;
 	}
 

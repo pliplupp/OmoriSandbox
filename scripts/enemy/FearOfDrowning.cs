@@ -1,0 +1,69 @@
+using System.Threading.Tasks;
+using Godot;
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+
+internal sealed class FearOfDrowning : Enemy
+{
+    public override string Name => "SOMETHING";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>($"res://animations/fear_of_drowning_{Phase}.tres");
+    protected override Stats Stats => new(10300, 0, 84, 84, 70, 10, 95);
+    protected override string[] EquippedSkills => ["FODAttack", "FODDoNothing", "FODDragDown", "FODWhirlpool", "FODDrowning1", "FODDrowning2", "FODDrowning3"];
+
+    public override bool IsStateValid(string state)
+    {
+        return state == "neutral" || state == "hurt" || state == "toast";
+    }
+
+    private int Phase = 1;
+
+    public override BattleCommand ProcessAI()
+    {
+        if (Roll() < 41)
+            return new BattleCommand(this, SelectTarget(), Skills["FODAttack"]);
+        if (Roll() < 26)
+            return new BattleCommand(this, SelectTarget(), Skills["FODDoNothing"]);
+        if (Roll() < 41)
+            return new BattleCommand(this, SelectTarget(), Skills["FODDragDown"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["FODWhirlpool"]);
+    }
+
+    public override async Task OnStartOfBattle()
+    {
+        DialogueManager.Instance.QueueMessage("The room fills with water.");
+        await DialogueManager.Instance.WaitForDialogue();
+    }
+
+    public override Task ProcessEndOfTurn()
+    {
+        BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["FODWhirlpool"]);
+        BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills[$"FODDrowning{Phase}"]);
+        return Task.CompletedTask;
+    }
+
+    public override Task ProcessBattleConditions()
+    {
+        if (CurrentHP < 7210 && Phase == 1)
+        {
+            Phase = 2;
+            UpdateSprite();
+        }
+
+        if (CurrentHP < 3090 && Phase == 2)
+        {
+            Phase = 3;
+            UpdateSprite();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void UpdateSprite()
+    {
+        // change sprite on phase change
+        Sprite.SpriteFrames = Animation;
+        Sprite.Animation = "neutral";
+        Sprite.Play();
+    }
+}

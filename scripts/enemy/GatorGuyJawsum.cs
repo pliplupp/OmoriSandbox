@@ -45,7 +45,7 @@ internal sealed class GatorGuyJawsum : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["GGAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["GGDoNothing"]);
+        return new BattleCommand(this, this, Skills["GGDoNothing"]);
     rough:
         return new BattleCommand(this, SelectTarget(), Skills["GGRoughUp"]);
     }

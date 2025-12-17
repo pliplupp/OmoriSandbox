@@ -20,6 +20,6 @@ internal sealed class YeOldSprout : Enemy
 
     public override BattleCommand ProcessAI()
     {
-        return new BattleCommand(this, null, Skills["YOSRollOver"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["YOSRollOver"]);
     }
 }

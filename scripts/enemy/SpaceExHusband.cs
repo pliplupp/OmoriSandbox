@@ -1,0 +1,264 @@
+using Godot;
+using System.Threading.Tasks;
+using OmoriSandbox.Battle;
+using OmoriSandbox.Animation;
+
+namespace OmoriSandbox.Actors;
+
+internal sealed class SpaceExHusband : Enemy
+{
+    public override string Name => "SPACE EX-HUSBAND";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/space_ex_husband.tres");
+    protected override Stats Stats => new(6000, 3000, 80, 999, 50, 10, 95);
+    protected override string[] EquippedSkills => ["SEHAttack", "SEHLaser", "SEHAngrySong", "SEHAngstySong", "SEHJoyfulSong", "SEHSpinningKick", "SEHBulletHell"];
+
+    private Stats GetStatsForEmotion(string emotion)
+    {
+        return CurrentState switch
+        {
+            "sad" or "depressed" or "miserable" => new Stats(6000, 3000, 65, 85, 30, 5, 95),
+            "happy" or "ecstatic" or "manic" => new Stats(6000, 3000, 70, 35, 105, 25, 95),
+            "angry" or "enraged" or "furious" => new Stats(6000, 3000, 90, 15, 50, 10, 95),
+            _ => new(6000, 3000, 80, 999, 50, 10, 95)
+        };
+    }
+
+    public override bool IsStateValid(string state)
+    {
+        if (state == "neutral" || state == "toast")
+            return true;
+
+        if (state == DesiredEmotion)
+        {
+            AnimationManager.Instance.PlayPhotograph();
+            return true;
+        }
+
+        return CurrentState switch
+        {
+            "sad" => state == "depressed",
+            "depressed" => state == "miserable",
+            "happy" => state == "ecstatic",
+            "ecstatic" => state == "manic",
+            "angry" => state == "enraged",
+            "enraged" => state == "furious",
+            _ => false,
+        };
+    }
+
+    public override void SetHurt(bool hurt)
+    {
+        if (hurt && CurrentState == "neutral")
+            Sprite.Animation = "hurt";
+        else
+            Sprite.Animation = CurrentState;
+    }
+
+    public override BattleCommand ProcessAI()
+    {
+        switch (CurrentState)
+        {
+            case "happy":
+            case "ecstatic":
+            case "manic":
+                if (Roll() < 51)
+                    goto joyful;
+                if (Roll() < 51)
+                    goto kick;
+                goto laser;
+            case "sad":
+            case "depressed":
+            case "miserable":
+                if (Roll() < 51)
+                    goto angsty;
+                goto laser;
+            case "angry":
+            case "enraged":
+            case "furious":
+                if (Roll() < 46)
+                    goto angry;
+                if (Roll() < 46)
+                    goto laser;
+                goto bullet;
+            default:
+                if (Roll() < 51)
+                    goto attack;
+                goto laser;
+
+        }
+    attack:
+        return new BattleCommand(this, SelectTarget(), Skills["SEHAttack"]);
+    laser:
+        return new BattleCommand(this, SelectTarget(), Skills["SEHLaser"]);
+    angry:
+        return new BattleCommand(this, SelectAllTargets(), Skills["SEHAngrySong"]);
+    angsty:
+        return new BattleCommand(this, SelectAllTargets(), Skills["SEHAngstySong"]);
+    joyful:
+        return new BattleCommand(this, SelectAllTargets(), Skills["SEHJoyfulSong"]);
+    kick:
+        return new BattleCommand(this, SelectTarget(), Skills["SEHSpinningKick"]);
+    bullet:
+        return new BattleCommand(this, SelectTargets(4), Skills["SEHBulletHell"]);
+    }
+
+    private int TurnCounter = 0;
+    private bool TurnTwoLine = false;
+    private bool DesiringEmotion = false;
+    private string DesiredEmotion = "neutral";
+    public override async Task ProcessStartOfTurn()
+    {
+        TurnCounter++;
+        if (DesiringEmotion)
+        {
+            if (!CheckDesiredEmotion())
+            {
+                DialogueManager.Instance.QueueMessage(this, "No one truly understands the depths of my pain.");
+                DialogueManager.Instance.QueueMessage(this, "If I do not feel... then the pain can no longer reach me.");
+            }
+            await DialogueManager.Instance.WaitForDialogue();
+            DesiredEmotion = "neutral";
+            DesiringEmotion = false;
+            return;
+        }
+        if (TurnCounter == 3)
+        {
+            if (!TurnTwoLine)
+            {
+                DialogueManager.Instance.QueueMessage(this, "All I have left are my memories...");
+                DialogueManager.Instance.QueueMessage(this, "But even they cannot make me feel anymore.");
+                await DialogueManager.Instance.WaitForDialogue();
+                TurnTwoLine = true;
+            }
+
+            TurnCounter = 0;
+
+            if (CurrentState != "neutral")
+            {
+                DialogueManager.Instance.QueueMessage(this, "Nay! I must guard my HEART.@ I must become one... with the ice...");
+                await DialogueManager.Instance.WaitForDialogue();
+                AnimationManager.Instance.PlayPhotograph();
+                SetState("neutral", true);
+            }
+            else
+            {
+                DialogueManager.Instance.QueueMessage(this, "Alas! I see a memory before me!");
+                await DialogueManager.Instance.WaitForDialogue();
+                await ChooseDesiredEmotion();
+            }
+        }
+    }
+
+    private bool CheckDesiredEmotion()
+    {
+        switch (DesiredEmotion)
+        {
+            case "sad":
+                if (CurrentState == "sad" || CurrentState == "depressed" || CurrentState == "miserable")
+                {
+                    DialogueManager.Instance.QueueMessage(this, "I can't believe she's really gone...");
+                    return true;
+                }
+                break;
+            case "happy":
+                if (CurrentState == "happy" || CurrentState == "ecstatic" || CurrentState == "manic")
+                {
+                    DialogueManager.Instance.QueueMessage(this, "I still do think fondly of those times...");
+                    return true;
+                }
+                break;
+            case "angry":
+                if (CurrentState == "angry" || CurrentState == "enraged" || CurrentState == "furious")
+                {
+                    DialogueManager.Instance.QueueMessage(this, "HOW DARE SHE TREAT ME THAT WAY!");
+                    DialogueManager.Instance.QueueMessage(this, "I GAVE HER MY HEART AND SHE THREW IT AWAY SO EASILY!");
+                    return true;
+                }
+                break;
+        }
+        return false;
+    }
+
+    private async Task ChooseDesiredEmotion()
+    {
+        switch (GameManager.Instance.Random.RandiRange(0, 2))
+        {
+            case 0:
+                DesiredEmotion = "sad";
+                switch (GameManager.Instance.Random.RandiRange(0, 2))
+                {
+                    case 0:
+                        DialogueManager.Instance.QueueMessage(this, "It's me... alone...@ throwing away my SPECIAL MIXTAPE...");
+                        break;
+                    case 1:
+                        DialogueManager.Instance.QueueMessage(this, "It's me... alone...@ weeping in my king-sized bed...");
+                        break;
+                    case 2:
+                        DialogueManager.Instance.QueueMessage(this, "It's me... alone...@ holding a picture of my dear SWEETHEART...");
+                        break;
+                }
+                break;
+            case 1:
+                DesiredEmotion = "happy";
+                switch (GameManager.Instance.Random.RandiRange(0, 2))
+                {
+                    case 0:
+                        DialogueManager.Instance.QueueMessage(this, "It's me... and my SWEETHEART...@ kissing on her glorious stage!");
+                        break;
+                    case 1:
+                        DialogueManager.Instance.QueueMessage(this, "It's me... and my SWEETHEART...@ staring at the night sky together!");
+                        break;
+                    case 2:
+                        DialogueManager.Instance.QueueMessage(this, "It's me... and my SWEETHEART...@ gazing into each other's eyes!");
+                        break;
+                }
+                break;
+            case 2:
+                DesiredEmotion = "angry";
+                switch (GameManager.Instance.Random.RandiRange(0, 2))
+                {
+                    case 0:
+                        DialogueManager.Instance.QueueMessage(this, "It's my SWEETHEART... but she's...@ swinging her mace at me!");
+                        break;
+                    case 1:
+                        DialogueManager.Instance.QueueMessage(this, "It's my SWEETHEART... but she's...@ in the arms of another man!");
+                        break;
+                    case 2:
+                        DialogueManager.Instance.QueueMessage(this, "It's my SWEETHEART... but she's...@ throwing my things across the room!");
+                        break;
+                }
+                break;
+        }
+        DesiringEmotion = true;
+        await DialogueManager.Instance.WaitForDialogue();
+    }
+
+    public override async Task ProcessBattleConditions()
+    {
+        if (CurrentHP <= 0)
+        {
+            DialogueManager.Instance.QueueMessage(this, "The pain...@ I can feel it...");
+            await DialogueManager.Instance.WaitForDialogue();
+        }
+    }
+
+    public override async Task OnEndOfBattle(bool victory)
+    {
+        if (!victory)
+        {
+            DialogueManager.Instance.QueueMessage(this, "I feel nothing...@ I am cold... like ice...");
+            await DialogueManager.Instance.WaitForDialogue();
+        }
+    }
+
+    public override async Task OnStartOfBattle()
+    {
+        AddStatModifier("SpaceExHusbandBlock", true);
+        OnStateChanged += (s, e) =>
+        {
+            BaseStats = GetStatsForEmotion(CurrentState);
+        };
+        DialogueManager.Instance.QueueMessage(this, "I feel nothing...@ I am cold...@ like ice...");
+        await DialogueManager.Instance.WaitForDialogue();
+    }
+}

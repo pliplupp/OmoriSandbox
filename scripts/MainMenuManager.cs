@@ -60,6 +60,12 @@ internal partial class MainMenuManager : Node
 			GameManager.Instance.DiscordManager.SetEditingPreset();
 		};
 
+		SettingsButton.Pressed += () =>
+		{
+			MainControls.Visible = false;
+			Settings.Visible = true;
+		};
+
 		DataFolderButton.Pressed += () =>
 		{
 			Error error = OS.ShellOpen(ProjectSettings.GlobalizePath("user://presets"));
@@ -173,7 +179,7 @@ internal partial class MainMenuManager : Node
 			if (PreviewButton.Text == "Preview")
 			{
 				string bgm = BGMDropdown.GetItemText(BGMDropdown.Selected);
-				AudioManager.Instance.PlayBGM(StringExtensions.GetBaseName(bgm));
+				AudioManager.Instance.PlayBGM(StringExtensions.GetBaseName(bgm), 1f, (float)BGMPitch.Value);
 				PreviewButton.Text = "Stop";
 			}
 			else
@@ -282,6 +288,7 @@ internal partial class MainMenuManager : Node
 			{ "name", PresetInput.Text },
 			{ "battleback", BattlebackDropdown.GetItemText(BattlebackDropdown.Selected) },
 			{ "bgm", BGMDropdown.GetItemText(BGMDropdown.Selected) },
+			{ "bgmPitch", BGMPitch.Value },
 			{ "followupTier", (int)FollowupTierSlider.Value },
 			{ "basilFollowups", BasilFollowupsCheckbox.ButtonPressed },
 			{ "basilReleaseEnergy", BasilReleaseEnergyCheckbox.ButtonPressed },
@@ -391,14 +398,16 @@ internal partial class MainMenuManager : Node
 
 		try
 		{
-			string name = dict["name"].ToString();
 			string battleback = dict["battleback"].ToString();
 			string bgm = dict["bgm"].ToString();
+			double bgmPitch = 1.0d;
+			if (dict.TryGetValue("bgmPitch", out Variant value))
+				bgmPitch = value.AsDouble();
 			int followupTier = (int)dict["followupTier"];
 			bool basilFollowups = (bool)dict["basilFollowups"];
 			bool basilReleaseEnergy = (bool)dict["basilReleaseEnergy"];
 			bool disableDialogue = false;
-			if (dict.TryGetValue("disableDialogue", out Variant value))
+			if (dict.TryGetValue("disableDialogue", out value))
 				disableDialogue = value.AsBool();
 			Godot.Collections.Dictionary<string, int> items = dict["items"].AsGodotDictionary<string, int>();
 			Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>> actors = dict["actors"].AsGodotArray<Godot.Collections.Dictionary<string, Variant>>();
@@ -416,8 +425,9 @@ internal partial class MainMenuManager : Node
 			BGMDropdown.Selected = BGMDropdown.GetItemIndex(bgm);
 			if (BGMDropdown.Selected == -1)
 				BGMDropdown.Selected = 0;
+			BGMPitch.Value = Math.Clamp(bgmPitch, 0.1d, 2.0d);
 
-			FollowupTierSlider.Value = followupTier;
+			FollowupTierSlider.Value = Math.Clamp(followupTier, 1, 3);
 			BasilFollowupsCheckbox.ButtonPressed = basilFollowups;
 			BasilReleaseEnergyCheckbox.ButtonPressed = basilReleaseEnergy;
 			DisableDialogue.ButtonPressed = disableDialogue;
@@ -665,6 +675,7 @@ internal partial class MainMenuManager : Node
 		BattlebackDropdown.Selected = BattlebackDropdown.GetItemIndex("battleback_vf_default");
 		BattlebackDropdown.EmitSignal("item_selected", BattlebackDropdown.Selected);
 		BGMDropdown.Selected = 0;
+		BGMPitch.Value = 1.0d;
 		FollowupTierSlider.Value = 1;
 		BasilFollowupsCheckbox.ButtonPressed = false;
 		BasilReleaseEnergyCheckbox.ButtonPressed = false;
@@ -709,123 +720,48 @@ internal partial class MainMenuManager : Node
 	public static MainMenuManager Instance;
 	public string LastLoadedPreset { get; private set; } = "";
 
-	[Export]
-	private Control[] AddActorControls;
-
-	[Export]
-	private Control AddEnemyControl;
-
-	[Export]
-	private PackedScene PartyMemberEditor;
-
-	[Export]
-	private PackedScene EnemyEditor;
-
-	[Export]
-	private PackedScene BattleCard;
-
-	[Export]
-	private PackedScene ModListEntry;
-
-	[Export]
-	private ScrollContainer ModListParent;
-
-	[Export]
-	private Button ShowModsButton;
-
-	[Export]
-	private TabContainer ActorTabs;
-
-	[Export]
-	private TabContainer EnemyTabs;
-
-	[Export]
-	private CanvasLayer MainMenu;
-
-	[Export]
-	private CanvasLayer Editor;
-
-	[Export]
-	private Button PlayButton;
-
-	[Export]
-	private Button ConfigureButton;
-
-	[Export]
-	private Button DataFolderButton;
-
-	[Export]
-	private Button ModFolderButton;
-
-	[Export]
-	private Label ModsLoaded;
-
-	[Export]
-	private Button GithubButton;
-
-	[Export]
-	private OptionButton TitlePresetDropdown;
-
-	[Export]
-	private TextureRect BattlebackPreview;
-
-	[Export]
-	private OptionButton BattlebackDropdown;
-
-	[Export]
-	private OptionButton BGMDropdown;
-
-	[Export]
-	private Button PreviewButton;
-
-	[Export]
-	private HSlider FollowupTierSlider;
-
-	[Export]
-	private Label FollowupTierValue;
-
-	[Export]
-	private CheckBox BasilFollowupsCheckbox;
-
-	[Export]
-	private CheckBox BasilReleaseEnergyCheckbox;
-
-	[Export]
-	private CheckBox DisableDialogue;
-
-	[Export]
-	private Button AddItemButton;
-
-	[Export]
-	private GridContainer ItemContainer;
-
-	[Export]
-	private LineEdit SearchInput;
-
-	[Export]
-	private Button SearchButton;
-
-	[Export]
-	private TextEdit Results;
-
-	[Export]
-	private Button SavePresetButton;
-
-	[Export]
-	private LineEdit PresetInput;
-
-	[Export]
-	private Button LoadPresetButton;
-
-	[Export]
-	private Button DeletePresetButton;
-
-	[Export]
-	private OptionButton PresetDropdown;
-
-	[Export]
-	private Button ResetButton;
-
-	[Export]
-	private Button ReturnButton;
+	[Export] private Control[] AddActorControls;
+	[Export] private Control AddEnemyControl;
+	[Export] private PackedScene PartyMemberEditor;
+	[Export] private PackedScene EnemyEditor;
+	[Export] private PackedScene BattleCard;
+	[Export] private PackedScene ModListEntry;
+	[Export] private ScrollContainer ModListParent;
+	[Export] private Button ShowModsButton;
+	[Export] private TabContainer ActorTabs;
+	[Export] private TabContainer EnemyTabs;
+	[Export] private CanvasLayer MainMenu;
+	[Export] private CanvasLayer Editor;
+	[Export] private Button PlayButton;
+	[Export] private Button ConfigureButton;
+	[Export] private Button SettingsButton;
+	[Export] private VBoxContainer MainControls;
+	[Export] private SettingsMenuManager Settings;
+	[Export] private Button DataFolderButton;
+	[Export] private Button ModFolderButton;
+	[Export] private Label ModsLoaded;
+	[Export] private Button GithubButton;
+	[Export] private OptionButton TitlePresetDropdown;
+	[Export] private TextureRect BattlebackPreview;
+	[Export] private OptionButton BattlebackDropdown;
+	[Export] private OptionButton BGMDropdown;
+	[Export] private SpinBox BGMPitch;
+	[Export] private Button PreviewButton;
+	[Export] private HSlider FollowupTierSlider;
+	[Export] private Label FollowupTierValue;
+	[Export] private CheckBox BasilFollowupsCheckbox;
+	[Export] private CheckBox BasilReleaseEnergyCheckbox;
+	[Export] private CheckBox DisableDialogue;
+	[Export] private Button AddItemButton;
+	[Export] private GridContainer ItemContainer;
+	[Export] private LineEdit SearchInput;
+	[Export] private Button SearchButton;
+	[Export] private TextEdit Results;
+	[Export] private Button SavePresetButton;
+	[Export] private LineEdit PresetInput;
+	[Export] private Button LoadPresetButton;
+	[Export] private Button DeletePresetButton;
+	[Export] private OptionButton PresetDropdown;
+	[Export] private Button ResetButton;
+	[Export] private Button ReturnButton;
 }

@@ -41,7 +41,7 @@ internal sealed class AubreyEnemy : Enemy
         }
         if (Roll() < 31)
         {
-            return new BattleCommand(this, null, Skills["AEDoNothing"]);
+            return new BattleCommand(this, this, Skills["AEDoNothing"]);
         }
         return new BattleCommand(this, SelectTarget(), Skills["AEHeadbutt"]);
     }

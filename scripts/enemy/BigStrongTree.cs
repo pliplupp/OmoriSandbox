@@ -16,6 +16,6 @@ internal sealed class BigStrongTree : Enemy
 
     public override BattleCommand ProcessAI()
     {
-        return new BattleCommand(this, null, Skills["BSTDoNothing"]);
+        return new BattleCommand(this, this, Skills["BSTDoNothing"]);
     }
 }

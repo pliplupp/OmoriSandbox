@@ -12,13 +12,17 @@ config_version=5
 
 config/name="OmoriSandbox"
 run/main_scene="uid://dnxcj20hgcsj8"
-config/features=PackedStringArray("4.4", "C#", "Forward Plus")
+config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/fullsize=false
 boot_splash/use_filter=false
 boot_splash/image="uid://bkfc0aptec36b"
 config/icon="uid://b71ist0rdxqnp"
 config/windows_native_icon="res://assets/icon.ico"
+
+[audio]
+
+buses/default_bus_layout="uid://lpmaav45bg5s"
 
 [display]
 

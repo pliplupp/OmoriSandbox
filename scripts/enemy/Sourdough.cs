@@ -46,7 +46,7 @@ internal sealed class Sourdough : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["SDAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["SDDoNothing"]);
+        return new BattleCommand(this, this, Skills["SDDoNothing"]);
     badword:
         return new BattleCommand(this, SelectTarget(), Skills["SDBadWord"]);
     }

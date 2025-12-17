@@ -40,8 +40,8 @@ internal sealed class Creepypasta : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["CPAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["CPDoNothing"]);
+        return new BattleCommand(this, this, Skills["CPDoNothing"]);
     scare:
-        return new BattleCommand(this, null, Skills["CPScare"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["CPScare"]);
     }
 }

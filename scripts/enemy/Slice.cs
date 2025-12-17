@@ -44,8 +44,8 @@ internal sealed class Slice : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["SLAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["SLDoNothing"]);
+        return new BattleCommand(this, this, Skills["SLDoNothing"]);
     rile:
-        return new BattleCommand(this, null, Skills["SLRile"]);
+        return new BattleCommand(this, SelectAllEnemies(), Skills["SLRile"]);
     }
 }

@@ -27,7 +27,6 @@ internal sealed class Sweetheart : Enemy
 			|| state == "angry" || state == "hurt";
 	}
 
-	// TODO: handle more boss specific stuff
 
 	public override BattleCommand ProcessAI()
 	{

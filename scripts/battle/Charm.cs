@@ -13,18 +13,17 @@ public class Charm
     /// </summary>
     public string Name { get; private set; }
     /// <summary>
-    /// The Charm's additive stats
+    /// The Charm's stats
     /// </summary>
-    public Stats Stats { get; private set; }
+    public StatBonus[] Stats { get; }
 
     /// <summary>
-    /// Applies the Charm's Stats.
+    /// An extra method that allows dynamic StatBonuses to be applied when <see cref="Apply"/>ing a charm.
     /// </summary>
     /// <remarks>
-    /// Usually this will just return the Charm's <c>Stats</c>.
-    /// However, it can be useful for stat changes that rely on game variables, like the Energy bar.
+    /// This can be useful for stat changes that rely on game variables, like the Energy bar.
     /// </remarks>
-    public Func<Stats> Apply { get; private set; }
+    public Func<StatBonus[]> OnApply { get; }
 
     /// <summary>
     /// What the charm does to its holder at the start of the battle.
@@ -35,19 +34,25 @@ public class Charm
     public Action<Actor> StartOfBattle { get; private set; }
 
     /// <summary>
-    /// A basic Charm with additive Stats.
+    /// A basic Charm that modifies a single stat.
     /// </summary>
-    /// <remarks>
-    /// Note: Will automatically create an <c>Apply</c> method that returns <c>Stats</c>.
-    /// </remarks>
-    public Charm(string name, Stats stats)
+    public Charm(string name, StatBonus stat)
+    {
+        Name = name;
+        Stats = [stat];
+        OnApply = null;
+        // empty action
+        StartOfBattle = (_) => { };
+    }
+    
+    /// <summary>
+    /// A basic Charm that modifies a multiple stats.
+    /// </summary>
+    public Charm(string name, StatBonus[] stats)
     {
         Name = name;
         Stats = stats;
-        Apply = () =>
-        {
-            return Stats;
-        };
+        OnApply = null;
         // empty action
         StartOfBattle = (_) => { };
     }
@@ -58,11 +63,11 @@ public class Charm
     /// <remarks>
     /// Useful for stats based on game variables, like the Energy bar.
     /// </remarks>
-    public Charm(string name, Func<Stats> apply)
+    public Charm(string name, Func<StatBonus[]> apply)
     {
         Name = name;
-        Stats = new Stats();
-        Apply = apply;
+        Stats = [];
+        OnApply = apply;
         // empty action
         StartOfBattle = (_) => { };
     }
@@ -70,28 +75,46 @@ public class Charm
     /// <summary>
     /// A Charm that does something at the start of the battle, usually giving an emotion to the specified <c>Actor</c>.
     /// </summary>
-    /// <remarks>
-    /// Note: Will automatically create an <c>Apply</c> method that returns <c>Stats</c>.
-    /// </remarks>
-    public Charm(string name, Stats stats, Action<Actor> startOfBattle)
+    public Charm(string name, StatBonus[] stats, Action<Actor> startOfBattle)
     {
         Name = name;
         Stats = stats;
-        Apply = () =>
-        {
-            return Stats;
-        };
+        OnApply = null;
         StartOfBattle = startOfBattle;
     }
 
     /// <summary>
     /// A Charm that both does something at the start of the battle and when stats are applied.
     /// </summary>
-    public Charm(string name, Func<Stats> apply, Action<Actor> startOfBattle)
+    public Charm(string name, Func<StatBonus[]> apply, Action<Actor> startOfBattle)
     {
         Name = name;
-        Stats = new Stats();
-        Apply = apply;
+        Stats = [];
+        OnApply = apply;
         StartOfBattle = startOfBattle;
+    }
+
+    /// <summary>
+    /// Applies this Charm's statbonuses to the provided <see cref="Stats"/>
+    /// </summary>
+    /// <param name="stats"></param>
+    public void Apply(ref Stats stats)
+    {
+        foreach (StatBonus bonus in Stats)
+        {
+            int stat = stats.GetStat(bonus.Type);
+            stat = (int)Math.Round(stat * bonus.Multiplier + bonus.FlatBonus);
+            stats.SetStat(bonus.Type, stat);
+        }
+
+        if (OnApply != null)
+        {
+            foreach (StatBonus bonus in OnApply())
+            {
+                int stat = stats.GetStat(bonus.Type);
+                stat = (int)Math.Round(stat * bonus.Multiplier + bonus.FlatBonus);
+                stats.SetStat(bonus.Type, stat);
+            }
+        }
     }
 }

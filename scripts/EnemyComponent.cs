@@ -19,11 +19,11 @@ public partial class EnemyComponent : Node
     /// </summary>
     public Enemy Actor => Enemy;
 
-    internal void SetEnemy(Enemy enemy, string initialState, bool fallsOffScreen)
+    internal void SetEnemy(Enemy enemy, string initialState, bool fallsOffScreen, int layer)
     {
         Enemy = enemy;
         AnimatedSprite2D sprite = GetNode<AnimatedSprite2D>("../Sprite");
-        Enemy.Init(sprite, initialState, fallsOffScreen);
+        Enemy.Init(sprite, initialState, fallsOffScreen, layer);
         AboveHead = GetNode<Control>("../AboveHead");
         NameRect = GetNode<NinePatchRect>("../AboveHead/Infobox");
         NameLabel = GetNode<Label>("../AboveHead/Infobox/Name");
