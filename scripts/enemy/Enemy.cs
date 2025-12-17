@@ -1,5 +1,7 @@
+using System;
 using Godot;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using OmoriSandbox.Battle;
 using OmoriSandbox.Battle.Modifier;
@@ -49,8 +51,9 @@ public abstract class Enemy : Actor
 	}
 
 	/// <summary>
-	/// Selects a target. Mainly used in <see cref="ProcessAI"/> to select targets when necessary. Can be overriden for custom targeting behavior.
+	/// Selects a target. Mainly used in <see cref="ProcessAI"/> for single-target skills. Can be overriden for custom targeting behavior.
 	/// </summary>
+	/// <remarks>This only includes alive party members by default.</remarks>
 	/// <returns>The <see cref="PartyMember"/> that will be targeted.</returns>
 	protected virtual PartyMember SelectTarget()
 	{
@@ -64,6 +67,51 @@ public abstract class Enemy : Actor
 			return members[GameManager.Instance.Random.RandiRange(0, members.Count - 1)].Actor;
 		}
 		return taunting[GameManager.Instance.Random.RandiRange(0, taunting.Count - 1)].Actor;
+	}
+
+	/// <summary>
+	/// Selects X random targets. Can include duplicates. Mainly used in <see cref="ProcessAI"/> for multi-target skills. Can be overriden for custom targeting behavior.
+	/// </summary>
+	/// <param name="amount">The amount of targets to select.</param>
+	/// <remarks>This only includes alive party members by default. </remarks>
+	/// <returns>The <see cref="PartyMember"/>s that will be targeted.</returns>
+	protected virtual IReadOnlyList<PartyMember> SelectTargets(int amount)
+	{
+		List<PartyMemberComponent> targets = BattleManager.Instance.GetAlivePartyMembers();
+		List<PartyMember> result = [];
+		for (int i = 0; i < Math.Min(amount, targets.Count); i++)
+			result.Add(targets[GameManager.Instance.Random.RandiRange(0, targets.Count - i)].Actor);
+		return result;
+	}
+
+	/// <summary>
+	/// Selects all targets. Mainly used in <see cref="ProcessAI"/> for multi-target skills. Can be overriden for custom targeting behavior.
+	/// </summary>
+	/// <remarks>This only includes alive party members by default.</remarks>
+	/// <returns>The <see cref="PartyMember"/>s that will be targeted.</returns>
+	protected virtual IReadOnlyList<PartyMember> SelectAllTargets()
+	{
+		return BattleManager.Instance.GetAlivePartyMembers().Select(x => x.Actor).ToList();
+	}
+
+	/// <summary>
+	/// Selects an enemy target. Mainly used in <see cref="ProcessAI"/> for single-target skills that target an enemy. Can be overriden for custom targeting behavior.<br/>
+	/// <remarks>For targeting party members, use <see cref="SelectTarget"/>.</remarks>
+	/// </summary>
+	/// <returns>The <see cref="Enemy"/> that will be targeted.</returns>
+	protected virtual Enemy SelectEnemy()
+	{
+		return BattleManager.Instance.GetRandomAliveEnemy();
+	}
+
+	/// <summary>
+	/// Selects all enemy targets. Mainly used in <see cref="ProcessAI"/> for multi-target skills that target all enemies. Can be overriden for custom targeting behavior.
+	/// </summary>
+	/// <remarks>For targeting all party members, use <see cref="SelectAllTargets"/>.</remarks>
+	/// <returns></returns>
+	protected virtual IReadOnlyList<Enemy> SelectAllEnemies()
+	{
+		return BattleManager.Instance.GetAllEnemies();
 	}
 
 	/// <summary>

@@ -35,7 +35,7 @@ internal class ModdedEnemy : Enemy
         if (data.Equals(default(JsonEnemyAIData)))
         {
             GD.PrintErr($"Modded enemy {Name} is missing AI data for emotion {CurrentState}");
-            return new BattleCommand(this, null, null);
+            return new BattleCommand(this, [], null);
         }
         foreach (JsonEnemyAIEntry entry in data.Entries)
         {
@@ -51,17 +51,28 @@ internal class ModdedEnemy : Enemy
                     GD.PrintErr($"Modded enemy {Name} does not have the {entry.Skill} skill equipped!");
                     continue;
                 }
-                if (skill.Target == SkillTarget.AllEnemies ||
-                    skill.Target == SkillTarget.AllAllies ||
-                    skill.Target == SkillTarget.AllDeadAllies)
-                    return new BattleCommand(this, null, skill); 
-                if (skill.Target == SkillTarget.Self)
-                    return new BattleCommand(this, this, skill);
-                // TODO: allow enemy target selection
-                return new BattleCommand(this, SelectTarget(), skill);
+
+                switch (skill.Target)
+                {
+                    case SkillTarget.Self:
+                        return new BattleCommand(this, this, skill);
+                    case SkillTarget.AllAllies:
+                        return new BattleCommand(this, SelectAllEnemies(), skill);
+                    case SkillTarget.AllEnemies:
+                        return new BattleCommand(this, SelectAllTargets(), skill);
+                    case SkillTarget.Ally:
+                    case SkillTarget.AllyNotSelf:    
+                        return new BattleCommand(this, SelectEnemy(), skill);
+                    case SkillTarget.Enemy:
+                    case SkillTarget.AllyOrEnemy:
+                        return new BattleCommand(this, SelectTarget(), skill);
+                    default:
+                        GD.PrintErr($"Skill {skill.Name} is not supported for enemies.");
+                        return new BattleCommand(this, [], null);
+                }
             }
         }
         GD.PrintErr($"Modded enemy {Name} ProcessAI failed due to an error.");
-        return new BattleCommand(this, null, null);
+        return new BattleCommand(this, [], null);
     }
 }

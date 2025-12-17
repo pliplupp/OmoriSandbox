@@ -26,7 +26,7 @@ internal sealed class FearOfDrowning : Enemy
             return new BattleCommand(this, SelectTarget(), Skills["FODDoNothing"]);
         if (Roll() < 41)
             return new BattleCommand(this, SelectTarget(), Skills["FODDragDown"]);
-        return new BattleCommand(this, null, Skills["FODWhirlpool"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["FODWhirlpool"]);
     }
 
     public override async Task OnStartOfBattle()
@@ -37,8 +37,8 @@ internal sealed class FearOfDrowning : Enemy
 
     public override Task ProcessEndOfTurn()
     {
-        BattleManager.Instance.ForceCommand(this, null, Skills["FODWhirlpool"]);
-        BattleManager.Instance.ForceCommand(this, null, Skills[$"FODDrowning{Phase}"]);
+        BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["FODWhirlpool"]);
+        BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills[$"FODDrowning{Phase}"]);
         return Task.CompletedTask;
     }
 

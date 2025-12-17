@@ -91,15 +91,15 @@ internal sealed class SpaceExHusband : Enemy
     laser:
         return new BattleCommand(this, SelectTarget(), Skills["SEHLaser"]);
     angry:
-        return new BattleCommand(this, null, Skills["SEHAngrySong"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["SEHAngrySong"]);
     angsty:
-        return new BattleCommand(this, null, Skills["SEHAngstySong"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["SEHAngstySong"]);
     joyful:
-        return new BattleCommand(this, null, Skills["SEHJoyfulSong"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["SEHJoyfulSong"]);
     kick:
         return new BattleCommand(this, SelectTarget(), Skills["SEHSpinningKick"]);
     bullet:
-        return new BattleCommand(this, null, Skills["SEHBulletHell"]);
+        return new BattleCommand(this, SelectTargets(4), Skills["SEHBulletHell"]);
     }
 
     private int TurnCounter = 0;
@@ -144,8 +144,6 @@ internal sealed class SpaceExHusband : Enemy
             {
                 DialogueManager.Instance.QueueMessage(this, "Alas! I see a memory before me!");
                 await DialogueManager.Instance.WaitForDialogue();
-                // make the box go away before showing the emotion prompt
-                await Task.Delay(500);
                 await ChooseDesiredEmotion();
             }
         }

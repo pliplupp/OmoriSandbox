@@ -19,7 +19,7 @@ internal sealed class Roboheart : Enemy
     public override BattleCommand ProcessAI()
     {
         if (CurrentHP < 250)
-            return new BattleCommand(this, null, Skills["RHExplode"]);
+            return new BattleCommand(this, SelectAllTargets(), Skills["RHExplode"]);
 
         switch (CurrentState)
         {
@@ -59,11 +59,11 @@ internal sealed class Roboheart : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["RHAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["RHDoNothing"]);
+        return new BattleCommand(this, this, Skills["RHDoNothing"]);
     laser:
         return new BattleCommand(this, SelectTarget(), Skills["RHLaser"]);
     snack:
-        return new BattleCommand(this, null, Skills["RHSnack"]);
+        return new BattleCommand(this, this, Skills["RHSnack"]);
     }
 
     private int Stage = 0;

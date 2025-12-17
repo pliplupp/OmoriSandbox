@@ -8,7 +8,7 @@ namespace OmoriSandbox.Battle.Modifier;
 public class TierStatModifier : StatModifier
 {
 	private int Tier;
-	private readonly int MaxTier;
+	private int MaxTier;
     /// <summary>
     /// The message to display on success.
     /// </summary>
@@ -71,6 +71,16 @@ public class TierStatModifier : StatModifier
 	{
 		SuccessMessage = success;
 		FailureMessage = failure;
+		return this;
+	}
+
+	/// <summary>
+	/// Overrides the max tier for this stat modifier. By default, the max tier will be the length of the stat bonuses.
+	/// </summary>
+	/// <param name="tier">The max tier to use.</param>
+	public TierStatModifier WithMaxTier(int tier)
+	{
+		MaxTier = tier;
 		return this;
 	}
 

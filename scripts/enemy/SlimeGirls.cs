@@ -97,7 +97,7 @@ internal sealed class SlimeGirls : Enemy
 
         if (CurrentHP < 1425 && Stage <= 2)
         {
-            BattleManager.Instance.ForceCommand(this, null, Skills["SlimeUltimateAttack"]);
+            BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["SlimeUltimateAttack"]);
             Stage = 3;
         }
 
@@ -107,7 +107,7 @@ internal sealed class SlimeGirls : Enemy
             DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, "Yes, sister...@ I think it's about time we switched things up.");
             DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, "Just relax, children...@ This won't hurt a bit~");
             await DialogueManager.Instance.WaitForDialogue();
-            BattleManager.Instance.ForceCommand(this, null, Skills["Swap"]);
+            BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["Swap"]);
             Stage++;
         }
 

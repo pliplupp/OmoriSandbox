@@ -45,10 +45,10 @@ internal sealed class KidsKite : Enemy
                 goto nothing;
         }
         fly:
-        return new BattleCommand(this, null, Skills["KSKFly"]);
+        return new BattleCommand(this, this, Skills["KSKFly"]);
         attack:
         return new BattleCommand(this, SelectTarget(), Skills["KSKAttack"]);
         nothing:
-        return new BattleCommand(this, null, Skills["KSKDoNothing"]);
+        return new BattleCommand(this, this, Skills["KSKDoNothing"]);
     }
 }

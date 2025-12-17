@@ -27,7 +27,7 @@ internal sealed class KingCrawler : Enemy
                 return new BattleCommand(this, SelectTarget(), Skills["KCAttack"]);
             if (Roll() < 31)
                 return new BattleCommand(this, SelectTarget(), Skills["KCCrunch"]);
-            return new BattleCommand(this, null, Skills["KCRam"]);
+            return new BattleCommand(this, SelectAllTargets(), Skills["KCRam"]);
         }
 
         if (Roll() < 41)
@@ -36,7 +36,7 @@ internal sealed class KingCrawler : Enemy
             return new BattleCommand(this, SelectTarget(), Skills["KCDoNothing"]);
         if (Roll() < 31)
             return new BattleCommand(this, SelectTarget(), Skills["KCCrunch"]);
-        return new BattleCommand(this, null, Skills["KCRam"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["KCRam"]);
     }
 
     private bool HasSpoken = false;
@@ -73,7 +73,7 @@ internal sealed class KingCrawler : Enemy
             DialogueManager.Instance.QueueMessage("KING CRAWLER eats a SPROUT MOLE!");
             await DialogueManager.Instance.WaitForDialogue();
             BattleManager.Instance.ForceCommand(this, SproutMole.Actor, Skills["KCEat"]);
-            BattleManager.Instance.ForceCommand(this, null, Skills["KCRecover"]);
+            BattleManager.Instance.ForceCommand(this, this, Skills["KCRecover"]);
             AteSproutMoleLastTurn = true;
         }
     }

@@ -39,13 +39,13 @@ internal sealed class Abbi : Enemy
                 {
                     Tentacles[i] = BattleManager.Instance.SummonEnemy("Tentacle", CenterPoint + new Vector2(Offsets[i], -80),
                         layer: Layer + 1);
-                    return new BattleCommand(this, null, Skills["AbbiSummon"]);
+                    return new BattleCommand(this, this, Skills["AbbiSummon"]);
                 }
             }
         }
 
         if (Roll() < 36)
-            return new BattleCommand(this, null, Skills["AbbiAttackOrder"]);
+            return new BattleCommand(this, SelectAllEnemies(), Skills["AbbiAttackOrder"]);
         return new  BattleCommand(this, SelectTarget(), Skills["AbbiAttack"]);
     }
 

@@ -45,11 +45,11 @@ internal sealed class Pluto : Enemy
                 goto brag;
         }
         nothing:
-        return new BattleCommand(this, null, Skills["PLDoNothing"]);
+        return new BattleCommand(this, this, Skills["PLDoNothing"]);
         headbutt:
         return new BattleCommand(this, SelectTarget(), Skills["PLHeadbutt"]);
         brag:
-        return new BattleCommand(this, null, Skills["PLBrag"]);
+        return new BattleCommand(this, this, Skills["PLBrag"]);
     }
 
     private EnemyComponent LeftArm;
@@ -78,7 +78,7 @@ internal sealed class Pluto : Enemy
             DialogueManager.Instance.QueueMessage(this, "GWAH AHAHAH AHAHA!!!");
             DialogueManager.Instance.QueueMessage(this, "What a splendid show of force!");
             await DialogueManager.Instance.WaitForDialogue();
-            BattleManager.Instance.ForceCommand(this, null, Skills["PLExpand"]);
+            BattleManager.Instance.ForceCommand(this, this, Skills["PLExpand"]);
             HasExpanded = true;
         }
         

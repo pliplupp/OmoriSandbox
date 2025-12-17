@@ -46,8 +46,8 @@ internal sealed class Sesame : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["SESAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["SESDoNothing"]);
+        return new BattleCommand(this, this, Skills["SESDoNothing"]);
     roll:
-        return new BattleCommand(this, null, Skills["SESBreadRoll"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["SESBreadRoll"]);
     }
 }

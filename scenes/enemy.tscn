@@ -8,6 +8,12 @@
 [ext_resource type="Texture2D" uid="uid://q4jxuj12jmru" path="res://assets/system/bsys_cursor.png" id="6_w8i8w"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xwavj"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"neutral",
+"speed": 5.0
+}]
 
 [node name="enemy" type="Node2D"]
 z_index = -5
@@ -15,6 +21,7 @@ z_as_relative = false
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_xwavj")
+animation = &"neutral"
 
 [node name="AboveHead" type="Control" parent="."]
 z_index = 10

@@ -59,11 +59,11 @@ internal sealed class SirMaximusII : Enemy
         attack:
         return new BattleCommand(this, SelectTarget(), Skills["SMIAttack"]);
         nothing:
-        return new BattleCommand(this, null, Skills["SMIIDoNothing"]);
+        return new BattleCommand(this, this, Skills["SMIIDoNothing"]);
         twice:
-        return new BattleCommand(this, null, Skills["SMIStrikeTwice"]);
+        return new BattleCommand(this, SelectTargets(2), Skills["SMIStrikeTwice"]);
         spin:
-        return new BattleCommand(this, null, Skills["SMIISpin"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["SMIISpin"]);
     }
 
     private bool FirstDialogue = false;
@@ -81,7 +81,7 @@ internal sealed class SirMaximusII : Enemy
         
         if (CurrentHP < 150 && !UltimateAttack)
         {
-            BattleManager.Instance.ForceCommand(this, null, Skills["SMIIUltimateAttack"]);
+            BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["SMIIUltimateAttack"]);
             UltimateAttack = true;
         }
 

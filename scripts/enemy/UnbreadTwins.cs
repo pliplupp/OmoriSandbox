@@ -66,14 +66,13 @@ internal sealed class UnbreadTwins : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["UBTAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["UBTDoNothing"]);
+        return new BattleCommand(this, this, Skills["UBTDoNothing"]);
     bake:
-        return new BattleCommand(this, null, Skills["UBTBakeBread"]);
+        return new BattleCommand(this, this, Skills["UBTBakeBread"]);
     cheerup:
-        return new BattleCommand(this, null, Skills["UBTCheerUp"]);
+        return new BattleCommand(this, this, Skills["UBTCheerUp"]);
     cook:
-        Enemy target = BattleManager.Instance.GetRandomAliveEnemy();
-        return new BattleCommand(this, target, Skills["UBTCook"]);
+        return new BattleCommand(this, SelectEnemy(), Skills["UBTCook"]);
     }
 
     public override async Task ProcessBattleConditions()
@@ -162,6 +161,6 @@ internal sealed class UnbreadTwins : Enemy
         }
         // in the Unbread Twins fight, the spawned enemy acts immediately after being spawned
         BattleCommand command = enemy.Actor.ProcessAI();
-        BattleManager.Instance.ForceCommand(enemy.Actor, command.Target, command.Action as Skill);
+        BattleManager.Instance.ForceCommand(enemy.Actor, command.Targets, command.Action as Skill);
     }
 }

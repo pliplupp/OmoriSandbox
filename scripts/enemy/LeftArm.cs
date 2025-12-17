@@ -49,7 +49,7 @@ internal sealed class LeftArm : Enemy
         attack:
         return new BattleCommand(this, SelectTarget(), Skills["LAAttack"]);
         flex:
-        return new BattleCommand(this, null, Skills["RAFlex"]);
+        return new BattleCommand(this, this, Skills["RAFlex"]);
         poke:
         return new BattleCommand(this, SelectTarget(), Skills["LAPoke"]);
     }

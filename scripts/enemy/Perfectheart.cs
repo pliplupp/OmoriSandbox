@@ -9,7 +9,7 @@ internal sealed class Perfectheart : Enemy
 {
     public override string Name => "PERFECTHEART";
     public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/perfectheart.tres");
-    protected override Stats Stats => new(10000, 5000, 140, 140, 140, 15, 95);
+    protected override Stats Stats => new(10000, 5000, 140, 140, 140, 15, 1000);
 
     protected override string[] EquippedSkills => ["PHStealHeart", "PHStealBreath", "PHWrath", "PHExploitEmotion", "PHSpare", "PHAngelicVoice"];
 
@@ -26,13 +26,13 @@ internal sealed class Perfectheart : Enemy
     public override BattleCommand ProcessAI()
     {
         if (SecondPhase)
-            return new BattleCommand(this, null, Skills["PHWrath"]);
+            return new BattleCommand(this, SelectAllTargets(), Skills["PHWrath"]);
         if (Roll() < 36)
             return new BattleCommand(this, SelectTarget(), Skills["PHStealHeart"]);
         if (Roll() < 26)
             return new BattleCommand(this, SelectTarget(), Skills["PHStealBreath"]);
         if (Roll() < 36)
-            return new BattleCommand(this, null, Skills["PHAngelicVoice"]);
+            return new BattleCommand(this, SelectAllTargets(), Skills["PHAngelicVoice"]);
         if (Roll() < 46)
             return new BattleCommand(this, SelectTarget(), Skills["PHExploitEmotion"]);
         return new BattleCommand(this, SelectTarget(), Skills["PHSpare"]);

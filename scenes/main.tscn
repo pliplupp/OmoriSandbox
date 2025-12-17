@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://dnxcj20hgcsj8"]
+[gd_scene load_steps=39 format=3 uid="uid://dnxcj20hgcsj8"]
 
 [ext_resource type="PackedScene" uid="uid://dxm1fg4428tk" path="res://scenes/main_menu.tscn" id="1_yq6so"]
 [ext_resource type="Script" uid="uid://5otaqjeah5jj" path="res://scripts/modding/ModManager.cs" id="2_j8jky"]
@@ -34,6 +34,7 @@
 [ext_resource type="Texture2D" uid="uid://xnt03w7xslfi" path="res://assets/system/battle_speech_tail.png" id="22_qkpxi"]
 [ext_resource type="PackedScene" uid="uid://b6d4hja4l4r44" path="res://scenes/cursor.tscn" id="24_qkpxi"]
 [ext_resource type="Script" uid="uid://brg8pn4xipyww" path="res://scripts/EnergyDots.cs" id="24_tel4y"]
+[ext_resource type="Texture2D" uid="uid://danupr12bhttw" path="res://assets/system/Battle_Window.png" id="26_kmb1v"]
 [ext_resource type="Material" uid="uid://duiu3jck554il" path="res://assets/mask_shader.tres" id="30_fv21b"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_5q0nq"]
@@ -79,7 +80,7 @@ EnergyBar = NodePath("../UI/Energy")
 EnergyText = NodePath("../UI/Energy/EnergyAmount")
 
 [node name="BGM" type="AudioStreamPlayer" parent="BattleCanvas"]
-volume_db = -10.0
+bus = &"BGM"
 
 [node name="AnimationManager" type="Node" parent="BattleCanvas" node_paths=PackedStringArray("Battleback", "ReleaseEnergy", "ReleaseEnergyBasil", "RedHands", "FlowerCrown", "Photograph", "PerfectheartOverlayParent", "FullScreenEffectNode")]
 script = ExtResource("12_5q0nq")
@@ -98,26 +99,37 @@ script = ExtResource("11_ya4ey")
 BGM = NodePath("../BGM")
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
+bus = &"SFX"
 
 [node name="AudioStreamPlayer2" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
+bus = &"SFX"
 
 [node name="AudioStreamPlayer3" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
+bus = &"SFX"
 
 [node name="AudioStreamPlayer4" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
+bus = &"SFX"
 
 [node name="AudioStreamPlayer5" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
+bus = &"SFX"
 
 [node name="AudioStreamPlayer6" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
+bus = &"SFX"
 
 [node name="AudioStreamPlayer7" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
+bus = &"SFX"
 
 [node name="AudioStreamPlayer8" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
+bus = &"SFX"
 
 [node name="AudioStreamPlayer9" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
+bus = &"SFX"
 
 [node name="AudioStreamPlayer10" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
+bus = &"SFX"
 
 [node name="AudioStreamPlayer11" type="AudioStreamPlayer" parent="BattleCanvas/AudioManager"]
+bus = &"SFX"
 
 [node name="UI" type="Control" parent="BattleCanvas"]
 layout_mode = 3
@@ -151,7 +163,7 @@ layout_mode = 2
 theme_override_constants/outline_size = 2
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 10
-text = "OmoriSandbox v0.8.0"
+text = "OmoriSandbox v0.9.0"
 
 [node name="Battleback" type="TextureRect" parent="BattleCanvas/UI"]
 z_index = -100
@@ -183,15 +195,13 @@ sprite_frames = ExtResource("13_og1vs")
 
 [node name="FlowerCrown" type="AnimatedSprite2D" parent="BattleCanvas/UI/Battleback/FullScreenEffects"]
 visible = false
-position = Vector2(320, 243.5)
+position = Vector2(320, 239.5)
 sprite_frames = ExtResource("14_2wyq8")
 
 [node name="ReleaseEnergyBasil" type="AnimatedSprite2D" parent="BattleCanvas/UI/Battleback/FullScreenEffects"]
 visible = false
-position = Vector2(320, 243.5)
+position = Vector2(320, 239.5)
 sprite_frames = ExtResource("15_vxglm")
-frame = 3
-frame_progress = 0.0638822
 
 [node name="Photograph" type="ColorRect" parent="BattleCanvas/UI/Battleback/FullScreenEffects"]
 visible = false
@@ -215,7 +225,7 @@ centered = false
 
 [node name="Party" type="Node" parent="BattleCanvas/UI"]
 
-[node name="BattleLog" type="TextureRect" parent="BattleCanvas/UI" node_paths=PackedStringArray("ImmediateLabel")]
+[node name="BattleLog" type="TextureRect" parent="BattleCanvas/UI" node_paths=PackedStringArray("ImmediateLabel", "Icon")]
 visible = false
 z_index = -1
 layout_mode = 1
@@ -231,6 +241,7 @@ script = ExtResource("9_eb6dy")
 LogLine = ExtResource("10_trceg")
 ImmediateLabel = NodePath("Immediate")
 Font = ExtResource("10_choun")
+Icon = NodePath("Icon")
 metadata/_edit_use_anchors_ = true
 
 [node name="Immediate" type="Label" parent="BattleCanvas/UI/BattleLog"]
@@ -247,46 +258,132 @@ grow_vertical = 2
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 24
 
-[node name="DialogueBox" type="Node2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("Text", "SpeakerSprite", "Cursor")]
+[node name="Icon" type="Sprite2D" parent="BattleCanvas/UI/BattleLog"]
 visible = false
-position = Vector2(320, 300)
+position = Vector2(308.5, 40.882072)
+scale = Vector2(0.75, 0.75)
+region_enabled = true
+region_rect = Rect2(108, 0, 108, 108)
+
+[node name="DialogueBox" type="Node2D" parent="BattleCanvas/UI" node_paths=PackedStringArray("Text", "Box", "SpeakerSprite", "Cursor", "ChoiceBox", "ChoiceTextParent")]
+visible = false
+position = Vector2(320, 360)
 script = ExtResource("22_5q0nq")
 Text = NodePath("Text")
+Box = NodePath("Box")
 SpeakerSprite = NodePath("SpeakerArrow")
 Cursor = NodePath("Cursor")
+ChoiceBox = NodePath("ChoiceBox")
+ChoiceTextParent = NodePath("ChoiceBox/Text")
 
 [node name="Text" type="Label" parent="BattleCanvas/UI/DialogueBox"]
 offset_left = -166.0
-offset_top = 9.0
+offset_top = -45.0
 offset_right = 162.0
-offset_bottom = 99.0
+offset_bottom = 45.0
 theme_override_constants/outline_size = 4
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 28
 
-[node name="TextureRect" type="TextureRect" parent="BattleCanvas/UI/DialogueBox"]
-z_index = -1
+[node name="Box" type="NinePatchRect" parent="BattleCanvas/UI/DialogueBox"]
+custom_minimum_size = Vector2(360, 20)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
 offset_left = -180.0
-offset_right = 182.0
-offset_bottom = 110.0
-texture = ExtResource("9_85g3d")
+offset_top = -10.0
+offset_right = 180.0
+offset_bottom = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("26_kmb1v")
+draw_center = false
+region_rect = Rect2(96, 0, 96, 96)
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 6
 
-[node name="TextureRect2" type="TextureRect" parent="BattleCanvas/UI/DialogueBox"]
+[node name="ColorRect" type="ColorRect" parent="BattleCanvas/UI/DialogueBox/Box"]
 z_index = -1
-offset_left = -180.0
-offset_right = 182.0
-offset_bottom = 88.0
-texture = ExtResource("9_85g3d")
-flip_v = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="ChoiceBox" type="NinePatchRect" parent="BattleCanvas/UI/DialogueBox"]
+visible = false
+custom_minimum_size = Vector2(110, 20)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 70.0
+offset_top = -110.0
+offset_right = 180.0
+offset_bottom = -90.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("26_kmb1v")
+draw_center = false
+region_rect = Rect2(96, 0, 96, 96)
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 6
+
+[node name="ColorRect" type="ColorRect" parent="BattleCanvas/UI/DialogueBox/ChoiceBox"]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Text" type="Control" parent="BattleCanvas/UI/DialogueBox/ChoiceBox"]
+visible = false
+anchors_preset = 0
+offset_left = 6.0
+offset_top = 5.0
+offset_right = 94.0
+offset_bottom = 78.0
+
+[node name="Yes" type="Label" parent="BattleCanvas/UI/DialogueBox/ChoiceBox/Text"]
+layout_mode = 0
+offset_left = 52.0
+offset_top = 5.0
+offset_right = 92.0
+offset_bottom = 35.0
+theme_override_fonts/font = ExtResource("10_choun")
+theme_override_font_sizes/font_size = 30
+text = "YES"
+
+[node name="No" type="Label" parent="BattleCanvas/UI/DialogueBox/ChoiceBox/Text"]
+layout_mode = 0
+offset_left = 54.0
+offset_top = 34.0
+offset_right = 94.0
+offset_bottom = 64.0
+theme_override_fonts/font = ExtResource("10_choun")
+theme_override_font_sizes/font_size = 30
+text = "NO"
 
 [node name="SpeakerArrow" type="Sprite2D" parent="BattleCanvas/UI/DialogueBox"]
 visible = false
 modulate = Color(0.870588, 0.870588, 0.870588, 1)
-position = Vector2(0, -2.5)
+position = Vector2(0, -57.5)
 texture = ExtResource("22_qkpxi")
 
 [node name="Cursor" parent="BattleCanvas/UI/DialogueBox" instance=ExtResource("24_qkpxi")]
-position = Vector2(145, 90)
+position = Vector2(145, 40)
 
 [node name="Energy" type="Sprite2D" parent="BattleCanvas/UI"]
 visible = false

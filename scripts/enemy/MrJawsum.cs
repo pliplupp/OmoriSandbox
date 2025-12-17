@@ -25,12 +25,12 @@ internal sealed class MrJawsum : Enemy
     public override BattleCommand ProcessAI()
     {
         if (GatorGuys.Count == 0)
-            return new BattleCommand(this, null, Skills["MJSummonGator"]);
+            return new BattleCommand(this, this, Skills["MJSummonGator"]);
         if (Roll() < 21)
-            return new BattleCommand(this, null, Skills["MJAttackOrder"]);
+            return new BattleCommand(this, SelectAllEnemies(), Skills["MJAttackOrder"]);
         if (GatorGuys.Count < 2)
-            return new BattleCommand(this, null, Skills["MJSummonGator"]);
-        return new BattleCommand(this, null, Skills["MJAttackOrder"]);
+            return new BattleCommand(this, this, Skills["MJSummonGator"]);
+        return new BattleCommand(this, SelectAllEnemies(), Skills["MJAttackOrder"]);
     }
 
     public void SpawnGatorGuy()

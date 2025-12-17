@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://dxm1fg4428tk"]
+[gd_scene load_steps=13 format=3 uid="uid://dxm1fg4428tk"]
 
 [ext_resource type="Texture2D" uid="uid://bkfc0aptec36b" path="res://assets/logo.png" id="1_l6cm7"]
 [ext_resource type="Script" uid="uid://b1cjgogphng5l" path="res://scripts/MainMenuManager.cs" id="1_wu84c"]
@@ -9,13 +9,17 @@
 [ext_resource type="PackedScene" uid="uid://d32syyvyr6iwr" path="res://scenes/party_member.tscn" id="5_rtw2f"]
 [ext_resource type="Texture2D" uid="uid://cmbljlf76y4r6" path="res://assets/title_screen.png" id="5_tbmy8"]
 [ext_resource type="Texture2D" uid="uid://d36ge2cnq6lkj" path="res://assets/battlebacks/battleback_vf_default.png" id="8_tbmy8"]
+[ext_resource type="Script" uid="uid://w0pq3jqqlyp" path="res://scripts/SettingsMenuManager.cs" id="9_5dd4i"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tbmy8"]
 bg_color = Color(0.14, 0.14, 0.14, 0.784314)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5dd4i"]
+bg_color = Color(0.14117648, 0.14117648, 0.14117648, 0.78431374)
+
 [node name="MainMenu" type="CanvasLayer"]
 
-[node name="MainMenuManager" type="Node" parent="." node_paths=PackedStringArray("AddActorControls", "AddEnemyControl", "ModListParent", "ShowModsButton", "ActorTabs", "EnemyTabs", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "DataFolderButton", "ModFolderButton", "ModsLoaded", "GithubButton", "TitlePresetDropdown", "BattlebackPreview", "BattlebackDropdown", "BGMDropdown", "PreviewButton", "FollowupTierSlider", "FollowupTierValue", "BasilFollowupsCheckbox", "BasilReleaseEnergyCheckbox", "DisableDialogue", "AddItemButton", "ItemContainer", "SearchInput", "SearchButton", "Results", "SavePresetButton", "PresetInput", "LoadPresetButton", "DeletePresetButton", "PresetDropdown", "ResetButton", "ReturnButton")]
+[node name="MainMenuManager" type="Node" parent="." node_paths=PackedStringArray("AddActorControls", "AddEnemyControl", "ModListParent", "ShowModsButton", "ActorTabs", "EnemyTabs", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "SettingsButton", "MainControls", "Settings", "DataFolderButton", "ModFolderButton", "ModsLoaded", "GithubButton", "TitlePresetDropdown", "BattlebackPreview", "BattlebackDropdown", "BGMDropdown", "BGMPitch", "PreviewButton", "FollowupTierSlider", "FollowupTierValue", "BasilFollowupsCheckbox", "BasilReleaseEnergyCheckbox", "DisableDialogue", "AddItemButton", "ItemContainer", "SearchInput", "SearchButton", "Results", "SavePresetButton", "PresetInput", "LoadPresetButton", "DeletePresetButton", "PresetDropdown", "ResetButton", "ReturnButton")]
 script = ExtResource("1_wu84c")
 AddActorControls = [NodePath("../Editor/Actors/AddActor1"), NodePath("../Editor/Actors/AddActor2"), NodePath("../Editor/Actors/AddActor3"), NodePath("../Editor/Actors/AddActor4")]
 AddEnemyControl = NodePath("../Editor/Actors/AddEnemy")
@@ -29,17 +33,21 @@ ActorTabs = NodePath("../Editor/SettingsTabs/Actors/VBoxContainer/ActorTabs")
 EnemyTabs = NodePath("../Editor/SettingsTabs/Enemies/VBoxContainer/EnemyTabs")
 MainMenu = NodePath("../Main")
 Editor = NodePath("../Editor")
-PlayButton = NodePath("../Main/VBoxContainer/Play")
-ConfigureButton = NodePath("../Main/VBoxContainer/Configure")
-DataFolderButton = NodePath("../Main/VBoxContainer/HBoxContainer2/DataFolder")
-ModFolderButton = NodePath("../Main/VBoxContainer/HBoxContainer2/ModFolder")
+PlayButton = NodePath("../Main/MainControls/Play")
+ConfigureButton = NodePath("../Main/MainControls/HBoxContainer3/Editor")
+SettingsButton = NodePath("../Main/MainControls/HBoxContainer3/Settings")
+MainControls = NodePath("../Main/MainControls")
+Settings = NodePath("../Main/Settings")
+DataFolderButton = NodePath("../Main/MainControls/HBoxContainer2/DataFolder")
+ModFolderButton = NodePath("../Main/MainControls/HBoxContainer2/ModFolder")
 ModsLoaded = NodePath("../Main/ModsLoaded")
 GithubButton = NodePath("../Main/Github")
-TitlePresetDropdown = NodePath("../Main/VBoxContainer/HBoxContainer/PresetDropdown")
+TitlePresetDropdown = NodePath("../Main/MainControls/HBoxContainer/PresetDropdown")
 BattlebackPreview = NodePath("../Editor/BattlebackPreview")
 BattlebackDropdown = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Battleback/OptionButton")
 BGMDropdown = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGM/OptionButton")
-PreviewButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGM/Button")
+BGMPitch = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch/PitchValue")
+PreviewButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch/Button")
 FollowupTierSlider = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier/HSlider")
 FollowupTierValue = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier/Label2")
 BasilFollowupsCheckbox = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BasilFollowups")
@@ -96,7 +104,7 @@ offset_bottom = -3.0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 14
-text = "OmoriSandbox v0.8.0"
+text = "OmoriSandbox v0.9.0"
 
 [node name="ModsLoaded" type="Label" parent="Main"]
 anchors_preset = 2
@@ -135,7 +143,7 @@ horizontal_scroll_mode = 0
 [node name="VBoxContainer" type="VBoxContainer" parent="Main/ModsLoadedList"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Main"]
+[node name="MainControls" type="VBoxContainer" parent="Main"]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
@@ -149,18 +157,20 @@ grow_horizontal = 2
 grow_vertical = 0
 size_flags_horizontal = 4
 size_flags_vertical = 4
-theme_override_constants/separation = 10
+theme_override_constants/separation = 3
+alignment = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Main/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Main/MainControls"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Main/VBoxContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="Main/MainControls/HBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_5dd4i")
 text = "Battle Preset: "
 
-[node name="PresetDropdown" type="OptionButton" parent="Main/VBoxContainer/HBoxContainer"]
+[node name="PresetDropdown" type="OptionButton" parent="Main/MainControls/HBoxContainer"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_ekxnf")
@@ -169,33 +179,167 @@ clip_text = true
 fit_to_longest_item = false
 allow_reselect = true
 
-[node name="Play" type="Button" parent="Main/VBoxContainer"]
+[node name="Play" type="Button" parent="Main/MainControls"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 40
 text = "Play"
 
-[node name="Configure" type="Button" parent="Main/VBoxContainer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 40
-text = "Configure"
-
-[node name="HBoxContainer2" type="HBoxContainer" parent="Main/VBoxContainer"]
+[node name="HBoxContainer3" type="HBoxContainer" parent="Main/MainControls"]
 layout_mode = 2
 alignment = 1
 
-[node name="DataFolder" type="Button" parent="Main/VBoxContainer/HBoxContainer2"]
+[node name="Editor" type="Button" parent="Main/MainControls/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
+text = "Editor"
+
+[node name="Settings" type="Button" parent="Main/MainControls/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
+text = "Settings"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Main/MainControls"]
+layout_mode = 2
+alignment = 1
+
+[node name="DataFolder" type="Button" parent="Main/MainControls/HBoxContainer2"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 20
 text = "Open Preset Folder"
 
-[node name="ModFolder" type="Button" parent="Main/VBoxContainer/HBoxContainer2"]
+[node name="ModFolder" type="Button" parent="Main/MainControls/HBoxContainer2"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 20
 text = "Open Mods Folder"
+
+[node name="Settings" type="ColorRect" parent="Main" node_paths=PackedStringArray("MasterSlider", "BGMSlider", "SFXSlider", "TestSFXButton", "DisableDamageLimitCheckbox", "BackButton", "MainControls")]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -281.0
+offset_right = 200.0
+offset_bottom = -17.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0.14117648, 0.14117648, 0.14117648, 0.78431374)
+script = ExtResource("9_5dd4i")
+MasterSlider = NodePath("VBoxContainer/MasterSlider/HSlider")
+BGMSlider = NodePath("VBoxContainer/BGMSlider/HSlider")
+SFXSlider = NodePath("VBoxContainer/SFXSlider/HSlider")
+TestSFXButton = NodePath("VBoxContainer/TestSFX")
+DisableDamageLimitCheckbox = NodePath("VBoxContainer/DisableDamageLimit")
+BackButton = NodePath("VBoxContainer/BackButton")
+MainControls = NodePath("../MainControls")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Main/Settings"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Settings" type="Label" parent="Main/Settings/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 35
+text = "Settings"
+
+[node name="MasterSlider" type="HBoxContainer" parent="Main/Settings/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="Label" type="Label" parent="Main/Settings/VBoxContainer/MasterSlider"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 25
+text = "Master"
+
+[node name="HSlider" type="HSlider" parent="Main/Settings/VBoxContainer/MasterSlider"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.001
+value = 1.0
+
+[node name="BGMSlider" type="HBoxContainer" parent="Main/Settings/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 27
+
+[node name="Label" type="Label" parent="Main/Settings/VBoxContainer/BGMSlider"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 25
+text = "BGM"
+
+[node name="HSlider" type="HSlider" parent="Main/Settings/VBoxContainer/BGMSlider"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.001
+value = 0.5
+
+[node name="SFXSlider" type="HBoxContainer" parent="Main/Settings/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 31
+
+[node name="Label" type="Label" parent="Main/Settings/VBoxContainer/SFXSlider"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 25
+text = "SFX"
+
+[node name="HSlider" type="HSlider" parent="Main/Settings/VBoxContainer/SFXSlider"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.001
+value = 1.0
+
+[node name="TestSFX" type="Button" parent="Main/Settings/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+text = "Test SFX"
+
+[node name="DisableDamageLimit" type="CheckBox" parent="Main/Settings/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_colors/checkbox_unchecked_color = Color(0.3779188, 0.37791887, 0.37791884, 1)
+text = "Disable Damage Limit"
+
+[node name="BackButton" type="Button" parent="Main/Settings/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 25
+text = "Back"
 
 [node name="Credits" type="Label" parent="Main"]
 anchors_preset = 3
@@ -250,7 +394,6 @@ layout_mode = 3
 anchors_preset = 0
 
 [node name="AddActor1" type="Control" parent="Editor/Actors"]
-layout_mode = 3
 anchors_preset = 0
 offset_left = 20.0
 offset_top = 306.0
@@ -269,7 +412,6 @@ theme_override_font_sizes/font_size = 15
 text = "+ Add Actor"
 
 [node name="AddActor2" type="Control" parent="Editor/Actors"]
-layout_mode = 3
 anchors_preset = 0
 offset_left = 20.0
 offset_top = 5.0
@@ -288,7 +430,6 @@ theme_override_font_sizes/font_size = 15
 text = "+ Add Actor"
 
 [node name="AddActor3" type="Control" parent="Editor/Actors"]
-layout_mode = 3
 anchors_preset = 0
 offset_left = 506.0
 offset_top = 306.0
@@ -307,7 +448,6 @@ theme_override_font_sizes/font_size = 15
 text = "+ Add Actor"
 
 [node name="AddActor4" type="Control" parent="Editor/Actors"]
-layout_mode = 3
 anchors_preset = 0
 offset_left = 506.0
 offset_top = 5.0
@@ -408,7 +548,22 @@ text = "BGM"
 layout_mode = 2
 allow_reselect = true
 
-[node name="Button" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGM"]
+[node name="BGMPitch" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
+layout_mode = 2
+
+[node name="Pitch" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch"]
+layout_mode = 2
+text = "BGM Pitch"
+
+[node name="PitchValue" type="SpinBox" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch"]
+layout_mode = 2
+size_flags_horizontal = 4
+min_value = 0.1
+max_value = 2.0
+step = 0.1
+value = 1.0
+
+[node name="Button" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch"]
 layout_mode = 2
 text = "Preview"
 

@@ -21,7 +21,7 @@ internal sealed class KiteKid : Enemy
         if (CurrentState == "happy" || Roll() < 76)
             return new BattleCommand(this, SelectTarget(), Skills["KKAttack"]);
         
-        return new BattleCommand(this, null, Skills["KKBrag"]);
+        return new BattleCommand(this, this, Skills["KKBrag"]);
     }
 
     private EnemyComponent KidsKite;

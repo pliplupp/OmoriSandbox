@@ -568,7 +568,7 @@ public partial class BattleManager : Node
 		foreach (EnemyComponent enemy in Enemies)
 		{
 			// Add an empty action for each enemy so the sorting below still works
-			Commands.Add(new BattleCommand(enemy.Actor, null, null));
+			Commands.Add(new BattleCommand(enemy.Actor, [], null));
 		}
 
 		Commands = Commands.OrderByDescending(x => x.Action is Skill s && s.GoesFirst)
@@ -714,11 +714,17 @@ public partial class BattleManager : Node
 				else
 					Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, CurrentParty.First(x => x.Position == CurrentPartyMemberTarget).Actor, SelectedAction));
 				break;
+			case SkillTarget.AllAllies:
+				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, GetAlivePartyMembers().Select(x => x.Actor).ToList(), SelectedAction));
+				break;
+			case SkillTarget.AllDeadAllies:
+				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, GetDeadPartyMembers().Select(x => x.Actor).ToList(), SelectedAction));
+				break;
+			case SkillTarget.AllEnemies:
+				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, GetAllEnemies(), SelectedAction));
+				break;
 			default:
-				// group skills have no "target"
-				// targets are selected in the skill itself
-				// ... which is probably bad behavior but oh well
-				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, null, SelectedAction));
+				GD.PrintErr("Unhandled SelectTarget case: " + SelectedAction.Target);
 				break;
 		}
 
@@ -768,33 +774,22 @@ public partial class BattleManager : Node
 
 		BattleLogManager.Instance.ClearBattleLog();
 		GD.Print("Processing action " + currentAction.Action.Name);
-		Actor target = currentAction.Target;
-		// if the enemy we're trying to target is null for whatever reason, pick a new one
-		if (target == null && (currentAction.Action.Target == SkillTarget.Enemy || currentAction.Action.Target == SkillTarget.AllyOrEnemy))
+		List<Actor> resolvedTargets = currentAction.Targets.ToList();
+		// reassign targets if any are now dead
+		if (currentAction.Action.Target != SkillTarget.DeadAlly &&
+		    currentAction.Action.Target != SkillTarget.AllDeadAllies)
 		{
-			target = GetRandomAliveEnemy();
-			if (target == null)
+			for (int i = resolvedTargets.Count - 1; i >= 0; i--)
 			{
-				GD.PrintErr("Unable to find enemy target!");
-				return;
-			}
-		}
-		if (target != null)
-		{
-			if (target.CurrentHP == 0 && currentAction.Action.Target != SkillTarget.DeadAlly && currentAction.Action.Target != SkillTarget.AllDeadAllies)
-			{
-				if (target is Enemy)
-					target = GetRandomAliveEnemy();
+				if (resolvedTargets[i].CurrentHP != 0) 
+					continue;
+				if (resolvedTargets[i] is Enemy)
+					resolvedTargets[i] = GetRandomAliveEnemy();
 				else
-					target = GetRandomAlivePartyMember();
-				if (target == null)
-				{
-					GD.PrintErr("Running Command when all targets are dead!");
-					return;
-				}
-				currentAction.Target = target;
+					resolvedTargets[i] = GetRandomAlivePartyMember();
 			}
 		}
+
 		if (currentAction.Action is Skill skill)
 		{
 			if (skill.Cost > 0)
@@ -828,7 +823,7 @@ public partial class BattleManager : Node
 			}
 		}
 
-		await currentAction.Action.Effect(currentAction.Actor, currentAction.Target);
+		await currentAction.Action.Effect(currentAction.Actor, resolvedTargets);
 
 		if (BattleLogManager.Instance.IsProcessingMessage)
 			SetPhase(BattlePhase.WaitForBattleLog);
@@ -873,7 +868,11 @@ public partial class BattleManager : Node
 		if (!Database.TryGetSkill(name, out Skill skill))
 			return false;
 
-		ForceCommand(current.Actor, Commands[CommandIndex].Target, skill);
+		// we already checked for this but oh well
+		if (name.StartsWith("ReleaseEnergy"))
+			ForceCommand(current.Actor, GetAllEnemies(), skill);
+		else
+			ForceCommand(current.Actor, Commands[CommandIndex].Targets, skill);
 		return true;
 	}
 
@@ -885,13 +884,24 @@ public partial class BattleManager : Node
 	/// <param name="skill">The skill that is being forced.</param>
 	public void ForceCommand(Actor self, Actor target, Skill skill)
 	{
+		ForceCommand(self, [target], skill);
+	}
+
+	/// <summary>
+	/// Forces a skill command to be executed after the current one.
+	/// </summary>
+	/// <param name="self">The actor that the command is being forced upon.</param>
+	/// <param name="targets">The targets of the command.</param>
+	/// <param name="skill">The skill that is being forced.</param>
+	public void ForceCommand(Actor self, IReadOnlyList<Actor> targets, Skill skill)
+	{
 		if (self is PartyMember && skill.Name.EndsWith("Attack"))
 			// if the forced skill is an attack, hide the followup bubbles
 			ForceHideFollowup = true;
 		if (CommandIndex == Commands.Count)
-			Commands.Add(new BattleCommand(self, target, skill));
+			Commands.Add(new BattleCommand(self, targets, skill));
 		else
-			Commands.Insert(CommandIndex + 1, new BattleCommand(self, target, skill));
+			Commands.Insert(CommandIndex + 1, new BattleCommand(self, targets, skill));
 	}
 
 	private void ProcessFollowupSuccess()
@@ -1034,10 +1044,7 @@ public partial class BattleManager : Node
 				return -1;
 			}
 		}
-		float baseDamage = damageFunc();
-		float damageVariance = GameManager.Instance.Random.RandfRange(1f - variance, 1f + variance);
-		bool critical = self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit || target.HasStatModifier("Tickle");
-		float finalDamage = baseDamage * damageVariance;
+		float damage = damageFunc();
 		string selfState = self.CurrentState;
 		string targetState = target.CurrentState;
 
@@ -1050,73 +1057,87 @@ public partial class BattleManager : Node
 		{
 			targetState = (target.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
 		}
-
-		finalDamage = CalculateEmotionModifiers(selfState, targetState, finalDamage, out int effectiveness);
+		
+		damage = CalculateEmotionModifiers(selfState, targetState, damage, out int effectiveness);
+		bool critical = self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit || target.HasStatModifier("Tickle");
+		
 		if (critical && !neverCrit)
 		{
-			finalDamage *= 1.5f;
+			damage *= 1.5f;
 			BattleLogManager.Instance.QueueMessage("IT HIT RIGHT IN THE HEART!");
 			AudioManager.Instance.PlaySFX("BA_CRITICAL_HIT", volume: 2f);
 		}
-
-		int juiceLost = 0;
-		switch (target.CurrentState)
-		{
-			case "miserable":
-				juiceLost = Math.Min((int)Math.Floor(finalDamage), target.CurrentJuice);
-				finalDamage -= juiceLost;
-				break;
-			case "depressed":
-				juiceLost = Math.Min((int)Math.Floor(finalDamage * 0.5f), target.CurrentJuice);
-				finalDamage -= juiceLost;
-				break;
-			case "sad":
-				juiceLost = Math.Min((int)Math.Floor(finalDamage * 0.3f), target.CurrentJuice);
-				finalDamage -= juiceLost;
-				break;
-		}
-		target.CurrentJuice -= juiceLost;
-
+		
 		foreach (StatModifier mod in self.StatModifiers.Values)
 		{
 			// omori calculates flex damage after everything else
 			if (mod is FlexStatModifier)
 				continue;
-			mod.OverrideDamage(ref finalDamage, self, target, true);
+			mod.OverrideDamage(ref damage, self, target, true);
+		}
+		
+		foreach (StatModifier mod in target.StatModifiers.Values)
+		{
+			// omori calculates guard after variance
+			if (mod is GuardStatModifier)
+				continue;
+			mod.OverrideDamage(ref damage, self, target, false);
 		}
 
-		// now calculate flex damage
+		if (critical && !neverCrit)
+		{
+			damage += 1.5f;
+		}
+
+		damage = CalculateVariance(damage, variance);
+
+		if (target.HasStatModifier("Guard"))
+		{
+			StatModifier mod = target.StatModifiers["Guard"];
+			mod.OverrideDamage(ref damage, self, target, false);
+		}
+		
+		float rounded = (float)Math.Round(damage, MidpointRounding.AwayFromZero);
+
 		if (self.HasStatModifier("Flex"))
 		{
 			StatModifier mod = self.StatModifiers["Flex"];
-			mod.OverrideDamage(ref finalDamage, self, target, true);
+			mod.OverrideDamage(ref rounded, self, target, true);
 			self.RemoveStatModifier("Flex");
 		}
-
-		foreach (StatModifier mod in target.StatModifiers.Values)
-		{
-			mod.OverrideDamage(ref finalDamage, self, target, false);
-		}
-
-		// critical hits always do at least 2 damage
-		if (critical && !neverCrit)
-		{
-			finalDamage = Math.Max(2, finalDamage + 2);
-		}
-
-		int rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
+		
 		if (rounded < 0)
 			rounded = 0;
-		if (rounded > 9999)
+		if (!SettingsMenuManager.Instance.DisableDamageLimit && rounded > 9999)
 			rounded = 9999;
-		target.Damage(rounded);
+		
+		int juiceLost = 0;
+		switch (target.CurrentState)
+		{
+			case "miserable":
+				juiceLost = (int)Math.Min(rounded, target.CurrentJuice);
+				rounded -= juiceLost;
+				break;
+			case "depressed":
+				juiceLost = Math.Min((int)Math.Floor(rounded * 0.5f), target.CurrentJuice);
+				rounded -= juiceLost;
+				break;
+			case "sad":
+				juiceLost = Math.Min((int)Math.Floor(rounded * 0.3f), target.CurrentJuice);
+				rounded -= juiceLost;
+				break;
+		}
+		target.CurrentJuice -= juiceLost;
+
+		int roundedInt = (int)rounded;
+		target.Damage(roundedInt);
 		if (target is PartyMember)
 		{
 			Energy++;
 			if (Energy > 10)
 				Energy = 10;
 		}
-		SpawnDamageNumber(rounded, target.CenterPoint, critical: (critical && !neverCrit));
+		SpawnDamageNumber(roundedInt, target.CenterPoint, critical: (critical && !neverCrit));
 		// we don't need to play a hitsound if the attack is a critical or if there's no damage
 		if (!critical && rounded > 0)
 		{
@@ -1134,14 +1155,15 @@ public partial class BattleManager : Node
 			else
 				AudioManager.Instance.PlaySFX("SE_dig", 0.7f, 0.9f);
 		}
-		BattleLogManager.Instance.QueueMessage(self, target, "[target] takes " + rounded + " damage!");
+		BattleLogManager.Instance.QueueMessage(self, target, "[target] takes " + roundedInt + " damage!");
+		
 		if (juiceLost > 0)
 		{
 			BattleLogManager.Instance.QueueMessage(self, target, "[target] lost " + juiceLost + " juice...");
 			SpawnDamageNumber(juiceLost, target.CenterPoint, DamageType.JuiceLoss);
 		}
 
-		return rounded;
+		return roundedInt;
 	}
 
 	/// <summary>
@@ -1172,10 +1194,7 @@ public partial class BattleManager : Node
 				return -1;
 			}
 		}
-		float baseDamage = damageFunc();
-		float damageVariance = GameManager.Instance.Random.RandfRange(1f - variance, 1f + variance);
-		bool critical = self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit || target.HasStatModifier("Tickle");
-		float finalDamage = baseDamage * damageVariance;
+		float damage = damageFunc();
 		string selfState = self.CurrentState;
 		string targetState = target.CurrentState;
 
@@ -1188,53 +1207,65 @@ public partial class BattleManager : Node
 		{
 			targetState = (target.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
 		}
-
-		finalDamage = CalculateEmotionModifiers(selfState, targetState, finalDamage, out int effectiveness);
+		
+		damage = CalculateEmotionModifiers(selfState, targetState, damage, out int effectiveness);
+		bool critical = self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit || target.HasStatModifier("Tickle");
+		
 		if (critical && !neverCrit)
 		{
-			finalDamage *= 1.5f;
+			damage *= 1.5f;
+			BattleLogManager.Instance.QueueMessage("IT HIT RIGHT IN THE HEART!");
+			AudioManager.Instance.PlaySFX("BA_CRITICAL_HIT", volume: 2f);
 		}
-
+		
 		foreach (StatModifier mod in self.StatModifiers.Values)
 		{
 			// omori calculates flex damage after everything else
 			if (mod is FlexStatModifier)
 				continue;
-			mod.OverrideDamage(ref finalDamage, self, target, true);
+			mod.OverrideDamage(ref damage, self, target, true);
+		}
+		
+		foreach (StatModifier mod in target.StatModifiers.Values)
+		{
+			// omori calculates guard after variance
+			if (mod is GuardStatModifier)
+				continue;
+			mod.OverrideDamage(ref damage, self, target, false);
 		}
 
-		// now calculate flex damage
+		if (critical && !neverCrit)
+		{
+			damage += 1.5f;
+		}
+
+		damage = CalculateVariance(damage, variance);
+
+		if (target.HasStatModifier("Guard"))
+		{
+			StatModifier mod = target.StatModifiers["Guard"];
+			mod.OverrideDamage(ref damage, self, target, false);
+		}
+		
+		float rounded = (float)Math.Round(damage, MidpointRounding.AwayFromZero);
+
 		if (self.HasStatModifier("Flex"))
 		{
 			StatModifier mod = self.StatModifiers["Flex"];
-			mod.OverrideDamage(ref finalDamage, self, target, true);
+			mod.OverrideDamage(ref rounded, self, target, true);
 			self.RemoveStatModifier("Flex");
 		}
-
-		foreach (StatModifier mod in target.StatModifiers.Values)
-		{
-			mod.OverrideDamage(ref finalDamage, self, target, false);
-		}
-
-		// critical hits always do at least 2 damage
-		if (critical && !neverCrit)
-		{
-			if (finalDamage <= 0)
-				finalDamage = 2;
-			else
-				finalDamage += 2;
-		}
-
-		int rounded = (int)Math.Round(finalDamage, MidpointRounding.AwayFromZero);
+		
 		if (rounded < 0)
 			rounded = 0;
-		if (rounded > 9999)
+		if (!SettingsMenuManager.Instance.DisableDamageLimit && rounded > 9999)
 			rounded = 9999;
-		target.DamageJuice(rounded);
-		SpawnDamageNumber(rounded, target.CenterPoint, DamageType.JuiceLoss);
-
-		BattleLogManager.Instance.QueueMessage(self, target, "[target] lost " + rounded + " juice...");
-		return rounded;
+		
+		int roundedInt = (int)rounded;
+		target.DamageJuice(roundedInt);
+		SpawnDamageNumber(roundedInt, target.CenterPoint, DamageType.JuiceLoss);
+		BattleLogManager.Instance.QueueMessage(self, target, "[target] lost " + roundedInt + " juice...");
+		return roundedInt;
 	}
 
 	// some healing and juice skills are affected by emotion
@@ -1252,10 +1283,9 @@ public partial class BattleManager : Node
 	public void Heal(Actor self, Actor target, Func<float> healFunc, float variance = 0.2f)
 	{
 		float baseHealing = healFunc();
-		float healingVariance = GameManager.Instance.Random.RandfRange(1f - variance, 1f + variance);
-		float finalHealing = baseHealing * healingVariance;
-		finalHealing = CalculateEmotionModifiers(self.CurrentState, target.CurrentState, finalHealing, out _);
-		int rounded = (int)Math.Round(finalHealing, MidpointRounding.AwayFromZero);
+		baseHealing = CalculateEmotionModifiers(self.CurrentState, target.CurrentState, baseHealing, out _);
+		baseHealing = CalculateVariance(baseHealing, variance);
+		int rounded = (int)Math.Round(baseHealing, MidpointRounding.AwayFromZero);
 		target.Heal(rounded);
 		SpawnDamageNumber(rounded, target.CenterPoint, DamageType.Heal);
 		BattleLogManager.Instance.QueueMessage(self, target, $"[target] recovered {rounded} HEART!");
@@ -1278,6 +1308,14 @@ public partial class BattleManager : Node
 		target.HealJuice(rounded);
 		SpawnDamageNumber(rounded, target.CenterPoint, DamageType.JuiceGain);
 		BattleLogManager.Instance.QueueMessage(self, target, $"[target] recovered {rounded} JUICE!");
+	}
+
+	// RPGMaker applyVariance method
+	private float CalculateVariance(float damage, float variance)
+	{
+		int amp = (int)Math.Floor(Math.Max(Math.Abs(damage) * variance, 0));
+		int v = GameManager.Instance.Random.RandiRange(0, amp) + GameManager.Instance.Random.RandiRange(0, amp) - amp;
+		return damage + v;
 	}
 
 	private readonly int[,] EffectivenessMatrix = new int[3, 3]
@@ -1550,6 +1588,22 @@ public partial class BattleManager : Node
 	public PartyMember GetCurrentPartyMember()
 	{
 		return CurrentParty.ElementAtOrDefault(CurrentPartyMember)?.Actor;
+	}
+
+	/// <summary>
+	/// Adds an item to the party's inventory.
+	/// </summary>
+	/// <param name="name">The database name of the item.</param>
+	/// <param name="quantity">The item quantity to give.</param>
+	public void AddItem(string name, int quantity)
+	{
+		if (!Database.TryGetItem(name, out Item item))
+		{
+			GD.PrintErr("Unknown item: " + name);
+			return;
+		}
+		if (!Items.TryAdd(name, quantity))
+			Items[name] += quantity;
 	}
 
 	/// <summary>

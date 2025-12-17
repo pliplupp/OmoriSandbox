@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using System;
+using System.Collections.Generic;
+using Godot;
 using OmoriSandbox.Actors;
 
 namespace OmoriSandbox.Battle;
@@ -24,13 +26,25 @@ public class BattleAction
 	/// <summary>
 	/// What happens when this action is performed.
 	/// </summary>
-	public Func<Actor, Actor, Task> Effect { get; protected set; }
+	public Func<Actor, IReadOnlyList<Actor>, Task> Effect { get; }
 
-	protected BattleAction(string name, string description, SkillTarget target, Func<Actor, Actor, Task> effect)
+	protected BattleAction(string name, string description, SkillTarget target, Func<Actor, IReadOnlyList<Actor>, Task> effect)
 	{
 		Name = name;
 		Description = description;
 		Target = target;
 		Effect = effect;
 	}
+
+	protected BattleAction(string name, string description, SkillTarget target, Func<Actor, Actor, Task> effect)
+		: this(name, description, target, async (self, targets) =>
+		{
+			if (targets.Count != 1)
+			{
+				GD.PrintErr($"Skill {name} with single target effect cannot have more than one target.");
+				return;
+			}
+
+			await effect(self, targets[0]);
+		}){}
 }

@@ -54,13 +54,13 @@ internal sealed class NefariousChip : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["NCAttack"]);
     nothing:
-        return new BattleCommand(this, null, Skills["NCDoNothing"]);
+        return new BattleCommand(this, this, Skills["NCDoNothing"]);
     laugh:
-        return new BattleCommand(this, null, Skills["NCLaugh"]);
+        return new BattleCommand(this, this, Skills["NCLaugh"]);
     cookies:
-        return new BattleCommand(this, null, Skills["NCCookies"]);
+        return new BattleCommand(this, SelectTargets(3), Skills["NCCookies"]);
     happy:
-        return new BattleCommand(this, null, Skills["NCCookiesHappy"]);
+        return new BattleCommand(this, SelectTargets(4), Skills["NCCookiesHappy"]);
     }
 
     private bool HasSpoken = false;

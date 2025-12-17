@@ -77,7 +77,8 @@ public abstract class Actor
 	} 
 
 	private int _CurrentJuice = 0;
-    /// <summary>
+
+	/// <summary>
     /// The actor's current Juice. Updating this value will fire <see cref="OnJuiceChanged"/>.
     /// </summary>
     public int CurrentJuice

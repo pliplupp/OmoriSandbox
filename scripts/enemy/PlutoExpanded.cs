@@ -20,16 +20,16 @@ internal sealed class PlutoExpanded : Enemy
     public override BattleCommand ProcessAI()
     {
         if (CurrentHP < 300)
-            return new BattleCommand(this, null, Skills["PEEarthsFinale"]);
+            return new BattleCommand(this, SelectAllTargets(), Skills["PEEarthsFinale"]);
 
         if (Roll() < 31)
             return new BattleCommand(this, SelectTarget(), Skills["PEAttack"]);
         if (Roll() < 31)
             return new BattleCommand(this, SelectTarget(), Skills["PESubmissionHold"]);
         if (Roll() < 31)
-            return new BattleCommand(this, null, Skills["PEDoNothing"]);
+            return new BattleCommand(this, this, Skills["PEDoNothing"]);
         if (CurrentHP < 1200)
-            return new BattleCommand(this, null, Skills["PEExpandFurther"]);
+            return new BattleCommand(this, this, Skills["PEExpandFurther"]);
         return new BattleCommand(this, SelectTarget(), Skills["PEHeadbutt"]);
     }
 

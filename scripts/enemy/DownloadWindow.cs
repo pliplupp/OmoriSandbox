@@ -20,9 +20,9 @@ internal sealed class DownloadWindow : Enemy
         TurnCounter++;
         return TurnCounter switch
         {
-            1 or 4 => new BattleCommand(this, null, Skills["DWDoNothing1"]),
-            2 or 5 => new BattleCommand(this, null, Skills["DWDoNothing2"]),
-            _ => new BattleCommand(this, null, Skills["Crash"]),
+            1 or 4 => new BattleCommand(this, this, Skills["DWDoNothing1"]),
+            2 or 5 => new BattleCommand(this, this, Skills["DWDoNothing2"]),
+            _ => new BattleCommand(this, SelectAllTargets(), Skills["Crash"]),
         };
     }
 }

@@ -3,6 +3,7 @@ using System;
 
 namespace OmoriSandbox.Battle;
 
+// TODO: change charms to use StatBonuses instead of Stats
 /// <summary>
 /// A Charm that can be equipped on a <see cref="PartyMember"/>
 /// </summary>

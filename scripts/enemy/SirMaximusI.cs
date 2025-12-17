@@ -50,9 +50,9 @@ internal sealed class SirMaximusI : Enemy
         attack:
         return new BattleCommand(this, SelectTarget(), Skills["SMIAttack"]);
         nothing:
-        return new BattleCommand(this, null, Skills["SMIDoNothing"]);
+        return new BattleCommand(this, this, Skills["SMIDoNothing"]);
         twice:
-        return new BattleCommand(this, null, Skills["SMIStrikeTwice"]);
+        return new BattleCommand(this, SelectTargets(2), Skills["SMIStrikeTwice"]);
     }
 
     private bool FirstDialogue = false;
@@ -65,7 +65,7 @@ internal sealed class SirMaximusI : Enemy
             DialogueManager.Instance.QueueMessage(this, "Behold! My family has spent generations perfecting this technique...");
             DialogueManager.Instance.QueueMessage(this, "This is my ultimate attack!");
             await DialogueManager.Instance.WaitForDialogue();
-            BattleManager.Instance.ForceCommand(this, null, Skills["SMIUltimateAttack"]);
+            BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["SMIUltimateAttack"]);
             UltimateAttack = true;
             return;
         }

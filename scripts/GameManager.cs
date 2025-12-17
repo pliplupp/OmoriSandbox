@@ -191,6 +191,4 @@ internal partial class GameManager : Node
 		component.SetPartyMember(instance, followup, position, startingEmotion, level, weapon, charm, skills);
 		return component;
 	}
-
-	internal record Settings(float MasterVolume, float BGMVolume, float SFXVolume, bool DisableDamageLimit);
 }

@@ -49,7 +49,7 @@ internal sealed class RightArm : Enemy
         attack:
         return new BattleCommand(this, SelectTarget(), Skills["RAAttack"]);
         flex:
-        return new BattleCommand(this, null, Skills["RAFlex"]);
+        return new BattleCommand(this, this, Skills["RAFlex"]);
         grab:
         return new BattleCommand(this, SelectTarget(), Skills["RAGrab"]);
     }

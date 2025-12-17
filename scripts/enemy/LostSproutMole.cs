@@ -48,7 +48,7 @@ internal sealed class LostSproutMole : Enemy
 	attack:
 		return new BattleCommand(this, SelectTarget(), Skills["LSMAttack"]);
 	nothing:
-		return new BattleCommand(this, null, Skills["LSMDoNothing"]);
+		return new BattleCommand(this, this, Skills["LSMDoNothing"]);
 	run:
 		return new BattleCommand(this, SelectTarget(), Skills["LSMRunAround"]);
 	}
