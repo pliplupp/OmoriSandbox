@@ -12,6 +12,11 @@ internal sealed class KelBoss : Enemy
     protected override Stats Stats => new(9000, 9000, 100, 70, 230, 20, 100);
     protected override string[] EquippedSkills => ["KBossPassToAubrey", "KBossPassToHero", "KBossFlex", "KBossRainCloud", "KAttack", "RunNGun", "Annoy", "Tickle", "Rebound", "Curveball", "Ricochet"];
 
+    public override bool IsStateValid(string state)
+    {
+        return state is "neutral" or "toast" or "happy" or "sad" or "angry";
+    }
+    
     private int TurnCount = 0;
     public override BattleCommand ProcessAI()
     {

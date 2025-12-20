@@ -113,7 +113,7 @@ public abstract class Actor
 			{
 				mod.ApplyStats(ref current);
 			}
-
+			
 			return current;
 		}
 	}

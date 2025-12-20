@@ -93,15 +93,15 @@ public class TierStatModifier : StatModifier
 	{
 		if (Tier == MaxTier)
 			return false;
-		Tier = Math.Min(Tier + tier, MaxTier);
+		Tier = Math.Min(tier, MaxTier);
 		return true;
 	}
 
-    /// <summary>
-    /// Increases the tier of this stat modifier by one. Also resets the turns left counter.
-    /// </summary>
-    /// <returns>If the increase is successful.</returns>
-    public bool IncreaseTier()
+	/// <summary>
+	/// Increases the tier of this stat modifier by one. Also resets the turns left counter.
+	/// </summary>
+	/// <returns>If the increase is successful.</returns>
+	public bool IncreaseTier()
 	{
 		if (Tier < MaxTier)
 		{
@@ -109,9 +109,10 @@ public class TierStatModifier : StatModifier
 			TurnsLeft = MaxTurns;
 			return true;
 		}
+
 		return false;
 	}
- 
+
 	/// <inheritdoc/>
 	public override void ApplyStats(ref Stats stats)
 	{

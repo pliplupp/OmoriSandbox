@@ -26,7 +26,6 @@ internal sealed class SpaceExBoyfriend : Enemy
     private int Stage = 0;
     public override BattleCommand ProcessAI()
     {
-        Actor target = SelectTarget();
         switch (CurrentState)
         {
             case "se_furious":
@@ -78,17 +77,17 @@ internal sealed class SpaceExBoyfriend : Enemy
 
         }
     attack:
-        return new BattleCommand(this, target, Skills["SEBAttack"]);
+        return new BattleCommand(this, SelectTarget(), Skills["SEBAttack"]);
     nothing:
         return new BattleCommand(this, this, Skills["SEBDoNothing"]);
     angsty:
-        return new BattleCommand(this, target, Skills["AngstySong"]);
+        return new BattleCommand(this, SelectTarget(), Skills["AngstySong"]);
     angry:
-        return new BattleCommand(this, target, Skills["AngrySong"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["AngrySong"]);
     laser:
-        return new BattleCommand(this, target, Skills["SpaceLaser"]);
+        return new BattleCommand(this, SelectTarget(), Skills["SpaceLaser"]);
     bullet:
-        return new BattleCommand(this, target, Skills["BulletHell"]);
+        return new BattleCommand(this, SelectAllTargets(), Skills["BulletHell"]);
     }
 
     public override async Task ProcessBattleConditions()

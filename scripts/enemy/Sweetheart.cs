@@ -30,7 +30,6 @@ internal sealed class Sweetheart : Enemy
 
 	public override BattleCommand ProcessAI()
 	{
-		Actor target = SelectTarget();
 		switch (CurrentState)
 		{
 			case "manic":
@@ -73,13 +72,13 @@ internal sealed class Sweetheart : Enemy
 
 		}
 	attack:
-		return new BattleCommand(this, target, Skills["SHAttack"]);
+		return new BattleCommand(this, SelectTarget(), Skills["SHAttack"]);
 	insult:
-		return new BattleCommand(this, target, Skills["SharpInsult"]);
+		return new BattleCommand(this, SelectAllTargets(), Skills["SharpInsult"]);
 	mace:
-		return new BattleCommand(this, target, Skills["SwingMace"]);
+		return new BattleCommand(this, SelectAllTargets(), Skills["SwingMace"]);
 	brag:
-		return new BattleCommand(this, target, Skills["Brag"]);
+		return new BattleCommand(this, this, Skills["Brag"]);
 	}
 
 

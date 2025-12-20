@@ -12,6 +12,11 @@ internal sealed class HeroBoss : Enemy
 	protected override Stats Stats => new(10000, 7000, 90, 100, 45, 10, 95);
 	protected override string[] EquippedSkills => ["HBossDazzle", "HBossCoffee", "SpicyFood", "HBossCook", "HAttack", "HBossSmile", "HBossCallAubrey", "HBossCallKel"];
 
+	public override bool IsStateValid(string state)
+	{
+		return state is "neutral" or "toast" or "happy" or "sad" or "angry";
+	}
+	
 	private int TurnCount = 0;
 	public override BattleCommand ProcessAI()
 	{

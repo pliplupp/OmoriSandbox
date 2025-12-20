@@ -49,7 +49,7 @@ internal sealed class FearOfHeights : Enemy
             BattleManager.Instance.CheckBattleOver();
             return;
         }
-        DialogueManager.Instance.QueueMessage(TurnsLeft + " turns left.");
+        DialogueManager.Instance.QueueMessage(TurnsLeft + $" turn{(TurnsLeft == 1 ? "" : 's')} left.");
         await DialogueManager.Instance.WaitForDialogue();
     }
 

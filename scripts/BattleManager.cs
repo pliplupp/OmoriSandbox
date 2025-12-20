@@ -195,7 +195,7 @@ public partial class BattleManager : Node
 			if (Phase == BattlePhase.TargetSelection)
 				x.SelectionBoxVisible = x.Position == CurrentPartyMemberTarget;
 			else if (Phase == BattlePhase.PlayerCommand)
-				x.SelectionBoxVisible = x.Position == CurrentPartyMember;
+				x.SelectionBoxVisible = CurrentPartyMember > -1 && x.Actor == CurrentParty[CurrentPartyMember].Actor;
 			else
 				x.SelectionBoxVisible = false;
 		});
@@ -223,29 +223,29 @@ public partial class BattleManager : Node
 			switch (Phase)
 			{
 				case BattlePhase.PlayerCommand:
-					if (CurrentPartyMember == 0)
+					do
 					{
-						AudioManager.Instance.PlaySFX("sys_cancel");
-						MenuManager.Instance.ShowMenu(MenuState.Party, true);
-						SetPhase(BattlePhase.FightRun);
-					}
-					else
-					{
-						if (Commands[^1].Action is Item item)
-						{
-							// Capitalize the item name for dictionary lookup
-							string name = item.Name.Capitalize();
-							if (!Items.ContainsKey(name))
-								Items.Add(name, 1);
-							else
-								Items[name]++;
-						}
-						Commands.RemoveAt(Commands.Count - 1);
 						CurrentPartyMember--;
-						AudioManager.Instance.PlaySFX("sys_cancel");
-						MenuManager.Instance.ShowMenu(MenuState.Battle);
-						SetPhase(BattlePhase.PlayerCommand);
+						if (CurrentPartyMember < 0)
+						{
+							AudioManager.Instance.PlaySFX("sys_cancel");
+							MenuManager.Instance.ShowMenu(MenuState.Party, true);
+							SetPhase(BattlePhase.FightRun);
+							return;
+						}
+					} while (CurrentParty[CurrentPartyMember].Actor.CurrentState == "toast");
+					
+					if (Commands[^1].Action is Item item)
+					{
+						// Capitalize the item name for dictionary lookup
+						string name = item.Name.Capitalize();
+						if (!Items.TryAdd(name, 1))
+							Items[name]++;
 					}
+					Commands.RemoveAt(Commands.Count - 1);
+					AudioManager.Instance.PlaySFX("sys_cancel");
+					MenuManager.Instance.ShowMenu(MenuState.Battle);
+					SetPhase(BattlePhase.PlayerCommand);
 					break;
 				case BattlePhase.TargetSelection:
 					AudioManager.Instance.PlaySFX("sys_cancel");
@@ -341,13 +341,13 @@ public partial class BattleManager : Node
 
 		var left = Enemies
 			.Select((enemy, index) => new { Enemy = enemy, Index = index })
-			.Where(e => e.Index != current && e.Enemy.Actor.CenterPoint.X < currentX)
+			.Where(e => e.Index != current && e.Enemy.Actor.CenterPoint.X <= currentX)
 			.OrderByDescending(e => e.Enemy.Actor.CenterPoint.X)
 			.ToList();
 
 		var right = Enemies
 			.Select((enemy, index) => new { Enemy = enemy, Index = index })
-			.Where(e => e.Index != current && e.Enemy.Actor.CenterPoint.X > currentX)
+			.Where(e => e.Index != current && e.Enemy.Actor.CenterPoint.X >= currentX)
 			.OrderBy(e => e.Enemy.Actor.CenterPoint.X)
 			.ToList();
 
@@ -357,8 +357,7 @@ public partial class BattleManager : Node
 
 		if (direction == InputDirection.Right)
 			return right.FirstOrDefault()?.Index ?? left.Last().Index;
-		else
-			return left.FirstOrDefault()?.Index ?? right.Last().Index;
+		return left.FirstOrDefault()?.Index ?? right.Last().Index;
 	}
 
 	private int SelectPartyMember(int current, InputDirection direction)
@@ -374,7 +373,7 @@ public partial class BattleManager : Node
 
 	internal void OnFightSelected()
 	{
-		CurrentPartyMember++;
+		CurrentPartyMember = 0;
 		MenuManager.Instance.ShowMenu(MenuState.Battle, true);
 		SetPhase(BattlePhase.PlayerCommand);
 	}
@@ -775,54 +774,55 @@ public partial class BattleManager : Node
 		BattleLogManager.Instance.ClearBattleLog();
 		GD.Print("Processing action " + currentAction.Action.Name);
 		List<Actor> resolvedTargets = [];
-		switch (currentAction.Action.Target)
+		foreach (Actor target in currentAction.Targets)
 		{
-			case SkillTarget.AllAllies:
-				resolvedTargets.AddRange(currentAction.Targets.Where(x => x.CurrentHP > 0));
-				break;
-			case SkillTarget.AllEnemies:
-				foreach (Actor t in currentAction.Targets)
+			if (target.CurrentHP == 0)
+			{
+				switch (currentAction.Action.Target)
 				{
-					if (t.CurrentHP > 0)
-						resolvedTargets.Add(t);
-					else
-						resolvedTargets.Add(t is Enemy ? GetRandomAliveEnemy() : GetRandomAlivePartyMember());
+					case SkillTarget.AllAllies:
+					case SkillTarget.AllEnemies:
+					case SkillTarget.Ally:
+					case SkillTarget.Enemy:
+					case SkillTarget.AllyOrEnemy:
+						resolvedTargets.Add(target is Enemy ? GetRandomAliveEnemy() : GetRandomAlivePartyMember());
+						continue;
+					case SkillTarget.DeadAlly:
+					case SkillTarget.AllDeadAllies:
+						resolvedTargets.Add(target);
+						continue;
+					case SkillTarget.AllyNotSelf:
+					{
+						Actor newTarget = target is Enemy ? GetRandomAliveUniqueEnemy(currentAction.Actor) : GetRandomUniqueAlivePartyMember(currentAction.Actor);
+						if (newTarget == null)
+						{
+							BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + "'s skill had no effect.");
+							SetPhase(BattlePhase.WaitForBattleLog);
+							return;
+						}
+						resolvedTargets.Add(newTarget);
+						continue;
+					}
 				}
-				break;
-			case SkillTarget.AllDeadAllies:
-			case SkillTarget.DeadAlly:	
-				resolvedTargets.AddRange(currentAction.Targets.Where(x => x.CurrentHP == 0));
-				break;
-			case SkillTarget.Ally:
-			case SkillTarget.Enemy:
-			case SkillTarget.AllyOrEnemy:	
-				if (currentAction.Targets[0].CurrentHP == 0)
-					resolvedTargets.Add(currentAction.Targets[0] is Enemy ? GetRandomAliveEnemy() : GetRandomAlivePartyMember());
-				else
-					resolvedTargets.Add(currentAction.Targets[0]);
-				break;
-			case SkillTarget.AllyNotSelf:
-				if (currentAction.Targets[0].CurrentHP == 0)
+			}
+			else
+			{
+				if (currentAction.Action.Target is SkillTarget.DeadAlly or SkillTarget.AllDeadAllies)
 				{
-					Actor newTarget = currentAction.Targets[0] is Enemy
-						? GetAllEnemies().FirstOrDefault(x => x.CurrentHP > 0 && x != currentAction.Targets[0])
-						: GetAllEnemies().FirstOrDefault(x => x.CurrentHP > 0 && x != currentAction.Targets[0]);
+					Actor newTarget = target is Enemy ? null : GetRandomDeadPartyMember();
 					if (newTarget == null)
 					{
-						// if we can't find anyone other than ourselves to target, do nothing
-						// this may change in the future
-						BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + "'s skill did nothing.");
+						BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + "'s skill had no effect.");
 						SetPhase(BattlePhase.WaitForBattleLog);
 						return;
 					}
-					resolvedTargets.Add(newTarget);
+					// for revival skills we don't want to target the same actor twice
+					if (!resolvedTargets.Contains(newTarget))
+						resolvedTargets.Add(newTarget);
 				}
-				else
-					resolvedTargets.Add(currentAction.Targets[0]);
-				break;
-			default:
-				resolvedTargets.AddRange(currentAction.Targets);
-				break;
+				else 
+					resolvedTargets.Add(target);
+			}
 		}
 		
 		if (currentAction.Action is Skill skill)
@@ -902,7 +902,7 @@ public partial class BattleManager : Node
 			return false;
 
 		// we already checked for this but oh well
-		if (name.StartsWith("ReleaseEnergy"))
+		if (skill.Target is SkillTarget.AllEnemies)
 			ForceCommand(current.Actor, GetAllEnemies(), skill);
 		else
 			ForceCommand(current.Actor, Commands[CommandIndex].Targets, skill);
@@ -1112,7 +1112,7 @@ public partial class BattleManager : Node
 		foreach (StatModifier mod in target.StatModifiers.Values)
 		{
 			// omori calculates guard after variance
-			if (mod is GuardStatModifier)
+			if (mod is GuardStatModifier or PlotArmorStatModifier)
 				continue;
 			mod.OverrideDamage(ref damage, self, target, false);
 		}
@@ -1130,7 +1130,18 @@ public partial class BattleManager : Node
 			mod.OverrideDamage(ref damage, self, target, false);
 		}
 		
+		if (target.HasStatModifier("PlotArmor"))
+		{
+			StatModifier mod = target.StatModifiers["PlotArmor"];
+			mod.OverrideDamage(ref damage, self, target, false);
+		}
+		
 		float rounded = (float)Math.Round(damage, MidpointRounding.AwayFromZero);
+				
+		if (rounded < 0)
+			rounded = 0;
+		if (!SettingsMenuManager.Instance.DisableDamageLimit && rounded > 9999)
+			rounded = 9999;
 
 		if (self.HasStatModifier("Flex"))
 		{
@@ -1138,11 +1149,6 @@ public partial class BattleManager : Node
 			mod.OverrideDamage(ref rounded, self, target, true);
 			self.RemoveStatModifier("Flex");
 		}
-		
-		if (rounded < 0)
-			rounded = 0;
-		if (!SettingsMenuManager.Instance.DisableDamageLimit && rounded > 9999)
-			rounded = 9999;
 		
 		int juiceLost = 0;
 		switch (target.CurrentState)
@@ -1161,14 +1167,17 @@ public partial class BattleManager : Node
 				break;
 		}
 		target.CurrentJuice -= juiceLost;
+				
+		if (rounded < 0)
+			rounded = 0;
+		if (!SettingsMenuManager.Instance.DisableDamageLimit && rounded > 9999)
+			rounded = 9999;
 
 		int roundedInt = (int)rounded;
 		target.Damage(roundedInt);
 		if (target is PartyMember)
 		{
-			Energy++;
-			if (Energy > 10)
-				Energy = 10;
+			Energy = Math.Min(10, Energy + 1);
 		}
 		SpawnDamageNumber(roundedInt, target.CenterPoint, critical: (critical && !neverCrit));
 		// we don't need to play a hitsound if the attack is a critical or if there's no damage
@@ -1281,18 +1290,18 @@ public partial class BattleManager : Node
 		}
 		
 		float rounded = (float)Math.Round(damage, MidpointRounding.AwayFromZero);
-
+				
+		if (rounded < 0)
+			rounded = 0;
+		if (!SettingsMenuManager.Instance.DisableDamageLimit && rounded > 9999)
+			rounded = 9999;
+		
 		if (self.HasStatModifier("Flex"))
 		{
 			StatModifier mod = self.StatModifiers["Flex"];
 			mod.OverrideDamage(ref rounded, self, target, true);
 			self.RemoveStatModifier("Flex");
 		}
-		
-		if (rounded < 0)
-			rounded = 0;
-		if (!SettingsMenuManager.Instance.DisableDamageLimit && rounded > 9999)
-			rounded = 9999;
 		
 		int roundedInt = (int)rounded;
 		target.DamageJuice(roundedInt);
@@ -1545,6 +1554,13 @@ public partial class BattleManager : Node
 		IEnumerable<PartyMemberComponent> alive = CurrentParty.Where(x => x.Actor.CurrentHP > 0);
 		return alive.ElementAt(GameManager.Instance.Random.RandiRange(0, alive.Count() - 1)).Actor;
 	}
+	
+	/// <returns>Returns a random alive <see cref="PartyMember"/> that's not the provided actor.</returns>
+	public PartyMember GetRandomUniqueAlivePartyMember(Actor not)
+	{
+		IEnumerable<PartyMemberComponent> alive = CurrentParty.Where(x => x.Actor.CurrentHP > 0 && x.Actor != not);
+		return alive.ElementAt(GameManager.Instance.Random.RandiRange(0, alive.Count() - 1)).Actor;
+	}
 
 	/// <returns>A random <see cref="PartyMember"/> that is toast.</returns>
 	public PartyMember GetRandomDeadPartyMember()
@@ -1557,6 +1573,13 @@ public partial class BattleManager : Node
 	public Enemy GetRandomAliveEnemy()
 	{
 		IEnumerable<EnemyComponent> alive = Enemies.Where(x => x.Actor.CurrentHP > 0);
+		return alive.ElementAt(GameManager.Instance.Random.RandiRange(0, alive.Count() - 1)).Actor;
+	}
+
+	/// <returns>A random alive <see cref="Enemy"/> that's not the provided actor.</returns>
+	public Enemy GetRandomAliveUniqueEnemy(Actor not)
+	{
+		IEnumerable<EnemyComponent> alive = Enemies.Where(x => x.Actor.CurrentHP > 0 && x.Actor != not);
 		return alive.ElementAt(GameManager.Instance.Random.RandiRange(0, alive.Count() - 1)).Actor;
 	}
 

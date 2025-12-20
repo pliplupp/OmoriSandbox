@@ -12,6 +12,11 @@ internal sealed class AubreyBoss : Enemy
     protected override Stats Stats => new(12000, 4000, 120, 55, 75, 15, 95);
     protected override string[] EquippedSkills => ["AAttack", "ABossBeatdown", "ABossLookAtKel", "ABossLookAtHero", "PowerHit", "WindUpThrow", "MoodWrecker", "PepTalk", "ABossTwirl"];
 
+    public override bool IsStateValid(string state)
+    {
+        return state is "neutral" or "toast" or "happy" or "sad" or "angry";
+    }
+
     private int TurnCount = 0;
     public override BattleCommand ProcessAI()
     {

@@ -24,7 +24,6 @@ internal sealed class SlimeGirls : Enemy
 
 	public override BattleCommand ProcessAI()
 	{
-		Actor target = SelectTarget();
         switch (CurrentState)
 		{
 			case "happy":
@@ -70,15 +69,15 @@ internal sealed class SlimeGirls : Enemy
 		}
 
 	combo:
-		return new BattleCommand(this, target, Skills["ComboAttack"]);
+		return new BattleCommand(this, SelectTarget(), Skills["ComboAttack"]);
 	gas:
-		return new BattleCommand(this, target, Skills["StrangeGas"]);
+		return new BattleCommand(this, SelectAllTargets(), Skills["StrangeGas"]);
 	dynamite:
-		return new BattleCommand(this, target, Skills["Dynamite"]);
+		return new BattleCommand(this, SelectAllTargets(), Skills["Dynamite"]);
 	stingray:
-		return new BattleCommand(this, target, Skills["StingRay"]);
+		return new BattleCommand(this, SelectTarget(), Skills["StingRay"]);
 	chainsaw:
-		return new BattleCommand(this, target, Skills["Chainsaw"]);
+		return new BattleCommand(this, SelectTarget(), Skills["Chainsaw"]);
 	}
 
 	public override async Task ProcessBattleConditions()

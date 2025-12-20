@@ -80,7 +80,7 @@ public abstract class Enemy : Actor
 		List<PartyMemberComponent> targets = BattleManager.Instance.GetAlivePartyMembers();
 		List<PartyMember> result = [];
 		for (int i = 0; i < Math.Min(amount, targets.Count); i++)
-			result.Add(targets[GameManager.Instance.Random.RandiRange(0, targets.Count - i)].Actor);
+			result.Add(targets[GameManager.Instance.Random.RandiRange(0, targets.Count - 1)].Actor);
 		return result;
 	}
 
