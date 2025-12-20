@@ -50,7 +50,7 @@ internal sealed class ForestBunnyQuestion : Enemy
     attack:
         return new BattleCommand(this, target, Skills["FBQAttack"]);
     nothing:
-        return new BattleCommand(this, target, Skills["FBQDoNothing"]);
+        return new BattleCommand(this, this, Skills["FBQDoNothing"]);
     cute:
         return new BattleCommand(this, target, Skills["FBQBeCute"]);
     sad:

@@ -52,7 +52,7 @@ internal sealed class TheEarth : Enemy
     attack:
         return new BattleCommand(this, SelectTarget(), Skills["TEAttack"]);
     nothing:
-        return new BattleCommand(this, this, Skills["TENothing"]);
+        return new BattleCommand(this, this, Skills["TEDoNothing"]);
     cruel:
         return new BattleCommand(this, SelectTarget(), Skills["TECruel"]);
     }

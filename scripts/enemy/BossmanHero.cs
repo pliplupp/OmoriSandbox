@@ -62,6 +62,11 @@ internal sealed class BossmanHero : Enemy
        If the contract offers debuff stats to the foes, 100% crit will not be offered to the foes.
        If the contract offers 100% crit to the friends, damage and debuff stats will not be offered to the friends.
     */
+    
+    public override bool IsStateValid(string state)
+    {
+        return state is "neutral" or "toast";
+    }
 
     private readonly EnemyComponent[] GatorGuys = new EnemyComponent[2];
 

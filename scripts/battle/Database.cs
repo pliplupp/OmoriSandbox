@@ -1650,7 +1650,7 @@ public class Database
 		Skills["CantCatchMe"] = new Skill(
 			name: "CAN'T CATCH ME",
 			description: "Attracts attention and reduces all foes'\nHIT RATE for the turn. Cost: 50",
-			target: SkillTarget.Self,
+			target: SkillTarget.AllEnemies,
 			cost: 50,
 			effect: async (self, targets) =>
 			{
@@ -3804,7 +3804,7 @@ public class Database
 			  {
 				  BattleManager.Instance.Damage(self, member, () => self.CurrentStats.ATK * 2 - member.CurrentStats.DEF, false);
 			  }
-			  await AnimationManager.Instance.WaitForAnimation(196, self);
+			  await AnimationManager.Instance.WaitForScreenAnimation(196, targets[0] is Enemy);
 		  },
 		  hidden: true
 		);
@@ -3822,7 +3822,7 @@ public class Database
 			  {
 				  BattleManager.Instance.Damage(self, member, () => self.CurrentStats.ATK * 2 - member.CurrentStats.DEF, false);
 			  }
-			  await AnimationManager.Instance.WaitForAnimation(196, self);
+			  await AnimationManager.Instance.WaitForScreenAnimation(196, targets[0] is Enemy);
 		  },
 		  hidden: true
 		);
@@ -5923,7 +5923,7 @@ public class Database
 		Modifiers.Add("AttackDown", () => new TierStatModifier(6, new StatBonus(StatType.ATK, 0.9f), new StatBonus(StatType.ATK, 0.8f), new StatBonus(StatType.ATK, 0.7f)).WithMessages("ATTACK fell.", "ATTACK cannot go\nany lower!"));
 		Modifiers.Add("DefenseUp", () => new TierStatModifier(6, new StatBonus(StatType.DEF, 1.15f), new StatBonus(StatType.DEF, 1.3f), new StatBonus(StatType.DEF, 1.5f)).WithMessages("DEFENSE rose!", "DEFENSE cannot go\nany higher!"));
 		Modifiers.Add("DefenseDown", () => new TierStatModifier(6, new StatBonus(StatType.DEF, 0.75f), new StatBonus(StatType.DEF, 0.5f), new StatBonus(StatType.DEF, 0.25f)).WithMessages("DEFENSE fell.", "DEFENSE cannot go\nany lower!"));
-		Modifiers.Add("SpeedUp", () => new TierStatModifier(6, new StatBonus(StatType.SPD, 1.15f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.SPD, 5f)).WithMessages("SPEED rose!", "SPEED cannot go\nany higher!"));
+		Modifiers.Add("SpeedUp", () => new TierStatModifier(6, new StatBonus(StatType.SPD, 1.5f), new StatBonus(StatType.SPD, 2f), new StatBonus(StatType.SPD, 5f)).WithMessages("SPEED rose!", "SPEED cannot go\nany higher!"));
 		Modifiers.Add("SpeedDown", () => new TierStatModifier(6, new StatBonus(StatType.SPD, 0.8f), new StatBonus(StatType.SPD, 0.5f), new StatBonus(StatType.SPD, 0.25f)).WithMessages("SPEED fell.", "SPEED cannot go\nany lower!"));
 		Modifiers.Add("ReleaseEnergy", () => new StatModifier(new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.LCK, 1.25f)));
 		Modifiers.Add("ReleaseEnergyBasil", () => new StatModifier(new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.ATK, 1.25f), new StatBonus(StatType.DEF, 1.25f), new StatBonus(StatType.LCK, 1.25f)));
