@@ -55,30 +55,31 @@ internal sealed class MrJawsum : Enemy
             DialogueManager.Instance.QueueMessage(this, "You let yourselves be foiled by a bunch of children!?");
             DialogueManager.Instance.QueueMessage(this, "WHAT DID I EVEN HIRE YOU FOR!?");
             await DialogueManager.Instance.WaitForDialogue();
+            return;
         }
 
         if (Stage > 2) 
             return;
-
-        if (CurrentHP < 150 && Stage <= 2)
-        {
-            DialogueManager.Instance.QueueMessage(this, "What do you mean we're running low on henchmen!?@ That's impossible!");
-            await DialogueManager.Instance.WaitForDialogue();
-            Stage++;
-        }
-
-        if (CurrentHP < 225 && Stage <= 1)
-        {
-            DialogueManager.Instance.QueueMessage(this, "The GATOR GUY who runs them out gets free pizza...@ on me!");
-            await DialogueManager.Instance.WaitForDialogue();
-            Stage++;
-        }
-
+        
         if (CurrentHP < 297 && Stage == 0)
         {
             DialogueManager.Instance.QueueMessage(this, "I WANT THESE KIDS GONE YOU UNDERSTAND!?");
             await DialogueManager.Instance.WaitForDialogue();
-            Stage++;
+            Stage = 1;
+        }
+        
+        if (CurrentHP < 225 && Stage <= 1)
+        {
+            DialogueManager.Instance.QueueMessage(this, "The GATOR GUY who runs them out gets free pizza...@ on me!");
+            await DialogueManager.Instance.WaitForDialogue();
+            Stage = 2;
+        }
+        
+        if (CurrentHP < 150 && Stage <= 2)
+        {
+            DialogueManager.Instance.QueueMessage(this, "What do you mean we're running low on henchmen!?@ That's impossible!");
+            await DialogueManager.Instance.WaitForDialogue();
+            Stage = 3;
         }
     }
 

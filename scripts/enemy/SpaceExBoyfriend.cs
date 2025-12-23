@@ -103,19 +103,18 @@ internal sealed class SpaceExBoyfriend : Enemy
         if (Stage > 2)
             return;
 
-        if (CurrentHP < 338 && Stage <= 2)
+        if (CurrentHP < 1013 && Stage == 0)
         {
-            EmotionLocked = false;
-            DialogueManager.Instance.QueueMessage(this, "Out of my way, earthly scum!");
-            DialogueManager.Instance.QueueMessage(this, "This is your last chance!");
+            DialogueManager.Instance.QueueMessage(this, "My rage cannot be contained...@ You cannot placate me!");
             await DialogueManager.Instance.WaitForDialogue();
-            ForceState("SpaceExFurious", "furious");
-            DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND became FURIOUS!");
+            ForceState("SpaceExAngry", "angry");
+            DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND became ANGRY!");
+            DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND can no longer be HAPPY or SAD!");
             await DialogueManager.Instance.WaitForDialogue();
             EmotionLocked = true;
-            Stage = 3;
+            Stage = 1;
         }
-
+        
         if (CurrentHP < 675 && Stage <= 1)
         {
             EmotionLocked = false;
@@ -128,17 +127,18 @@ internal sealed class SpaceExBoyfriend : Enemy
             EmotionLocked = true;
             Stage = 2;
         }
-
-        if (CurrentHP < 1013 && Stage == 0)
+        
+        if (CurrentHP < 338 && Stage <= 2)
         {
-            DialogueManager.Instance.QueueMessage(this, "My rage cannot be contained...@ You cannot placate me!");
+            EmotionLocked = false;
+            DialogueManager.Instance.QueueMessage(this, "Out of my way, earthly scum!");
+            DialogueManager.Instance.QueueMessage(this, "This is your last chance!");
             await DialogueManager.Instance.WaitForDialogue();
-            ForceState("SpaceExAngry", "angry");
-            DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND became ANGRY!");
-            DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND can no longer be HAPPY or SAD!");
+            ForceState("SpaceExFurious", "furious");
+            DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND became FURIOUS!");
             await DialogueManager.Instance.WaitForDialogue();
             EmotionLocked = true;
-            Stage = 1;
+            Stage = 3;
         }
     }
 

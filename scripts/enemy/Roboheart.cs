@@ -79,18 +79,18 @@ internal sealed class Roboheart : Enemy
         if (Stage > 1)
             return;
 
-        if (CurrentHP < 625 && Stage <= 1)
-        {
-            DialogueManager.Instance.QueueMessage(this, "SGVscC4uLiBtZS4uLgo=");
-            await DialogueManager.Instance.WaitForDialogue();
-            Stage++;
-        }
-
         if (CurrentHP < 1875 && Stage == 0)
         {
             DialogueManager.Instance.QueueMessage(this, "TXkgbGlmZSBpcyBzdW\nZmZXJpbmch");
             await DialogueManager.Instance.WaitForDialogue();
-            Stage++;
+            Stage = 1;
+        }
+        
+        if (CurrentHP < 625 && Stage <= 1)
+        {
+            DialogueManager.Instance.QueueMessage(this, "SGVscC4uLiBtZS4uLgo=");
+            await DialogueManager.Instance.WaitForDialogue();
+            Stage = 2;
         }
     }
 

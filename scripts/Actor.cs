@@ -122,8 +122,9 @@ public abstract class Actor
 	/// Adds a new <see cref="StatModifier"/> to this actor.
 	/// </summary>
 	/// <param name="modifier">The name of the modifier to add.</param>
+	/// <param name="turns">Overrides the default number of turns to give this modifier for. If unchanged, will use the default turn count for the modifier.
 	/// <param name="silent">If true, success/failure messages will not be logged.</param>
-	public void AddStatModifier(string modifier, bool silent = false)
+	public void AddStatModifier(string modifier, int turns = -1, bool silent = false)
 	{
 		if (StatModifiers.TryGetValue(modifier, out StatModifier m))
 		{
@@ -147,6 +148,13 @@ public abstract class Actor
 				GD.PrintErr("Unknown stat modifier: " + modifier);
 				return;
 			}
+
+			if (turns > -1)
+			{
+				mod.SetMaxTurns(turns);
+				mod.SetTurnsLeft(turns);
+			}
+
 			StatModifiers.Add(modifier, mod);
 			mod.OnAdd();
 			GD.Print("Added modifier " + modifier + " to " + Name);
@@ -168,7 +176,7 @@ public abstract class Actor
 		if (mod is not TierStatModifier t)
 		{
 			GD.PushWarning("Tried to add a non-tiered stat modifier with tier and turns: " + modifier);
-			AddStatModifier(modifier, silent);
+			AddStatModifier(modifier, silent: silent);
 			return;
 		}
 		if (StatModifiers.TryGetValue(modifier, out StatModifier m))
@@ -235,7 +243,6 @@ public abstract class Actor
 				{
 					GD.Print("Removed modifier " + mod.Key + " from " + Name);
 					StatModifiers.Remove(mod.Key);
-					continue;
 				}
 			}
 		}

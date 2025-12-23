@@ -96,39 +96,7 @@ internal sealed class Sweetheart : Enemy
 
 		if (Stage > 3)
 			return;
-
-		if (CurrentHP < 990 && Stage <= 3)
-		{
-			EmotionLocked = false;
-            DialogueManager.Instance.QueueMessage(this, "Hmph! I see you are still standing.");
-            DialogueManager.Instance.QueueMessage(this, "Cockroaches are resilient, I suppose!");
-            DialogueManager.Instance.QueueMessage("OHOHOHOHOHOHO!!");
-            await DialogueManager.Instance.WaitForDialogue();
-            ForceState("SweetheartManic", "manic");
-            DialogueManager.Instance.QueueMessage("SWEETHEART became MANIC!");
-            await DialogueManager.Instance.WaitForDialogue();
-            EmotionLocked = true;
-			Stage = 4;
-		}
-		if (CurrentHP < 1650 && Stage <= 2)
-		{
-			EmotionLocked = false;
-            DialogueManager.Instance.QueueMessage(this, "Oho!@ My beauty and grace is boundless and everlasting...");
-            DialogueManager.Instance.QueueMessage(this, "It's a shame that you won't be able to enjoy it for much longer!");
-            await DialogueManager.Instance.WaitForDialogue();
-            ForceState("SweetheartEcstatic", "ecstatic");
-            DialogueManager.Instance.QueueMessage("SWEETHEART became ECSTATIC!");
-            await DialogueManager.Instance.WaitForDialogue();
-            EmotionLocked = true;
-			Stage = 3;
-		}
-		if (CurrentHP < 2145 && Stage <= 1)
-		{
-            DialogueManager.Instance.QueueMessage(this, "You dare raise your fists at me!?");
-            DialogueManager.Instance.QueueMessage(this, "Fools!@ You should be grovelling on your knees!");
-			await DialogueManager.Instance.WaitForDialogue();
-			Stage = 2;
-		}
+		
 		if (CurrentHP < 2640 && Stage == 0)
 		{
 			DialogueManager.Instance.QueueMessage(this, "It's pointless, you fools!@ You cannot dampen my positive energy!");
@@ -139,6 +107,41 @@ internal sealed class Sweetheart : Enemy
 			await DialogueManager.Instance.WaitForDialogue();
 			EmotionLocked = true;
 			Stage = 1;
+		}
+		
+		if (CurrentHP < 2145 && Stage <= 1)
+		{
+			DialogueManager.Instance.QueueMessage(this, "You dare raise your fists at me!?");
+			DialogueManager.Instance.QueueMessage(this, "Fools!@ You should be grovelling on your knees!");
+			await DialogueManager.Instance.WaitForDialogue();
+			Stage = 2;
+		}
+		
+		if (CurrentHP < 1650 && Stage <= 2)
+		{
+			EmotionLocked = false;
+			DialogueManager.Instance.QueueMessage(this, "Oho!@ My beauty and grace is boundless and everlasting...");
+			DialogueManager.Instance.QueueMessage(this, "It's a shame that you won't be able to enjoy it for much longer!");
+			await DialogueManager.Instance.WaitForDialogue();
+			ForceState("SweetheartEcstatic", "ecstatic");
+			DialogueManager.Instance.QueueMessage("SWEETHEART became ECSTATIC!");
+			await DialogueManager.Instance.WaitForDialogue();
+			EmotionLocked = true;
+			Stage = 3;
+		}
+		
+		if (CurrentHP < 990 && Stage <= 3)
+		{
+			EmotionLocked = false;
+			DialogueManager.Instance.QueueMessage(this, "Hmph! I see you are still standing.");
+			DialogueManager.Instance.QueueMessage(this, "Cockroaches are resilient, I suppose!");
+			DialogueManager.Instance.QueueMessage("OHOHOHOHOHOHO!!");
+			await DialogueManager.Instance.WaitForDialogue();
+			ForceState("SweetheartManic", "manic");
+			DialogueManager.Instance.QueueMessage("SWEETHEART became MANIC!");
+			await DialogueManager.Instance.WaitForDialogue();
+			EmotionLocked = true;
+			Stage = 4;
 		}
 	}
 

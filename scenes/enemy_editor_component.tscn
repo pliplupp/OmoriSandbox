@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://d1q22va25i15g"]
+[gd_scene load_steps=6 format=3 uid="uid://d1q22va25i15g"]
 
 [ext_resource type="Script" uid="uid://o23hbcl14151" path="res://scripts/EnemyEditorComponent.cs" id="1_hxvew"]
+[ext_resource type="FontFile" uid="uid://bdh481cgsv8wf" path="res://fonts/OMORI_GAME2.ttf" id="2_qooje"]
+[ext_resource type="StyleBox" uid="uid://dwx8wc4k6lqm" path="res://assets/button_normal.tres" id="3_drgij"]
+[ext_resource type="StyleBox" uid="uid://bo6p8kgoa573n" path="res://assets/button_pressed.tres" id="4_i0156"]
+[ext_resource type="StyleBox" uid="uid://jwq4fr8u18k1" path="res://assets/button_hover.tres" id="5_sv4pq"]
 
 [node name="EnemyEditorComponent" type="MarginContainer" node_paths=PackedStringArray("EnemyDropdown", "EmotionDropdown", "XPosBox", "YPosBox", "LayerBox", "FallsOffScreenCheckbox", "VisibleCheckbox", "RemoveButton")]
 offset_right = 200.0
@@ -30,11 +34,18 @@ mouse_filter = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/Enemy"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_qooje")
+theme_override_font_sizes/font_size = 20
 text = "Enemy"
 
 [node name="EnemyDropdown" type="OptionButton" parent="VBoxContainer/Enemy"]
 layout_mode = 2
 mouse_filter = 1
+theme_override_fonts/font = ExtResource("2_qooje")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("3_drgij")
+theme_override_styles/pressed = ExtResource("4_i0156")
+theme_override_styles/hover = ExtResource("5_sv4pq")
 allow_reselect = true
 
 [node name="Emotion" type="HBoxContainer" parent="VBoxContainer"]
@@ -43,11 +54,18 @@ mouse_filter = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/Emotion"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_qooje")
+theme_override_font_sizes/font_size = 20
 text = "Emotion"
 
 [node name="EmotionDropdown" type="OptionButton" parent="VBoxContainer/Emotion"]
 layout_mode = 2
 mouse_filter = 1
+theme_override_fonts/font = ExtResource("2_qooje")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("3_drgij")
+theme_override_styles/pressed = ExtResource("4_i0156")
+theme_override_styles/hover = ExtResource("5_sv4pq")
 allow_reselect = true
 
 [node name="XPos" type="HBoxContainer" parent="VBoxContainer"]
@@ -56,6 +74,8 @@ mouse_filter = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/XPos"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_qooje")
+theme_override_font_sizes/font_size = 20
 text = "X Pos"
 
 [node name="XPosInput" type="SpinBox" parent="VBoxContainer/XPos"]
@@ -69,6 +89,8 @@ mouse_filter = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/YPos"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_qooje")
+theme_override_font_sizes/font_size = 20
 text = "Y Pos"
 
 [node name="YPosInput" type="SpinBox" parent="VBoxContainer/YPos"]
@@ -82,6 +104,8 @@ mouse_filter = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/Layer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_qooje")
+theme_override_font_sizes/font_size = 20
 text = "Layer"
 
 [node name="LayerInput" type="SpinBox" parent="VBoxContainer/Layer"]
@@ -91,19 +115,29 @@ rounded = true
 
 [node name="LayerNote" type="Label" parent="VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_qooje")
+theme_override_font_sizes/font_size = 18
 text = "Note: Layer 0 is the top layer"
 
 [node name="FallsOffScreen" type="CheckBox" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_qooje")
+theme_override_font_sizes/font_size = 20
 text = "Falls Off Screen"
 
 [node name="Visible" type="CheckBox" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_qooje")
+theme_override_font_sizes/font_size = 20
 button_pressed = true
 text = "Visible (Editor Only)"
 
 [node name="Remove" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 mouse_filter = 1
+theme_override_fonts/font = ExtResource("2_qooje")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("3_drgij")
+theme_override_styles/pressed = ExtResource("4_i0156")
+theme_override_styles/hover = ExtResource("5_sv4pq")
 text = "Remove"

@@ -94,32 +94,32 @@ internal sealed class SlimeGirls : Enemy
 		if (Stage > 2)
 			return;
 
+		if (CurrentHP < 4275 && Stage == 0)
+		{
+			DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, "Hmph...@ You kids are more resilient than expected.");
+			DialogueManager.Instance.QueueMessage("MARINA", CenterPoint, "You know what that means.@ It's time to get serious!");
+			DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, "Oh...@ I'm having so much fun~!");
+			await DialogueManager.Instance.WaitForDialogue();
+			ForceState("angry");
+			BattleLogManager.Instance.ClearAndShowMessage("SLIME GIRLS becomes ANGRIER!");
+			Stage = 1;
+		}
+		
+		if (CurrentHP < 2850 && Stage <= 1)
+		{
+			DialogueManager.Instance.QueueMessage("MARINA", CenterPoint, "Hey, MEDUSA!@ Are you thinkin' what I'm thinkin'?");
+			DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, "Yes, sister...@ I think it's about time we switched things up.");
+			DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, "Just relax, children...@ This won't hurt a bit~");
+			await DialogueManager.Instance.WaitForDialogue();
+			BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["Swap"]);
+			Stage = 2;
+		}
+		
         if (CurrentHP < 1425 && Stage <= 2)
         {
             BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["SlimeUltimateAttack"]);
             Stage = 3;
         }
-
-        if (CurrentHP < 2850 && Stage <= 1)
-        {
-            DialogueManager.Instance.QueueMessage("MARINA", CenterPoint, "Hey, MEDUSA!@ Are you thinkin' what I'm thinkin'?");
-            DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, "Yes, sister...@ I think it's about time we switched things up.");
-            DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, "Just relax, children...@ This won't hurt a bit~");
-            await DialogueManager.Instance.WaitForDialogue();
-            BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["Swap"]);
-            Stage++;
-        }
-
-        if (CurrentHP < 4275 && Stage == 0)
-		{
-			DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, "Hmph...@ You kids are more resilient than expected.");
-            DialogueManager.Instance.QueueMessage("MARINA", CenterPoint, "You know what that means.@ It's time to get serious!");
-            DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, "Oh...@ I'm having so much fun~!");
-			await DialogueManager.Instance.WaitForDialogue();
-            ForceState("angry");
-			BattleLogManager.Instance.ClearAndShowMessage("SLIME GIRLS becomes ANGRIER!");
-			Stage++;
-		}
     }
 
     public override async Task OnEndOfBattle(bool victory)

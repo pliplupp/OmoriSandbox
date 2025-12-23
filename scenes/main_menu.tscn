@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://dxm1fg4428tk"]
+[gd_scene load_steps=16 format=3 uid="uid://dxm1fg4428tk"]
 
 [ext_resource type="Texture2D" uid="uid://bkfc0aptec36b" path="res://assets/logo.png" id="1_l6cm7"]
 [ext_resource type="Script" uid="uid://b1cjgogphng5l" path="res://scripts/MainMenuManager.cs" id="1_wu84c"]
@@ -7,19 +7,18 @@
 [ext_resource type="PackedScene" uid="uid://5jek8whi4if3" path="res://scenes/party_member_editor_component.tscn" id="4_8ln24"]
 [ext_resource type="PackedScene" uid="uid://bafxyc8q2lavr" path="res://scenes/mod_list_entry.tscn" id="5_jk1qb"]
 [ext_resource type="PackedScene" uid="uid://d32syyvyr6iwr" path="res://scenes/party_member.tscn" id="5_rtw2f"]
-[ext_resource type="Texture2D" uid="uid://cmbljlf76y4r6" path="res://assets/title_screen.png" id="5_tbmy8"]
+[ext_resource type="Texture2D" uid="uid://crd7vedwxdd60" path="res://assets/Space_parallax.png" id="6_5dd4i"]
+[ext_resource type="SpriteFrames" uid="uid://d1x6v885rbwn5" path="res://animations/omori_title.tres" id="8_lgwnu"]
 [ext_resource type="Texture2D" uid="uid://d36ge2cnq6lkj" path="res://assets/battlebacks/battleback_vf_default.png" id="8_tbmy8"]
 [ext_resource type="Script" uid="uid://w0pq3jqqlyp" path="res://scripts/SettingsMenuManager.cs" id="9_5dd4i"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tbmy8"]
-bg_color = Color(0.14, 0.14, 0.14, 0.784314)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5dd4i"]
-bg_color = Color(0.14117648, 0.14117648, 0.14117648, 0.78431374)
+[ext_resource type="StyleBox" uid="uid://dwx8wc4k6lqm" path="res://assets/button_normal.tres" id="10_1ajci"]
+[ext_resource type="StyleBox" uid="uid://bo6p8kgoa573n" path="res://assets/button_pressed.tres" id="11_7b55j"]
+[ext_resource type="StyleBox" uid="uid://jwq4fr8u18k1" path="res://assets/button_hover.tres" id="12_1ajci"]
+[ext_resource type="StyleBox" uid="uid://ividp3svjft4" path="res://assets/tab_selected.tres" id="15_7b55j"]
 
 [node name="MainMenu" type="CanvasLayer"]
 
-[node name="MainMenuManager" type="Node" parent="." node_paths=PackedStringArray("AddActorControls", "AddEnemyControl", "ModListParent", "ShowModsButton", "ActorTabs", "EnemyTabs", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "SettingsButton", "MainControls", "Settings", "DataFolderButton", "ModFolderButton", "ModsLoaded", "GithubButton", "TitlePresetDropdown", "BattlebackPreview", "BattlebackDropdown", "BGMDropdown", "BGMPitch", "PreviewButton", "FollowupTierSlider", "FollowupTierValue", "BasilFollowupsCheckbox", "BasilReleaseEnergyCheckbox", "DisableDialogue", "AddItemButton", "ItemContainer", "SearchInput", "SearchButton", "Results", "SavePresetButton", "PresetInput", "LoadPresetButton", "DeletePresetButton", "PresetDropdown", "ResetButton", "ReturnButton")]
+[node name="MainMenuManager" type="Node" parent="." node_paths=PackedStringArray("AddActorControls", "AddEnemyControl", "ModListParent", "ShowModsButton", "ActorTabs", "EnemyTabs", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "SettingsButton", "MainControls", "DataFolderButton", "ModFolderButton", "ModsLoaded", "GithubButton", "TitlePresetDropdown", "BattlebackPreview", "BattlebackDropdown", "BGMDropdown", "BGMPitch", "PreviewButton", "FollowupTierSlider", "FollowupTierValue", "BasilFollowupsCheckbox", "BasilReleaseEnergyCheckbox", "DisableDialogue", "AddItemButton", "ItemContainer", "SearchInput", "SearchButton", "Results", "SavePresetButton", "PresetInput", "LoadPresetButton", "DeletePresetButton", "PresetDropdown", "ResetButton", "ReturnButton")]
 script = ExtResource("1_wu84c")
 AddActorControls = [NodePath("../Editor/Actors/AddActor1"), NodePath("../Editor/Actors/AddActor2"), NodePath("../Editor/Actors/AddActor3"), NodePath("../Editor/Actors/AddActor4")]
 AddEnemyControl = NodePath("../Editor/Actors/AddEnemy")
@@ -37,7 +36,6 @@ PlayButton = NodePath("../Main/MainControls/Play")
 ConfigureButton = NodePath("../Main/MainControls/HBoxContainer3/Editor")
 SettingsButton = NodePath("../Main/MainControls/HBoxContainer3/Settings")
 MainControls = NodePath("../Main/MainControls")
-Settings = NodePath("../Main/Settings")
 DataFolderButton = NodePath("../Main/MainControls/HBoxContainer2/DataFolder")
 ModFolderButton = NodePath("../Main/MainControls/HBoxContainer2/ModFolder")
 ModsLoaded = NodePath("../Main/ModsLoaded")
@@ -68,18 +66,26 @@ ReturnButton = NodePath("../Editor/Return")
 
 [node name="Main" type="CanvasLayer" parent="."]
 
-[node name="Background" type="TextureRect" parent="Main"]
+[node name="Parallax2D" type="Parallax2D" parent="Main"]
+repeat_size = Vector2(960, 0)
+autoscroll = Vector2(12, 0)
+repeat_times = 2
+ignore_camera_scroll = true
+
+[node name="Background" type="TextureRect" parent="Main/Parallax2D"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -315.0
-offset_right = 68.0
+offset_right = 708.0
+offset_bottom = 480.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(1.25, 1)
-texture = ExtResource("5_tbmy8")
+texture = ExtResource("6_5dd4i")
 
 [node name="Logo" type="TextureRect" parent="Main"]
+z_index = 1
 texture_filter = 1
 clip_contents = true
 anchors_preset = 5
@@ -93,6 +99,12 @@ texture = ExtResource("1_l6cm7")
 expand_mode = 1
 stretch_mode = 1
 
+[node name="Omori" type="AnimatedSprite2D" parent="Main"]
+position = Vector2(320, 305)
+sprite_frames = ExtResource("8_lgwnu")
+autoplay = "default"
+frame_progress = 0.2651262
+
 [node name="Version" type="Label" parent="Main"]
 anchors_preset = 2
 anchor_top = 1.0
@@ -104,7 +116,7 @@ offset_bottom = -3.0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 14
-text = "OmoriSandbox v0.9.2"
+text = "OmoriSandbox v0.9.3"
 
 [node name="ModsLoaded" type="Label" parent="Main"]
 anchors_preset = 2
@@ -129,6 +141,9 @@ offset_right = 68.0
 offset_bottom = -33.0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "View Mods"
 
 [node name="ModsLoadedList" type="ScrollContainer" parent="Main"]
@@ -137,7 +152,7 @@ z_index = 1
 custom_minimum_size = Vector2(175, 400)
 offset_right = 278.0
 offset_bottom = 400.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_tbmy8")
+theme_override_styles/panel = ExtResource("10_1ajci")
 horizontal_scroll_mode = 0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Main/ModsLoadedList"]
@@ -167,7 +182,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 24
-theme_override_styles/normal = SubResource("StyleBoxFlat_5dd4i")
+theme_override_styles/normal = ExtResource("10_1ajci")
 text = "Battle Preset: "
 
 [node name="PresetDropdown" type="OptionButton" parent="Main/MainControls/HBoxContainer"]
@@ -175,14 +190,21 @@ custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 clip_text = true
 fit_to_longest_item = false
 allow_reselect = true
 
 [node name="Play" type="Button" parent="Main/MainControls"]
 layout_mode = 2
+theme_override_constants/h_separation = 4
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Play"
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="Main/MainControls"]
@@ -194,6 +216,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Editor"
 
 [node name="Settings" type="Button" parent="Main/MainControls/HBoxContainer3"]
@@ -201,6 +226,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Settings"
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="Main/MainControls"]
@@ -211,15 +239,21 @@ alignment = 1
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Open Preset Folder"
 
 [node name="ModFolder" type="Button" parent="Main/MainControls/HBoxContainer2"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Open Mods Folder"
 
-[node name="Settings" type="ColorRect" parent="Main" node_paths=PackedStringArray("MasterSlider", "BGMSlider", "SFXSlider", "TestSFXButton", "DisableDamageLimitCheckbox", "BackButton", "MainControls")]
+[node name="Settings" type="Panel" parent="Main" node_paths=PackedStringArray("MasterSlider", "BGMSlider", "SFXSlider", "TestSFXButton", "DisableDamageLimitCheckbox", "BackButton", "MainControls")]
 visible = false
 anchors_preset = 7
 anchor_left = 0.5
@@ -232,7 +266,7 @@ offset_right = 200.0
 offset_bottom = -17.0
 grow_horizontal = 2
 grow_vertical = 0
-color = Color(0.14117648, 0.14117648, 0.14117648, 0.78431374)
+theme_override_styles/panel = ExtResource("10_1ajci")
 script = ExtResource("9_5dd4i")
 MasterSlider = NodePath("VBoxContainer/MasterSlider/HSlider")
 BGMSlider = NodePath("VBoxContainer/BGMSlider/HSlider")
@@ -323,6 +357,9 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Test SFX"
 
 [node name="DisableDamageLimit" type="CheckBox" parent="Main/Settings/VBoxContainer"]
@@ -339,6 +376,9 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Back"
 
 [node name="Credits" type="Label" parent="Main"]
@@ -375,6 +415,9 @@ grow_horizontal = 0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Github"
 
 [node name="Editor" type="CanvasLayer" parent="."]
@@ -408,7 +451,11 @@ offset_top = 20.0
 offset_right = 102.0
 offset_bottom = 50.0
 size_flags_vertical = 4
-theme_override_font_sizes/font_size = 15
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "+ Add Actor"
 
 [node name="AddActor2" type="Control" parent="Editor/Actors"]
@@ -426,7 +473,11 @@ offset_top = 20.0
 offset_right = 102.0
 offset_bottom = 50.0
 size_flags_vertical = 4
-theme_override_font_sizes/font_size = 15
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "+ Add Actor"
 
 [node name="AddActor3" type="Control" parent="Editor/Actors"]
@@ -444,7 +495,11 @@ offset_top = 20.0
 offset_right = 102.0
 offset_bottom = 50.0
 size_flags_vertical = 4
-theme_override_font_sizes/font_size = 15
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "+ Add Actor"
 
 [node name="AddActor4" type="Control" parent="Editor/Actors"]
@@ -462,7 +517,11 @@ offset_top = 20.0
 offset_right = 102.0
 offset_bottom = 50.0
 size_flags_vertical = 4
-theme_override_font_sizes/font_size = 15
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "+ Add Actor"
 
 [node name="AddEnemy" type="Control" parent="Editor/Actors"]
@@ -493,7 +552,11 @@ offset_bottom = 50.0
 grow_horizontal = 2
 grow_vertical = 0
 size_flags_vertical = 4
-theme_override_font_sizes/font_size = 15
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "+ Add Enemy"
 
 [node name="SettingsTabs" type="TabContainer" parent="Editor"]
@@ -505,6 +568,12 @@ offset_right = 250.0
 offset_bottom = 50.0
 grow_horizontal = 2
 scale = Vector2(0.75, 0.75)
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/panel = ExtResource("10_1ajci")
+theme_override_styles/tab_unselected = ExtResource("10_1ajci")
+theme_override_styles/tab_hovered = ExtResource("12_1ajci")
+theme_override_styles/tab_selected = ExtResource("15_7b55j")
 current_tab = 0
 clip_tabs = false
 tab_focus_mode = 1
@@ -523,6 +592,8 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
 text = "Battle Settings"
 horizontal_alignment = 1
 
@@ -531,10 +602,17 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/Battleback"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
 text = "Battleback"
 
 [node name="OptionButton" type="OptionButton" parent="Editor/SettingsTabs/Settings/VBoxContainer/Battleback"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 allow_reselect = true
 
 [node name="BGM" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
@@ -542,10 +620,17 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGM"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
 text = "BGM"
 
 [node name="OptionButton" type="OptionButton" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGM"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 allow_reselect = true
 
 [node name="BGMPitch" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
@@ -553,6 +638,8 @@ layout_mode = 2
 
 [node name="Pitch" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
 text = "BGM Pitch"
 
 [node name="PitchValue" type="SpinBox" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch"]
@@ -565,6 +652,11 @@ value = 1.0
 
 [node name="Button" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Preview"
 
 [node name="FollowupTier" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
@@ -572,6 +664,8 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
 text = "Followup Tier"
 
 [node name="HSlider" type="HSlider" parent="Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier"]
@@ -584,18 +678,26 @@ rounded = true
 
 [node name="Label2" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
 text = "1"
 
 [node name="BasilFollowups" type="CheckBox" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
 text = "Use Basil Followups"
 
 [node name="BasilReleaseEnergy" type="CheckBox" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
 text = "Use Basil Release Energy"
 
 [node name="DisableDialogue" type="CheckBox" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
 text = "Disable Dialogue"
 
 [node name="Save" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
@@ -604,10 +706,19 @@ layout_mode = 2
 [node name="PresetName" type="LineEdit" parent="Editor/SettingsTabs/Settings/VBoxContainer/Save"]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/focus = ExtResource("12_1ajci")
 placeholder_text = "Preset Name..."
 
 [node name="Save" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/Save"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Save Preset"
 
 [node name="Load" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
@@ -616,18 +727,38 @@ layout_mode = 2
 [node name="PresetDropdown" type="OptionButton" parent="Editor/SettingsTabs/Settings/VBoxContainer/Load"]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 
 [node name="Load" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/Load"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Load Preset"
 
 [node name="Delete" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/Load"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Delete Preset"
 
 [node name="Reset" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Reset All to Defaults"
 
 [node name="Items" type="MarginContainer" parent="Editor/SettingsTabs"]
@@ -644,12 +775,19 @@ layout_mode = 2
 
 [node name="ItemsLabel" type="Label" parent="Editor/SettingsTabs/Items/VBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
 text = "Items"
 horizontal_alignment = 1
 
 [node name="AddItemButton" type="Button" parent="Editor/SettingsTabs/Items/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "+ Add Item"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Editor/SettingsTabs/Items/VBoxContainer"]
@@ -675,6 +813,8 @@ layout_mode = 2
 
 [node name="Label2" type="Label" parent="Editor/SettingsTabs/Skill Search/VBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
 text = "Skill Search"
 horizontal_alignment = 1
 
@@ -684,21 +824,34 @@ layout_mode = 2
 [node name="SearchInput" type="LineEdit" parent="Editor/SettingsTabs/Skill Search/VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/focus = ExtResource("12_1ajci")
 placeholder_text = "Enter skill name..."
 
 [node name="Search" type="Button" parent="Editor/SettingsTabs/Skill Search/VBoxContainer/HBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Search"
 
 [node name="Label" type="Label" parent="Editor/SettingsTabs/Skill Search/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 16
 text = "Note: Basic attack skills are formatted as FirstInitalAttack.
-Example: OAttack -> Omori's Attack | ARWAttack -> Aubrey (Real World)'s Attack"
+Example: OAttack = Omori's Attack | ARWAttack = Aubrey (Real World)'s Attack"
 
 [node name="Results" type="TextEdit" parent="Editor/SettingsTabs/Skill Search/VBoxContainer"]
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/read_only = ExtResource("10_1ajci")
 editable = false
 wrap_mode = 1
 
@@ -716,12 +869,18 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="Editor/SettingsTabs/Actors/VBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
 text = "Actors"
 horizontal_alignment = 1
 
 [node name="ActorTabs" type="TabContainer" parent="Editor/SettingsTabs/Actors/VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+theme_override_styles/panel = ExtResource("10_1ajci")
+theme_override_styles/tab_unselected = ExtResource("10_1ajci")
+theme_override_styles/tab_hovered = ExtResource("12_1ajci")
+theme_override_styles/tab_selected = ExtResource("15_7b55j")
 clip_tabs = false
 
 [node name="Enemies" type="MarginContainer" parent="Editor/SettingsTabs"]
@@ -744,6 +903,10 @@ horizontal_alignment = 1
 [node name="EnemyTabs" type="TabContainer" parent="Editor/SettingsTabs/Enemies/VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+theme_override_styles/panel = ExtResource("10_1ajci")
+theme_override_styles/tab_unselected = ExtResource("10_1ajci")
+theme_override_styles/tab_hovered = ExtResource("12_1ajci")
+theme_override_styles/tab_selected = ExtResource("15_7b55j")
 
 [node name="Return" type="Button" parent="Editor"]
 z_index = 5
@@ -758,4 +921,9 @@ offset_right = 59.5
 offset_bottom = -19.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Return to Title"

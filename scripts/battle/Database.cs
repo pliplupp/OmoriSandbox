@@ -1179,7 +1179,8 @@ public class Database
 					self.CurrentJuice += Skills["Headbutt"].Cost;
 					return;
 				}
-				await AnimationManager.Instance.WaitForScreenAnimation(30, target is Enemy);
+				AnimationManager.Instance.PlayScreenAnimation(30, target is Enemy);
+				await Task.Delay(1500);
 				BattleLogManager.Instance.QueueMessage(self, target, "[actor] headbutts [target]!");
 				if (self.CurrentState is "angry" or "enraged")
 					BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 3f - target.CurrentStats.DEF, false);
@@ -1426,37 +1427,37 @@ public class Database
 			description: "Aubrey Followup",
 			target: SkillTarget.Self,
 			cost: 0,
-			effect: async (_, target) =>
+			effect: async(Actor self, Actor target) =>
 			{
 				PartyMember other = BattleManager.Instance.GetPartyMember(2);
-				BattleLogManager.Instance.QueueMessage(target, other, "[actor] looks at [target].");
+				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(38, false);
 				await Task.Delay(2000);
-				BattleLogManager.Instance.QueueMessage(target, other, "[target] eggs [actor] on!");
-				MakeAngry(target);
+				BattleLogManager.Instance.QueueMessage(self, other, "[target] eggs [actor] on!");
+				MakeAngry(self);
 			},
 			hidden: true
 		);
 
 		Skills["LookAtKel2"] = new Skill(
-		   name: "Look At Kel 2",
-		   description: "Aubrey Followup",
-		   target: SkillTarget.Self,
-		   cost: 0,
-		   effect: async (_, target) =>
+			name: "Look At Kel 2",
+			description: "Aubrey Followup",
+			target: SkillTarget.Self,
+			cost: 0,
+			effect: async(Actor self, Actor target) =>
 		   {
 			   PartyMember other = BattleManager.Instance.GetPartyMember(2);
-			   BattleLogManager.Instance.QueueMessage(target, other, "[actor] looks at [target].");
+			   BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 			   await Task.Delay(1000);
 			   AnimationManager.Instance.PlayScreenAnimation(39, false);
 			   await Task.Delay(2000);
-			   BattleLogManager.Instance.QueueMessage(target, other, "[target] eggs [actor] on!");
-			   target.AddStatModifier("AttackUp", silent: true);
-			   BattleLogManager.Instance.QueueMessage(target, other, "[target] and [actor]'s ATTACK ROSE!");
-			   AnimationManager.Instance.PlayAnimation(214, target);
+			   BattleLogManager.Instance.QueueMessage(self, other, "[target] eggs [actor] on!");
+			   self.AddStatModifier("AttackUp", silent: true);
+			   BattleLogManager.Instance.QueueMessage(self, other, "[target] and [actor]'s ATTACK ROSE!");
+			   AnimationManager.Instance.PlayAnimation(214, self);
 			   AnimationManager.Instance.PlayAnimation(214, other);
-			   MakeAngry(target);
+			   MakeAngry(self);
 			   MakeAngry(other);
 		   },
 		   hidden: true
@@ -1467,19 +1468,19 @@ public class Database
 		  description: "Aubrey Followup",
 		  target: SkillTarget.Self,
 		  cost: 0,
-		  effect: async (_, target) =>
+		  effect: async (Actor self, Actor target) =>
 		  {
 			  PartyMember other = BattleManager.Instance.GetPartyMember(2);
-			  BattleLogManager.Instance.QueueMessage(target, other, "[actor] looks at [target].");
+			  BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 			  await Task.Delay(1000);
 			  AnimationManager.Instance.PlayScreenAnimation(40, false);
 			  await Task.Delay(2000);
-			  BattleLogManager.Instance.QueueMessage(target, other, "[target] eggs [actor] on!");
-			  target.AddTierStatModifier("AttackUp", 3, silent: true);
-			  BattleLogManager.Instance.QueueMessage(target, other, "[target] and [actor]'s ATTACK ROSE!");
-			  AnimationManager.Instance.PlayAnimation(214, target);
+			  BattleLogManager.Instance.QueueMessage(self, other, "[target] eggs [actor] on!");
+			  self.AddTierStatModifier("AttackUp", 3, silent: true);
+			  BattleLogManager.Instance.QueueMessage(self, other, "[target] and [actor]'s ATTACK ROSE!");
+			  AnimationManager.Instance.PlayAnimation(214, self);
 			  AnimationManager.Instance.PlayAnimation(214, other);
-			  target.SetState("enraged");
+			  self.SetState("enraged");
 			  other.SetState("enraged");
 		  },
 		  hidden: true
@@ -1490,18 +1491,18 @@ public class Database
 			description: "Aubrey Followup",
 			target: SkillTarget.Self,
 			cost: 0,
-			effect: async (_, target) =>
+			effect: async (Actor self, Actor target) =>
 			{
 				PartyMember other = BattleManager.Instance.GetPartyMember(3);
-				BattleLogManager.Instance.QueueMessage(target, other, "[actor] looks at [target].");
+				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(41, false);
 				await Task.Delay(2000);
-				AnimationManager.Instance.PlayAnimation(214, target);
+				AnimationManager.Instance.PlayAnimation(214, self);
 				await Task.Delay(1000);
-				BattleLogManager.Instance.QueueMessage(target, other, "[target] tells [actor] to focus!");
-				target.AddStatModifier("DefenseUp");
-				MakeHappy(target);
+				BattleLogManager.Instance.QueueMessage(self, other, "[target] tells [actor] to focus!");
+				self.AddStatModifier("DefenseUp");
+				MakeHappy(self);
 			},
 			hidden: true
 		);
@@ -1511,21 +1512,21 @@ public class Database
 			description: "Aubrey Followup",
 			target: SkillTarget.Self,
 			cost: 0,
-			effect: async (_, target) =>
+			effect: async (Actor self, Actor target) =>
 			{
 				PartyMember other = BattleManager.Instance.GetPartyMember(3);
-				BattleLogManager.Instance.QueueMessage(target, other, "[actor] looks at [target].");
+				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(42, false);
 				await Task.Delay(2000);
-				AnimationManager.Instance.PlayAnimation(214, target);
+				AnimationManager.Instance.PlayAnimation(214, self);
 				await Task.Delay(1000);
-				await AnimationManager.Instance.WaitForAnimation(212, target);
-				int heal = (int)Math.Round(target.CurrentStats.MaxHP * 0.25f, MidpointRounding.AwayFromZero);
-				BattleLogManager.Instance.QueueMessage(target, other, "[target] cheers [actor]!");
-				target.Heal(heal);
-				target.AddTierStatModifier("DefenseUp", 2);
-				MakeHappy(target);
+				await AnimationManager.Instance.WaitForAnimation(212, self);
+				int heal = (int)Math.Round(self.CurrentStats.MaxHP * 0.25f, MidpointRounding.AwayFromZero);
+				BattleLogManager.Instance.QueueMessage(self, other, "[target] cheers [actor]!");
+				self.Heal(heal);
+				self.AddTierStatModifier("DefenseUp", 2);
+				MakeHappy(self);
 			},
 			hidden: true
 		);
@@ -1535,23 +1536,23 @@ public class Database
 			description: "Aubrey Followup",
 			target: SkillTarget.Self,
 			cost: 0,
-			effect: async (_, target) =>
+			effect: async (Actor self, Actor target) =>
 			{
 				PartyMember other = BattleManager.Instance.GetPartyMember(3);
-				BattleLogManager.Instance.QueueMessage(target, other, "[actor] looks at [target].");
+				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(43, false);
 				await Task.Delay(2000);
-				AnimationManager.Instance.PlayAnimation(214, target);
+				AnimationManager.Instance.PlayAnimation(214, self);
 				await Task.Delay(1000);
-				await AnimationManager.Instance.WaitForAnimation(212, target);
-				int heal = (int)Math.Round(target.CurrentStats.MaxHP * 0.75f, MidpointRounding.AwayFromZero);
-				int juice = (int)Math.Round(target.CurrentStats.MaxJuice * 0.5f, MidpointRounding.AwayFromZero);
-				BattleLogManager.Instance.QueueMessage(target, other, "[target] cheers [actor]!");
-				target.Heal(heal);
-				target.HealJuice(juice);
-				target.AddTierStatModifier("DefenseUp", 3);
-				target.SetState("ecstatic");
+				await AnimationManager.Instance.WaitForAnimation(212, self);
+				int heal = (int)Math.Round(self.CurrentStats.MaxHP * 0.75f, MidpointRounding.AwayFromZero);
+				int juice = (int)Math.Round(self.CurrentStats.MaxJuice * 0.5f, MidpointRounding.AwayFromZero);
+				BattleLogManager.Instance.QueueMessage(self, other, "[target] cheers [actor]!");
+				self.Heal(heal);
+				self.HealJuice(juice);
+				self.AddTierStatModifier("DefenseUp", 3);
+				self.SetState("ecstatic");
 			},
 			hidden: true
 		);
@@ -1696,7 +1697,7 @@ public class Database
 			cost: 30,
 			effect: async (self, target) =>
 			{
-				BattleLogManager.Instance.QueueMessage("[actor] does a fancy ball trick!");
+				BattleLogManager.Instance.QueueMessage(self, "[actor] does a fancy ball trick!");
 				await AnimationManager.Instance.WaitForScreenAnimation(58, target is Enemy);
 				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 2 - target.CurrentStats.DEF, false, 0.3f);
 				await Task.Delay(1000);
@@ -1727,7 +1728,7 @@ public class Database
 		Skills["Rally"] = new Skill(
 			name: "RALLY",
 			description: "[actor] becomes HAPPY. [actor]'s friends recover\nsome ENERGY and JUICE. Cost: 50",
-			target: SkillTarget.Self,
+			target: SkillTarget.AllAllies,
 			cost: 50,
 			effect: async (self, targets) =>
 			{
@@ -1896,7 +1897,7 @@ public class Database
 		Skills["PassToOmori2"] = new Skill(
 			name: "Pass To Omori 2",
 			description: "Kel Followup",
-			target: SkillTarget.Ally,
+			target: SkillTarget.Enemy,
 			cost: 0,
 			effect: async (self, target) =>
 			{
@@ -1914,7 +1915,7 @@ public class Database
 		Skills["PassToOmori3"] = new Skill(
 		   name: "Pass To Omori 3",
 		   description: "Kel Followup",
-		   target: SkillTarget.Ally,
+		   target: SkillTarget.Enemy,
 		   cost: 0,
 		   effect: async (self, target) =>
 		   {
@@ -3005,7 +3006,7 @@ public class Database
 			description: "SEBDoNothing",
 			target: SkillTarget.Self,
 			cost: 0,
-			effect: async (_, target) =>
+			effect: async (_,target) =>
 			{
 				BattleLogManager.Instance.QueueMessage(target, "[actor] looks wistfully\ninto the distance.");
 				await Task.CompletedTask;
@@ -3018,9 +3019,9 @@ public class Database
 			description: "AngstySong",
 			target: SkillTarget.Enemy,
 			cost: 0,
-			effect: async (_, target) =>
+			effect: async (self, target) =>
 			{
-				BattleLogManager.Instance.QueueMessage(target, "[actor] sings sadly...");
+				BattleLogManager.Instance.QueueMessage(self, "[actor] sings sadly...");
 				await AnimationManager.Instance.WaitForScreenAnimation(154, target is Enemy);
 				MakeSad(target);
 			},
@@ -3473,7 +3474,7 @@ public class Database
 			   foreach (Actor enemy in targets)
 			   {
 				   MakeAngry(enemy);
-				   enemy.AddStatModifier("AttackUp", true);
+				   enemy.AddTierStatModifier("AttackUp", silent: true);
 			   }
 			   await Task.CompletedTask;
 		   },
@@ -3745,7 +3746,7 @@ public class Database
 		  {
 			  await AnimationManager.Instance.WaitForAnimation(122, target);
 			  BattleLogManager.Instance.QueueMessage(self, target, "[actor] slaps [target]!");
-			  BattleManager.Instance.Damage(self, target, () => 999, true, 0f, neverCrit: true);
+			  BattleManager.Instance.Damage(target, target, () => 999, true, 0f, neverCrit: true);
 		  },
 		  hidden: true
 		);
@@ -4117,7 +4118,7 @@ public class Database
 			  foreach (Actor member in targets)
 			  {
 				  AnimationManager.Instance.PlayAnimation(215, member);
-				  member.AddStatModifier("AttackDown", true);
+				  member.AddTierStatModifier("AttackDown", silent: true);
 			  }
 			  await Task.Delay(1000);
 		  },
@@ -5793,7 +5794,7 @@ public class Database
 
 				foreach (Enemy enemy in BattleManager.Instance.GetAllEnemies())
 				{
-					enemy.AddStatModifier("Tickle");
+					enemy.AddStatModifier("Tickle", 2);
 				}
 			},
 			hidden: true
@@ -5819,7 +5820,7 @@ public class Database
 
 				foreach (PartyMemberComponent member in BattleManager.Instance.GetAllPartyMembers())
 				{
-					member.Actor.AddStatModifier("Tickle");
+					member.Actor.AddStatModifier("Tickle", 2);
 				}
 			},
 			hidden: true
@@ -5869,14 +5870,14 @@ public class Database
 			hidden: true
 		);
 		
-		Skills["BMHGivePizza"] = new Skill(
-			name: "BMHGivePizza",
-			description: "BMHGivePizza",
+		Skills["BMHGivePizzaFriends"] = new Skill(
+			name: "BMHGivePizzaFriends",
+			description: "BMHGivePizzaFriends",
 			target: SkillTarget.AllEnemies,
 			cost: 0,
 			effect: async (_, targets) =>
 			{
-				DialogueManager.Instance.QueueMessage($"{targets[0].Name} got 10 WHOLE PIZZAS.");
+				DialogueManager.Instance.QueueMessage($"{targets[0].Name.ToUpper()} got 10 WHOLE PIZZAS.");
 				await DialogueManager.Instance.WaitForDialogue();
 				BattleManager.Instance.AddItem("Whole Pizza", 10);
 			},

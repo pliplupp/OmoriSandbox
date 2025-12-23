@@ -18,7 +18,7 @@ public partial class PartyMemberComponent : Node
 	private Label JuiceLabel;
 
 
-	private const float LerpSpeed = 400f;
+	private const float LerpSpeed = 9.2f;
 	private float DisplayedHP;
 	private float DisplayedJuice;
 	private float TargetHP;
@@ -100,9 +100,9 @@ public partial class PartyMemberComponent : Node
 	public override void _Process(double delta)
 	{
 		float dt = (float)delta;
-
-		DisplayedHP = Mathf.MoveToward(DisplayedHP, PartyMember.CurrentHP, dt * LerpSpeed);
-		DisplayedJuice = Mathf.MoveToward(DisplayedJuice, PartyMember.CurrentJuice, dt * LerpSpeed);
+		
+		DisplayedHP = Mathf.MoveToward(DisplayedHP, PartyMember.CurrentHP, dt * ((float)HPBar.MaxValue / 0.5f));
+		DisplayedJuice = Mathf.MoveToward(DisplayedJuice, PartyMember.CurrentJuice, dt * ((float)JuiceBar.MaxValue / 0.5f));
 
 		HPBar.Value = DisplayedHP;
 		JuiceBar.Value = DisplayedJuice;

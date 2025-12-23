@@ -17,7 +17,7 @@ internal sealed class BossmanHero : Enemy
             "BMHHealFoes", "BMHBuffFriends", "BMHBuffFoes", "BMHDebuffFriends", 
             "BMHDebuffFoes", "BMHHappyFriends", "BMHHappyFoes", "BMHSadFriends",
             "BMHSadFoes", "BMHAngryFriends", "BMHAngryFoes", "BMHCritFriends",
-            "BMHCritFoes", "BMHDamageFriends", "BMHDamageFoes", "GGPizzaParty", "BMHGivePizza"];
+            "BMHCritFoes", "BMHDamageFriends", "BMHDamageFoes", "GGPizzaParty", "BMHGivePizzaFriends"];
 
     private readonly Dictionary<int, string> Buffs = new()
     {
@@ -27,7 +27,7 @@ internal sealed class BossmanHero : Enemy
         { 3, "BMHHappyFriends" }, // make all friends happy
         { 4, "BMHSadFriends" }, // make all friends sad
         { 5, "BMHAngryFriends" }, // make all friends angry
-        { 6, "BMHGivePizza" }, // give you 10 whole pizzas
+        { 6, "BMHGivePizzaFriends" }, // give you 10 whole pizzas
         { 7, "BMHCritFriends" } // grant crits to friends
     };
     

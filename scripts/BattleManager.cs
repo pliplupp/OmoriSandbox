@@ -577,8 +577,7 @@ public partial class BattleManager : Node
 				PartyMemberComponent c = CurrentParty.FirstOrDefault(y => y.Actor == x.Actor);
 				if (c == null)
 					return int.MaxValue;
-				else
-					return c.Position;
+				return c.Position;
 			})
 			.ToList();
 
@@ -594,19 +593,20 @@ public partial class BattleManager : Node
 		CommandIndex = -1;
 		Commands.Clear();
 		ProcessedEndOfTurn = false;
-		foreach (PartyMemberComponent member in CurrentParty.Where(x => x.Actor.CurrentState != "toast"))
-		{
-			if (!member.Actor.HasStatModifier("ReleaseEnergyBasil")) 
-				continue;
-			int heal = (int)Math.Round(member.Actor.CurrentStats.MaxHP * 0.1f, MidpointRounding.AwayFromZero);
-			int juice = (int)Math.Round(member.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
-			member.Actor.Heal(heal);
-			member.Actor.HealJuice(juice);
-			SpawnDamageNumber(heal, member.Actor.CenterPoint, DamageType.Heal);
-			SpawnDamageNumber(juice, member.Actor.CenterPoint, DamageType.JuiceGain);
-		}
 		if (!ProcessedStartOfTurn)
 		{
+			foreach (PartyMemberComponent member in CurrentParty.Where(x => x.Actor.CurrentState != "toast"))
+			{
+				if (!member.Actor.HasStatModifier("ReleaseEnergyBasil")) 
+					continue;
+				int heal = (int)Math.Round(member.Actor.CurrentStats.MaxHP * 0.1f, MidpointRounding.AwayFromZero);
+				int juice = (int)Math.Round(member.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
+				member.Actor.Heal(heal);
+				member.Actor.HealJuice(juice);
+				SpawnDamageNumber(heal, member.Actor.CenterPoint, DamageType.Heal);
+				SpawnDamageNumber(juice, member.Actor.CenterPoint, DamageType.JuiceGain);
+			}
+			
 			for (int i = 0; i < Enemies.Count; i++)
 				await Enemies[i].Actor.ProcessStartOfTurn();
 			ProcessedStartOfTurn = true;
@@ -713,11 +713,12 @@ public partial class BattleManager : Node
 				else
 					Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, CurrentParty.First(x => x.Position == CurrentPartyMemberTarget).Actor, SelectedAction));
 				break;
+			// select all party members for now, these will be resolved later
 			case SkillTarget.AllAllies:
-				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, GetAlivePartyMembers().Select(x => x.Actor).ToList(), SelectedAction));
+				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, GetAllPartyMembers().Select(x => x.Actor).ToList(), SelectedAction));
 				break;
 			case SkillTarget.AllDeadAllies:
-				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, GetDeadPartyMembers().Select(x => x.Actor).ToList(), SelectedAction));
+				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, GetAllPartyMembers().Select(x => x.Actor).ToList(), SelectedAction));
 				break;
 			case SkillTarget.AllEnemies:
 				Commands.Add(new BattleCommand(CurrentParty[CurrentPartyMember].Actor, GetAllEnemies(), SelectedAction));
@@ -774,55 +775,69 @@ public partial class BattleManager : Node
 		BattleLogManager.Instance.ClearBattleLog();
 		GD.Print("Processing action " + currentAction.Action.Name);
 		List<Actor> resolvedTargets = [];
-		foreach (Actor target in currentAction.Targets)
+		switch (currentAction.Action.Target)
 		{
-			if (target.CurrentHP == 0)
-			{
-				switch (currentAction.Action.Target)
+			case SkillTarget.AllAllies:
+				resolvedTargets.AddRange(currentAction.Actor is Enemy ? GetAllEnemies() : GetAlivePartyMembers().Select(x => x.Actor));
+				break;
+			case SkillTarget.AllEnemies:
+				resolvedTargets.AddRange(currentAction.Actor is Enemy ? GetAlivePartyMembers().Select(x => x.Actor) : GetAllEnemies());
+				break;
+			case SkillTarget.Ally:
+			case SkillTarget.Enemy:
+			case SkillTarget.AllyOrEnemy:
+				if (currentAction.Targets[0].CurrentState is "toast")
+					resolvedTargets.Add(currentAction.Targets[0] is Enemy ? GetRandomAliveEnemy() : GetRandomAlivePartyMember());
+				else
+					resolvedTargets.Add(currentAction.Targets[0]);
+				break;
+			case SkillTarget.DeadAlly:
+				if (currentAction.Targets[0].CurrentState is not "toast")
 				{
-					case SkillTarget.AllAllies:
-					case SkillTarget.AllEnemies:
-					case SkillTarget.Ally:
-					case SkillTarget.Enemy:
-					case SkillTarget.AllyOrEnemy:
-						resolvedTargets.Add(target is Enemy ? GetRandomAliveEnemy() : GetRandomAlivePartyMember());
-						continue;
-					case SkillTarget.DeadAlly:
-					case SkillTarget.AllDeadAllies:
-						resolvedTargets.Add(target);
-						continue;
-					case SkillTarget.AllyNotSelf:
-					{
-						Actor newTarget = target is Enemy ? GetRandomAliveUniqueEnemy(currentAction.Actor) : GetRandomUniqueAlivePartyMember(currentAction.Actor);
-						if (newTarget == null)
-						{
-							BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + "'s skill had no effect.");
-							SetPhase(BattlePhase.WaitForBattleLog);
-							return;
-						}
-						resolvedTargets.Add(newTarget);
-						continue;
-					}
-				}
-			}
-			else
-			{
-				if (currentAction.Action.Target is SkillTarget.DeadAlly or SkillTarget.AllDeadAllies)
-				{
-					Actor newTarget = target is Enemy ? null : GetRandomDeadPartyMember();
+					Actor newTarget = currentAction.Targets[0] is Enemy
+						? null
+						: GetRandomAlivePartyMember();
 					if (newTarget == null)
 					{
-						BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + "'s skill had no effect.");
+						BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + "'s skill did nothing.");
 						SetPhase(BattlePhase.WaitForBattleLog);
 						return;
 					}
-					// for revival skills we don't want to target the same actor twice
-					if (!resolvedTargets.Contains(newTarget))
-						resolvedTargets.Add(newTarget);
+					resolvedTargets.Add(newTarget);
 				}
-				else 
-					resolvedTargets.Add(target);
-			}
+				else
+					resolvedTargets.Add(currentAction.Targets[0]);
+				break;
+			case SkillTarget.AllDeadAllies:
+				List<PartyMember> deadAllies = GetDeadPartyMembers().Select(x=> x.Actor).ToList();
+				if (currentAction.Actor is Enemy || deadAllies.Count == 0)
+				{
+					BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + "'s skill did nothing.");
+					SetPhase(BattlePhase.WaitForBattleLog);
+					return;
+				}
+				resolvedTargets.AddRange(deadAllies);
+				break;
+			case SkillTarget.AllyNotSelf:
+				if (currentAction.Targets[0].CurrentState is "toast")
+				{
+					Actor newTarget = currentAction.Targets[0] is Enemy
+						? GetRandomAliveUniqueEnemy(currentAction.Actor)
+						: GetRandomUniqueAlivePartyMember(currentAction.Actor);
+					if (newTarget == null)
+					{
+						BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + "'s skill did nothing.");
+						SetPhase(BattlePhase.WaitForBattleLog);
+						return;
+					}
+					resolvedTargets.Add(newTarget);
+				}
+				else
+					resolvedTargets.Add(currentAction.Targets[0]);
+				break;
+			default:
+				resolvedTargets.AddRange(currentAction.Targets);
+				break;
 		}
 		
 		if (currentAction.Action is Skill skill)
@@ -831,7 +846,7 @@ public partial class BattleManager : Node
 			{
 				if (currentAction.Actor.CurrentJuice < skill.Cost)
 				{
-					BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + " does not have enough juice!");
+					BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + " does not have enough JUICE!");
 					SetPhase(BattlePhase.WaitForBattleLog);
 					return;
 				}
@@ -957,10 +972,6 @@ public partial class BattleManager : Node
 				await Enemies[i].Actor.ProcessEndOfTurn();
 			}
 			ProcessedEndOfTurn = true;
-			
-			// tick down stat turn timers
-			CurrentParty.ForEach(x => x.Actor.DecreaseStatTurnCounter());
-			Enemies.ForEach(x => x.Actor.DecreaseStatTurnCounter());
 		}
 
 		// if any commands were added during the ProcessEndOfTurn, we need to run those still
@@ -969,6 +980,10 @@ public partial class BattleManager : Node
 			SetPhase(BattlePhase.PreCommand);
 			return;
 		}
+		
+		// tick down stat turn timers
+		CurrentParty.ForEach(x => x.Actor.DecreaseStatTurnCounter());
+		Enemies.ForEach(x => x.Actor.DecreaseStatTurnCounter());
 
 		CheckBattleOver();
 
@@ -1077,7 +1092,7 @@ public partial class BattleManager : Node
 				return -1;
 			}
 		}
-		float damage = damageFunc();
+		float damage = Math.Max(0, damageFunc());
 		string selfState = self.CurrentState;
 		string targetState = target.CurrentState;
 
@@ -1130,12 +1145,6 @@ public partial class BattleManager : Node
 			mod.OverrideDamage(ref damage, self, target, false);
 		}
 		
-		if (target.HasStatModifier("PlotArmor"))
-		{
-			StatModifier mod = target.StatModifiers["PlotArmor"];
-			mod.OverrideDamage(ref damage, self, target, false);
-		}
-		
 		float rounded = (float)Math.Round(damage, MidpointRounding.AwayFromZero);
 				
 		if (rounded < 0)
@@ -1173,7 +1182,14 @@ public partial class BattleManager : Node
 		if (!SettingsMenuManager.Instance.DisableDamageLimit && rounded > 9999)
 			rounded = 9999;
 
-		int roundedInt = (int)rounded;
+		if (target.HasStatModifier("PlotArmor"))
+		{
+			StatModifier mod = target.StatModifiers["PlotArmor"];
+			mod.OverrideDamage(ref rounded, self, target, false);
+		}
+		
+		int roundedInt = (int)Math.Round(rounded, MidpointRounding.AwayFromZero);
+		
 		target.Damage(roundedInt);
 		if (target is PartyMember)
 		{
@@ -1376,6 +1392,8 @@ public partial class BattleManager : Node
 		if (self == "emotion" && target != "neutral")
 		{
 			effect = 1;
+			if (target == "afraid")
+				return damage * 1.5f;
 			return damage * weakness[GetEmotionTier(target)];
 		}
 
@@ -1534,6 +1552,13 @@ public partial class BattleManager : Node
 	/// <returns>The <see cref="EnemyComponent"/> of the spawned enemy.</returns>
 	public EnemyComponent SummonEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)
 	{
+		while (Enemies.Any(x => x.Actor.CenterPoint == position))
+		{
+			// if this enemy is going to spawn on top of another, nudge them a little
+			// this way the targeting system still works
+			position.X += 0.1f;
+		}
+		
 		EnemyComponent enemy = GameManager.Instance.SpawnEnemy(who, position, startingEmotion, fallsOffScreen, layer);
 		Enemies.Add(enemy);
 		return enemy;
