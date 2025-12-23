@@ -204,7 +204,7 @@ public partial class AnimationManager : Node
 	/// Mainly used for animation layering, such as skill animations that target enemies and need to display underneath the UI.</param>
 	public void PlayScreenAnimation(int id, bool targetsEnemy)
 	{
-		StartAnimation(id, new Vector2(315, 240), targetsEnemy);
+		StartAnimation(id, new Vector2(320, 240), targetsEnemy);
 	}
 
 	/// <summary>

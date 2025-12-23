@@ -198,6 +198,8 @@ public partial class AudioManager : Node
 			if (pair.Value == player)
 			{
 				PlayingSounds.Remove(pair.Key);
+				player.PitchScale = 1f;
+				player.VolumeLinear = 1f;
 				break;
 			}
 		}
@@ -206,10 +208,5 @@ public partial class AudioManager : Node
 	internal IEnumerable<string> GetAllBGM()
 	{
 		return BGMDictionary.Keys;
-	}
-
-	private void OnBGMFinish()
-	{
-		BGM.Play();
 	}
 }

@@ -38,6 +38,20 @@ internal sealed class Boss : Enemy
         if (Stage > 2 || CurrentHP <= 0)
             return;
 
+        if (CurrentHP < 120 && Stage == 0)
+        {
+            DialogueManager.Instance.QueueMessage(this, "Hwehwehwe!@ You weaklings!@ You call that an attack!?");
+            await DialogueManager.Instance.WaitForDialogue();
+            Stage = 1;
+        }
+
+        if (CurrentHP < 60 && Stage <= 1)
+        {
+            DialogueManager.Instance.QueueMessage(this, "Hey, that kinda hurt!@ Hmph!@ This isn't fun anymore.");
+            await DialogueManager.Instance.WaitForDialogue();
+            Stage = 2;
+        }
+                
         if (CurrentHP < 15 && Stage <= 2)
         {
             DialogueManager.Instance.QueueMessage(this, "Grr... Now you've made me angry...");
@@ -46,21 +60,7 @@ internal sealed class Boss : Enemy
             await DialogueManager.Instance.WaitForDialogue();
             SetState("angry", true);
             BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["BSSAttackAll"]);
-            Stage++;
-        }
-
-        if (CurrentHP < 60 && Stage <= 1)
-        {
-            DialogueManager.Instance.QueueMessage(this, "Hey, that kinda hurt!@ Hmph!@ This isn't fun anymore.");
-            await DialogueManager.Instance.WaitForDialogue();
-            Stage++;
-        }
-
-        if (CurrentHP < 120 && Stage == 0)
-        {
-            DialogueManager.Instance.QueueMessage(this, "Hwehwehwe!@ You weaklings!@ You call that an attack!?");
-            await DialogueManager.Instance.WaitForDialogue();
-            Stage++;
+            Stage = 3;
         }
     }
 }

@@ -253,7 +253,7 @@ internal sealed class SpaceExHusband : Enemy
 
     public override async Task OnStartOfBattle()
     {
-        AddStatModifier("SpaceExHusbandBlock", true);
+        AddStatModifier("SpaceExHusbandBlock", silent: true);
         OnStateChanged += (s, e) =>
         {
             BaseStats = GetStatsForEmotion(CurrentState);

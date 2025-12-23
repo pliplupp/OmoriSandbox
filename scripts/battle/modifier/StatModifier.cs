@@ -17,10 +17,10 @@ public class StatModifier
     /// How many turns this stat bonus has remaining.
     /// </summary>
     public int TurnsLeft { get; protected set; } = -1;
+    
     /// <summary>
     /// The max number of turns this stat bonus can be applied for.
     /// </summary>
-
     protected int MaxTurns = -1;
 
     /// <summary>
@@ -85,6 +85,12 @@ public class StatModifier
     public void SetTurnsLeft(int turnsLeft)
     {
         TurnsLeft = Math.Min(turnsLeft, MaxTurns);
+    }
+
+    // TODO: replace
+    internal void SetMaxTurns(int turns)
+    {
+        MaxTurns = turns;
     }
 
     /// <summary>

@@ -90,15 +90,25 @@ internal sealed class UnbreadTwins : Enemy
         if (Stage > 3)
             return;
 
-        if (CurrentHP < 1875 && Stage <= 3)
+        if (CurrentHP < 6000 && Stage == 0)
         {
-            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "We're running low on everything! We have almost nothing left...");
+            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "Fresh bread... fresh bread... Every day, it's fresh bread...");
+            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "Ohooooooooo...");
+            await DialogueManager.Instance.WaitForDialogue();
+            ForceState("UnbreadTwinsSad", "sad");
+            DialogueManager.Instance.QueueMessage("UNBREAD TWINS became SAD...");
+            DialogueManager.Instance.QueueMessage("UNBREAD TWINS can no longer become HAPPY or ANGRY!");
+            await DialogueManager.Instance.WaitForDialogue();
+            EmotionLocked = true;
+            Stage = 1;
+        }
+
+        if (CurrentHP < 4875 && Stage <= 1)
+        {
+            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "We're doomed to bake bread for all enternity...@ aren't we, BISCUIT?");
             DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "Ohooo...");
             await DialogueManager.Instance.WaitForDialogue();
-            ForceState("UnbreadTwinsMiserable", "miserable");
-            DialogueManager.Instance.QueueMessage("UNBREAD TWINS became MISERABLE...");
-            await DialogueManager.Instance.WaitForDialogue();
-            Stage = 4;
+            Stage = 2;
         }
 
         if (CurrentHP < 3750 && Stage <= 2)
@@ -111,27 +121,16 @@ internal sealed class UnbreadTwins : Enemy
             await DialogueManager.Instance.WaitForDialogue();
             Stage = 3;
         } 
-
-
-        if (CurrentHP < 4875 && Stage <= 1)
+        
+        if (CurrentHP < 1875 && Stage <= 3)
         {
-            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "We're doomed to bake bread for all enternity...@ aren't we, BISCUIT?");
+            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "We're running low on everything! We have almost nothing left...");
             DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "Ohooo...");
             await DialogueManager.Instance.WaitForDialogue();
-            Stage = 2;
-        }
-
-        if (CurrentHP < 6000 && Stage == 0)
-        {
-            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "Fresh bread... fresh bread... Every day, it's fresh bread...");
-            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "Ohooooooooo...");
+            ForceState("UnbreadTwinsMiserable", "miserable");
+            DialogueManager.Instance.QueueMessage("UNBREAD TWINS became MISERABLE...");
             await DialogueManager.Instance.WaitForDialogue();
-            ForceState("UnbreadTwinsSad", "sad");
-            DialogueManager.Instance.QueueMessage("UNBREAD TWINS became SAD...");
-            DialogueManager.Instance.QueueMessage("UNBREAD TWINS can no longer become HAPPY or ANGRY!");
-            await DialogueManager.Instance.WaitForDialogue();
-            EmotionLocked = true;
-            Stage = 1;
+            Stage = 4;
         }
     }
 
@@ -162,5 +161,6 @@ internal sealed class UnbreadTwins : Enemy
         // in the Unbread Twins fight, the spawned enemy acts immediately after being spawned
         BattleCommand command = enemy.Actor.ProcessAI();
         BattleManager.Instance.ForceCommand(enemy.Actor, command.Targets, command.Action as Skill);
+        SpawnedBread.Add(enemy);
     }
 }

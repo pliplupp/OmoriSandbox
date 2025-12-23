@@ -1,0 +1,32 @@
+[gd_resource type="SpriteFrames" load_steps=5 format=3 uid="uid://d1x6v885rbwn5"]
+
+[ext_resource type="Texture2D" uid="uid://g8g66dxi14xd" path="res://assets/Omori_TitleScreen_normal.png" id="1_megdb"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_megdb"]
+atlas = ExtResource("1_megdb")
+region = Rect2(612, 0, 306, 351)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1g0gh"]
+atlas = ExtResource("1_megdb")
+region = Rect2(306, 0, 306, 351)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xauam"]
+atlas = ExtResource("1_megdb")
+region = Rect2(0, 0, 306, 351)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_megdb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1g0gh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xauam")
+}],
+"loop": true,
+"name": &"default",
+"speed": 3.0
+}]

@@ -9,15 +9,27 @@ namespace OmoriSandbox.Battle.Modifier;
 public sealed class AubreyCounterModifier : StatModifier
 {
     public AubreyCounterModifier(int turns) : base(turns) { }
+
+    private bool HasCounteredThisTurn = false;
+    
     public override void OverrideDamage(ref float damage, Actor attacker, Actor defender, bool isAttacking)
     {
         if (isAttacking)
+        {
+            // if we're attacking, presumably this is a counter attack
+            // so we can reset this value back to false
+            HasCounteredThisTurn = false;
+            return;
+        }
+
+        if (HasCounteredThisTurn)
             return;
 
         BattleCommand command = BattleManager.Instance.GetCurrentCommand();
 
         if (attacker is Enemy && command.Action is Skill skill && skill.Target == SkillTarget.Enemy)
         {
+            HasCounteredThisTurn = true;
             BattleManager.Instance.ForceCommand(defender, attacker, defender.Skills.First().Value);
         }
     }

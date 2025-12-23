@@ -23,7 +23,7 @@ internal class DiscordManager
                 Assets =
                 {
                     LargeImage = "icon",
-                    LargeText = "OmoriSandbox v0.9.2"
+                    LargeText = "OmoriSandbox v0.9.3"
                 },
                 Instance = false
             };
