@@ -24,6 +24,8 @@ internal partial class DamageNumber : Node2D
             Modulate = Color.Color8(255, 0, 0, 0);
         else
             Modulate = Colors.Transparent;
+        ZAsRelative = false;
+        ZIndex = 5;
     }
 
     // since we spawn in damage numbers we need to cache this texture from elsewhere

@@ -92,7 +92,7 @@ internal sealed class BossmanHero : Enemy
         {
             foreach (EnemyComponent enemy in GatorGuys)
                 enemy.Actor.CurrentHP = 0;
-            DialogueManager.Instance.QueueMessage("HERO", CenterPoint, "Friends...@ Let's...@ make a de...@ Huff...@ Huff...@ Wheeze...");
+            DialogueManager.Instance.QueueMessage("HERO", CenterPoint, @"Friends...\! Let's...\! make a de...\! Huff...\| Huff...\| Wheeze...");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }
@@ -101,7 +101,7 @@ internal sealed class BossmanHero : Enemy
     {
         if (!victory)
         {
-            DialogueManager.Instance.QueueMessage("HERO", CenterPoint, "Sorry friends...@ You should have taken my offer when you had the chance!");
+            DialogueManager.Instance.QueueMessage("HERO", CenterPoint, @"Sorry friends...\| You should have taken my offer when you had the chance!");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }

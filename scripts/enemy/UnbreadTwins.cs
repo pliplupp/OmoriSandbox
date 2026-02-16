@@ -81,8 +81,8 @@ internal sealed class UnbreadTwins : Enemy
 
         if (CurrentHP <= 0)
         {
-            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "Our resources have been depleted...@ What will we do without ingredients?");
-            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "Ohooooo...");
+            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, @"Our resources have been depleted...\! What will we do without ingredients?");
+            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "[wave freq=10]Ohooooo...");
             await DialogueManager.Instance.WaitForDialogue();
             return;
         }
@@ -92,8 +92,8 @@ internal sealed class UnbreadTwins : Enemy
 
         if (CurrentHP < 6000 && Stage == 0)
         {
-            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "Fresh bread... fresh bread... Every day, it's fresh bread...");
-            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "Ohooooooooo...");
+            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, @"[wave freq=10][br]Fresh bread...\! fresh bread...\! Every day, it's fresh bread...");
+            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "[wave freq=10][br]Ohooooooooo...");
             await DialogueManager.Instance.WaitForDialogue();
             ForceState("UnbreadTwinsSad", "sad");
             DialogueManager.Instance.QueueMessage("UNBREAD TWINS became SAD...");
@@ -105,8 +105,8 @@ internal sealed class UnbreadTwins : Enemy
 
         if (CurrentHP < 4875 && Stage <= 1)
         {
-            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "We're doomed to bake bread for all enternity...@ aren't we, BISCUIT?");
-            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "Ohooo...");
+            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, @"We're doomed to bake bread for all enternity...\! aren't we, BISCUIT?");
+            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "[wave freq=10]Ohooo...");
             await DialogueManager.Instance.WaitForDialogue();
             Stage = 2;
         }
@@ -114,7 +114,7 @@ internal sealed class UnbreadTwins : Enemy
         if (CurrentHP < 3750 && Stage <= 2)
         {
             DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "We're running out of supplies! What do we do, BISCUIT!?");
-            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "Ohooooooo!");
+            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "[wave freq=10]Ohooooooo!");
             await DialogueManager.Instance.WaitForDialogue();
             ForceState("UnbreadTwinsDepressed", "depressed");
             DialogueManager.Instance.QueueMessage("UNBREAD TWINS became DEPRESSED...");
@@ -124,8 +124,8 @@ internal sealed class UnbreadTwins : Enemy
         
         if (CurrentHP < 1875 && Stage <= 3)
         {
-            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "We're running low on everything! We have almost nothing left...");
-            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "Ohooo...");
+            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, @"We're running low on everything!\! We have almost nothing left...");
+            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "[wave freq=10]Ohooo...");
             await DialogueManager.Instance.WaitForDialogue();
             ForceState("UnbreadTwinsMiserable", "miserable");
             DialogueManager.Instance.QueueMessage("UNBREAD TWINS became MISERABLE...");
@@ -138,10 +138,10 @@ internal sealed class UnbreadTwins : Enemy
     {
         if (!victory)
         {
-            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "BISCUIT!@ It's a miracle! We've been saved by the gods!");
-            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "Ohooooo!");
-            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, "Now I guess it's back to making... fresh bread... fresh bread... fresh bread...");
-            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "Ohoo...");
+            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, @"BISCUIT!\! It's a miracle!\![br]We've been saved by the gods!");
+            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "[wave freq=10]Ohooooo!");
+            DialogueManager.Instance.QueueMessage("DOUGHIE", CenterPoint, @"Now I guess it's back to making... [wave freq=10]fresh bread...\! fresh bread...\! fresh bread...");
+            DialogueManager.Instance.QueueMessage("BISCUIT", CenterPoint, "[wave freq=10]Ohoo...");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }

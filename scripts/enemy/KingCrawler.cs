@@ -33,7 +33,7 @@ internal sealed class KingCrawler : Enemy
         if (Roll() < 41)
             return new BattleCommand(this, SelectTarget(), Skills["KCAttack"]);
         if (Roll() < 26)
-            return new BattleCommand(this, SelectTarget(), Skills["KCDoNothing"]);
+            return new BattleCommand(this, this, Skills["KCDoNothing"]);
         if (Roll() < 31)
             return new BattleCommand(this, SelectTarget(), Skills["KCCrunch"]);
         return new BattleCommand(this, SelectAllTargets(), Skills["KCRam"]);
@@ -44,7 +44,7 @@ internal sealed class KingCrawler : Enemy
     {
         if (CurrentHP < 365 && !HasSpoken)
         {
-            DialogueManager.Instance.QueueMessage(this, "Ssssssssssssss...");
+            DialogueManager.Instance.QueueMessage(this, "[br][shake rate=20][font_size=12]Ssssssssssssssssssss...");
             await DialogueManager.Instance.WaitForDialogue();
             HasSpoken = true;
         }
@@ -82,7 +82,7 @@ internal sealed class KingCrawler : Enemy
     {
         if (!victory)
         {
-            DialogueManager.Instance.QueueMessage(this, "KISHKISHKISHKISH!!");
+            DialogueManager.Instance.QueueMessage(this, "[br][shake rate=20][font_size=12]KISHKISHKISHKISHKISH!!");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }

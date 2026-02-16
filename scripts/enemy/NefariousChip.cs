@@ -76,7 +76,7 @@ internal sealed class NefariousChip : Enemy
         if (CurrentHP < 1728 && !HasSpoken)
         {
             DialogueManager.Instance.QueueMessage(this, "Mamma-mia...");
-            DialogueManager.Instance.QueueMessage(this, "Is...@ Is getting hot in here, no?");
+            DialogueManager.Instance.QueueMessage(this, @"...\! Is...\![br]Is getting hot in here, no?");
             await DialogueManager.Instance.WaitForDialogue();
             HasSpoken = true;
         }
@@ -86,7 +86,7 @@ internal sealed class NefariousChip : Enemy
     {
         if (!victory)
         {
-            DialogueManager.Instance.QueueMessage(this, "YAHOO!@ WAA-HAA!!");
+            DialogueManager.Instance.QueueMessage("[font_size=36][wave freq=10.0]YAHOO! WAA-HAA!!");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }

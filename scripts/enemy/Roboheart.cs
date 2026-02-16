@@ -71,7 +71,7 @@ internal sealed class Roboheart : Enemy
     {
         if (CurrentHP <= 0)
         {
-            DialogueManager.Instance.QueueMessage(this, "V2h5Pw==");
+            DialogueManager.Instance.QueueMessage(this, "[br]V2h5Pw==");
             await DialogueManager.Instance.WaitForDialogue();
             return;
         }
@@ -98,7 +98,7 @@ internal sealed class Roboheart : Enemy
     {
         if (!victory)
         {
-            DialogueManager.Instance.QueueMessage(this, "Tm8sIEkgZGlkbid0I\nG1lYW4gdG8h");
+            DialogueManager.Instance.QueueMessage(this, "Tm8sIEkgZGlkbid0IG1lYW4gdG8h");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }

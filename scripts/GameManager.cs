@@ -5,17 +5,63 @@ using OmoriSandbox.Animation;
 using OmoriSandbox.Battle;
 using OmoriSandbox.Editor;
 using OmoriSandbox.Modding;
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
 namespace OmoriSandbox;
 
+/* TODO: Update 1.0
+ Features:
+ - Modify text speed - done
+ - More Info / State Icons - in testing
+ - Edit BGM loop point - in testing
+ - Queue restart via keybind during battle - done
+ - Text effects - in testing
+ - Boss Alt Stats - in progress
+ - Minibosses (Snaley, Shady Mole, etc.) - done
+ - Skip dialogue with 'X' - done
+ - Modifiable keybinds - done
+ - Fullscreen option - done
+ - Premade vanilla presets
+ - Humphrey - in testing
+ - Other Sunny skills - in progress
+ - Update wiki
+ - Add modded animation support
+ - Console exclusive stats + mechanics - in testing
+ - Add quit button - done
+ - Allow damage to be overriden at various points of the calculation - done
+ - basil release energy double use bonus - done
+ - Other TODOs
+ Bugfixes:
+ - Tiered stat modifiers do not increment - done
+ - Enemies can stack on top of each other preventing selection - in testing
+ - Capitalize 'emotions' and 'heart' in perfectheart text - done
+ - 'OMORI did not succumb' text is missing - done
+ - Certain hit sounds do not play, seemingly at random
+ - Mr Jawsum redirect damage should ignore juice - done
+ - Mr Jawsum shouldn't be crit for 2 damage - done
+ - Last Resort shouldn't hurt the user if it misses - done
+ - Audio pitch/volume still doesn't get reset after being modified - in testing
+ - Boss Hero/Kel/Aubrey shouldn't be able to call themselves - done
+ - Pluto (expanded)'s headbutt has bugged text - done
+ - Backing out of selecting a target for an item deletes the item - done
+ - Bossman Hero's enemy buff should remove all debuffs first - done
+ - Basil followups use incorrect targeting - done
+ - Using certain enemy skills on party members breaks the game
+ - Given key was not present in the dictionary BattleManager.cs:756 - done
+ - Poetry book has no animation - done
+ - Perfectheart exploit breaks with plot armor - fixed?
+ - Fix menu wrapping - done
+ - Fix Skill/Snack/Toy menu back going back to menu it came from - done
+ - Make skill/toy menu appear on top of battle menu
+ - Fix followups (party and bosses) with less than 4 party members
+ */
+
 internal partial class GameManager : Node
 {
 	[Export] private PackedScene BattlecardUI;
-	[Export] private PackedScene EnemyUI;
+	[Export] private PackedScene EnemyNode;
 	[Export] private TextureRect BattlebackParent;
 	[Export] private Label FPSLabel;
 	[Export] private Node Party;
@@ -67,6 +113,9 @@ internal partial class GameManager : Node
 		bool DisableDialogue = false;
 		if (data.TryGetValue("disableDialogue", out Variant value))
 			DisableDialogue = value.AsBool();
+		bool DisableDamageNumbers = false;
+		if (data.TryGetValue("disableDamageNumbers", out value))
+			DisableDamageNumbers = value.AsBool();
 
 		string battleback = data["battleback"].AsString();
 		if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback + ".png"))
@@ -79,8 +128,12 @@ internal partial class GameManager : Node
 		string bgm = StringExtensions.GetBaseName(data["bgm"].AsString());
 		double bgmPitch = 1.0d;
 		if (data.TryGetValue("bgmPitch", out value))
-			bgmPitch =  value.AsDouble();
+			bgmPitch = value.AsDouble();
+		double bgmLoopPoint = 0d;
+		if (data.TryGetValue("bgmLoopPoint", out value))
+			bgmLoopPoint = value.AsDouble();
 		AudioManager.Instance.PlayBGM(bgm, 1f, (float)bgmPitch);
+		AudioManager.Instance.SetBGMLoopOffset(bgmLoopPoint);
 
 		foreach (var entry in actors)
 		{
@@ -126,6 +179,11 @@ internal partial class GameManager : Node
 			Vector2 position = new(float.Parse(positionArr[0], CultureInfo.InvariantCulture), float.Parse(positionArr[1], CultureInfo.InvariantCulture));
 			if (!entry.TryGetValue("layer", out Variant layer))
 				layer = 0;
+			while (enemy.Any(x => x.Actor.CenterPoint == position))
+			{
+				// prevent stacking
+				position += new Vector2(0.01f, 0f);
+			}
 			EnemyComponent en = SpawnEnemy(
 					entry["name"].ToString(),
 					position,
@@ -140,7 +198,7 @@ internal partial class GameManager : Node
 
 		DialogueManager.Instance.DialogueDisabled = DisableDialogue;
 		DiscordManager.SetBattling(enemies.Count);
-		BattleManager.Instance.Init(party, enemy, items, FollowupTier, UseBasilFollowups, UseBasilReleaseEnergy);
+		BattleManager.Instance.Init(party, enemy, items, FollowupTier, UseBasilFollowups, UseBasilReleaseEnergy, DisableDamageNumbers);
 	}
 
 	internal void DespawnAll()
@@ -160,7 +218,7 @@ internal partial class GameManager : Node
 	internal EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)
 	{
 		Enemy instance = Database.CreateEnemy(who);
-		Node2D node = EnemyUI.Instantiate<Node2D>();
+		Node2D node = EnemyNode.Instantiate<Node2D>();
 		BattlebackParent.AddChild(node);
 		GD.Print("Spawning enemy at: " + position);
 		node.GlobalPosition = position;

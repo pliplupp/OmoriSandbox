@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 namespace OmoriSandbox.Menu;
@@ -30,13 +31,27 @@ internal partial class BattleMenu : Menu
 
 	protected override void MoveCursor(Vector2I direction)
 	{
-		int x = CursorIndex % 2;
-		int y = CursorIndex / 2;
-		x = (x + direction.X + GridSize.X) % GridSize.X;
-		y = (y + direction.Y + GridSize.Y) % GridSize.Y;
-		CursorIndex = y * GridSize.X + x;
+		int old = CursorIndex;
+		// the omori battle menu has no wrapping
+		// pressing left or right simply increments/decrements the index
+		if (direction == Vector2.Left)
+			CursorIndex = Math.Max(CursorIndex - 1, 0);
+		else if (direction == Vector2.Right)
+			CursorIndex = Math.Min(CursorIndex + 1, CursorPositions.Count - 1);
+		else if (direction == Vector2.Up)
+		{
+			if (CursorIndex > 1)
+				CursorIndex -= 2;
+		}
+		else if (direction == Vector2.Down)
+		{
+			if (CursorIndex < 2)
+				CursorIndex += 2;
+		}
 		UpdateCursor();
-		AudioManager.Instance.PlaySFX("SYS_move");
+		// only play a sound if the cursor actually moved
+		if (old != CursorIndex)
+			AudioManager.Instance.PlaySFX("SYS_move");
 	}
 
 	protected override void OnSelect()

@@ -29,6 +29,10 @@ internal partial class SkillMenu : Menu
 			if (idx > 3)
 				break;
 			SkillLabels[idx].Text = s.Name;
+			if (actor.CurrentJuice < s.Cost || !s.MeetsRequirements(actor))
+				SkillLabels[idx].AddThemeColorOverride("font_color", Colors.DimGray);
+			else
+				SkillLabels[idx].RemoveThemeColorOverride("font_color");
 			Skills.Add(s);
 			idx++;
 		}
@@ -47,7 +51,7 @@ internal partial class SkillMenu : Menu
         if (Empty) return;
         Skill s = Skills[CursorIndex];
 		CostText.Text = s.Cost.ToString();
-		BattleLogManager.Instance.ClearAndShowMessage($"{s.Name}\n{s.Description.Replace("[actor]", ActorName).Replace("[first]", BattleManager.Instance.GetPartyMember(0).Name)}");
+		BattleLogManager.Instance.ClearAndShowMessage($"{s.Name}\n{s.Description.Replace("[actor]", ActorName.ToUpper()).Replace("[first]", BattleManager.Instance.GetPartyMember(0).Name.ToUpper())}");
 	}
 
 	protected override void MoveCursor(Vector2I direction)

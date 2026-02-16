@@ -12,9 +12,12 @@ internal partial class PartyMenu : Menu
 
 	protected override void MoveCursor(Vector2I direction)
 	{
+		int old = CursorIndex;
 		CursorIndex = (CursorIndex + direction.Y + Options.Count) % Options.Count;
 		UpdateCursor();
-		AudioManager.Instance.PlaySFX("SYS_move");
+		// only play a sound if the cursor actually moved
+		if (old != CursorIndex)
+			AudioManager.Instance.PlaySFX("SYS_move");
 	}
 
 	protected override void OnSelect()

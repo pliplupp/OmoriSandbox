@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=26 format=3 uid="uid://gysj8mucc7lc"]
+[gd_resource type="SpriteFrames" format=3 uid="uid://gysj8mucc7lc"]
 
 [ext_resource type="Texture2D" uid="uid://d3kmgwttmuvh" path="res://assets/faces/01_FA_OMORI_BATTLE.png" id="1_keuhm"]
 

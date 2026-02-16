@@ -56,6 +56,11 @@ public class TierStatModifier : StatModifier
 		MaxTier = bonuses.Length;
 	}
 
+	internal override StateIcon[] GetStateIcons()
+	{
+		return [StateIcons[Math.Min(Tier - 1, StateIcons.Length - 1)]];
+	}
+
 	/// <summary>
 	/// Sets the messages that display in the battle log when the stat modifier is given or the tier is changed.
 	/// </summary>
@@ -83,7 +88,7 @@ public class TierStatModifier : StatModifier
 		MaxTier = tier;
 		return this;
 	}
-
+	
 	/// <summary>
 	/// Directly sets the tier of the stat modifier.
 	/// </summary>
@@ -116,7 +121,9 @@ public class TierStatModifier : StatModifier
 	/// <inheritdoc/>
 	public override void ApplyStats(ref Stats stats)
 	{
-		StatBonus bonus = Bonuses[Tier - 1];
+		if (Bonuses.Length == 0)
+			return;
+		StatBonus bonus = Bonuses[Math.Min(Tier - 1, Bonuses.Length - 1)];
 		int val = stats.GetStat(bonus.Type);
 		val = (int)Math.Round(val * bonus.Multiplier + bonus.FlatBonus);
 		stats.SetStat(bonus.Type, val);

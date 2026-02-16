@@ -21,11 +21,12 @@ public partial class BattleManager : Node
 	[Export] private Sprite2D EnergyBar;
 	[Export] private EnergyDots EnergyDots;
 	[Export] private HBoxContainer MenuButtonContainer;
+	[Export] private Label RestartLabel;
 
 	private List<PartyMemberComponent> CurrentParty = [];
 	private List<EnemyComponent> Enemies = [];
 
-	private BattlePhase Phase = BattlePhase.FightRun;
+	private BattlePhase Phase = BattlePhase.PreBattle;
 	private int CurrentPartyMember = -1;
 	private int CurrentEnemyTarget = -1;
 	private int CurrentPartyMemberTarget = -1;
@@ -46,6 +47,7 @@ public partial class BattleManager : Node
 	private int FollowupTier = 1;
 	private bool UseBasilReleaseEnergy = false;
 	private bool UseBasilFollowups = false;
+	private bool DamageNumbersDisabled = false;
 
 	/// <summary>
 	/// Whether a battle is currently ongoing.
@@ -100,23 +102,7 @@ public partial class BattleManager : Node
 		MenuButtonContainer.GetChild<Button>(0).Pressed += () =>
 		{
 			Reset();
-			string presetName = MainMenuManager.Instance.LastLoadedPreset;
-			string path = "user://presets/" + MainMenuManager.Instance.LastLoadedPreset + ".json";
-			if (!FileAccess.FileExists(path))
-			{
-				GD.PrintErr("Preset file not found at: " + path);
-				return;
-			}
-
-			using FileAccess file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
-			Variant json = Json.ParseString(file.GetAsText());
-
-			if (json.VariantType == Variant.Type.Nil)
-			{
-				GD.PrintErr("Failed to parse preset " + presetName);
-				return;
-			}
-			GameManager.Instance.LoadBattlePreset(json.AsGodotDictionary<string, Variant>());
+			ReloadPreset();
 		};
 
 		MenuButtonContainer.GetChild<Button>(1).Pressed += () =>
@@ -127,7 +113,7 @@ public partial class BattleManager : Node
 		Instance = this;
 	}
 
-	internal void Init(List<PartyMemberComponent> party, List<EnemyComponent> enemies, Godot.Collections.Dictionary<string, int> items, int followupTier, bool useBasilFollowups, bool useBasilReleaseEnergy)
+	internal void Init(List<PartyMemberComponent> party, List<EnemyComponent> enemies, Godot.Collections.Dictionary<string, int> items, int followupTier, bool useBasilFollowups, bool useBasilReleaseEnergy, bool damageNumbersDisabled)
 	{
 		CurrentParty = party.OrderBy(x => x.Position).ToList();
 		Enemies = enemies;
@@ -136,6 +122,7 @@ public partial class BattleManager : Node
 		FollowupTier = followupTier;
 		UseBasilFollowups = useBasilFollowups;
 		UseBasilReleaseEnergy = useBasilReleaseEnergy;
+		DamageNumbersDisabled = damageNumbersDisabled;
 		MenuButtonContainer.Visible = false;
 
 		EnergyBar.Visible = CurrentParty.Any(x => x.HasFollowup);
@@ -237,8 +224,7 @@ public partial class BattleManager : Node
 					
 					if (Commands[^1].Action is Item item)
 					{
-						// Capitalize the item name for dictionary lookup
-						string name = item.Name.Capitalize();
+						string name = CaptializeItemName(item);
 						if (!Items.TryAdd(name, 1))
 							Items[name]++;
 					}
@@ -248,11 +234,21 @@ public partial class BattleManager : Node
 					SetPhase(BattlePhase.PlayerCommand);
 					break;
 				case BattlePhase.TargetSelection:
+					MenuState targetMenu;
+					if (SelectedAction is Item i)
+					{
+						targetMenu = i.IsToy ? MenuState.Toy : MenuState.Snack;
+						string name = CaptializeItemName(i);
+						if (!Items.TryAdd(name, 1))
+							Items[name]++;
+					}
+					else
+						targetMenu = SelectedAction.Name.EndsWith("Attack") ? MenuState.Battle : MenuState.Skill;
 					AudioManager.Instance.PlaySFX("sys_cancel");
 					CurrentEnemyTarget = -1;
 					CurrentPartyMemberTarget = -1;
-					MenuManager.Instance.ShowMenu(MenuState.Battle);
-					SetPhase(BattlePhase.PlayerCommand);
+					MenuManager.Instance.ShowMenu(targetMenu);
+					SetPhase(targetMenu is MenuState.Battle ? BattlePhase.PlayerCommand : BattlePhase.SkillSelection);
 					break;
 				case BattlePhase.SkillSelection:
 					AudioManager.Instance.PlaySFX("sys_cancel");
@@ -298,6 +294,28 @@ public partial class BattleManager : Node
 				}
 			}
 		}
+
+		if (Input.IsActionJustPressed("Restart"))
+		{
+			// don't allow restarts during the setup phase
+			// prevents stuff from breaking
+			if (Phase is BattlePhase.PreBattle)
+				return;
+			
+			// if the restart is requested during a turn, queue it to prevent anything breaking
+			if (Phase is BattlePhase.PreCommand or
+			    BattlePhase.CommandExecute or
+			    BattlePhase.WaitForBattleLog or
+			    BattlePhase.PostCommand or
+				BattlePhase.EnemyDying)
+				RestartLabel.Visible = true;
+			else
+			{
+				// otherwise, just reset immediately
+				Reset();
+				ReloadPreset();
+			}
+		}
 	}
 
 	private void HandleInputDirection(InputDirection direction)
@@ -337,27 +355,20 @@ public partial class BattleManager : Node
 		if (Enemies.Count < 2)
 			return current;
 
-		float currentX = Enemies[current].Actor.CenterPoint.X;
-
-		var left = Enemies
+		var sortedEnemies = Enemies
 			.Select((enemy, index) => new { Enemy = enemy, Index = index })
-			.Where(e => e.Index != current && e.Enemy.Actor.CenterPoint.X <= currentX)
-			.OrderByDescending(e => e.Enemy.Actor.CenterPoint.X)
-			.ToList();
-
-		var right = Enemies
-			.Select((enemy, index) => new { Enemy = enemy, Index = index })
-			.Where(e => e.Index != current && e.Enemy.Actor.CenterPoint.X >= currentX)
 			.OrderBy(e => e.Enemy.Actor.CenterPoint.X)
+			.ThenBy(e => e.Index)
 			.ToList();
+		
+		int sortedPosition = sortedEnemies.FindIndex(e => e.Index == current);
 
-		// sanity check
-		if (left.Count == 0 && right.Count == 0)
-			return current;
-
+		int nextPosition;
 		if (direction == InputDirection.Right)
-			return right.FirstOrDefault()?.Index ?? left.Last().Index;
-		return left.FirstOrDefault()?.Index ?? right.Last().Index;
+			nextPosition = (sortedPosition + 1) % sortedEnemies.Count;
+		else
+			nextPosition = (sortedPosition - 1 + sortedEnemies.Count) % sortedEnemies.Count;
+		return sortedEnemies[nextPosition].Index;
 	}
 
 	private int SelectPartyMember(int current, InputDirection direction)
@@ -385,6 +396,7 @@ public partial class BattleManager : Node
 		CurrentParty.Clear();
 		Enemies.Clear();
 		Items.Clear();
+		Commands.Clear();
 		MenuManager.Instance.ShowMenu(MenuState.None, true);
 		MenuManager.Instance.ClearLastSelected();
 		EnergyBar.Visible = false;
@@ -393,10 +405,34 @@ public partial class BattleManager : Node
 		Delay.Timeout -= OnDelayTimeout;
 		Delay.QueueFree();
 		BattleLogManager.Instance.FinishedLogging -= OnBattleLogFinished;
-		Phase = BattlePhase.FightRun;
+		DialogueManager.Instance.Reset();
+		AudioManager.Instance.Reset();
+		Phase = BattlePhase.PreBattle;
 		ProcessedStartOfTurn = false;
 		ProcessedEndOfTurn = false;
+		RestartLabel.Visible = false;
 		IsBattling = false;
+	}
+
+	private void ReloadPreset()
+	{
+		string presetName = MainMenuManager.Instance.LastLoadedPreset;
+		string path = "user://presets/" + MainMenuManager.Instance.LastLoadedPreset + ".json";
+		if (!FileAccess.FileExists(path))
+		{
+			GD.PrintErr("Preset file not found at: " + path);
+			return;
+		}
+
+		using FileAccess file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+		Variant json = Json.ParseString(file.GetAsText());
+
+		if (json.VariantType == Variant.Type.Nil)
+		{
+			GD.PrintErr("Failed to parse preset " + presetName);
+			return;
+		}
+		GameManager.Instance.LoadBattlePreset(json.AsGodotDictionary<string, Variant>());
 	}
 
 	internal void OnSelectAttack()
@@ -417,13 +453,7 @@ public partial class BattleManager : Node
 	internal void OnSelectSkill(Skill skill)
 	{
 		SelectedAction = skill;
-		// TODO: handle emotion locked skills better
-		if (CurrentParty[CurrentPartyMember].Actor.CurrentState == "afraid" && !(skill.Name == "GUARD" || skill.Name == "CALM DOWN"))
-		{
-			AudioManager.Instance.PlaySFX("sys_buzzer");
-			return;
-		}
-		if (CurrentParty[CurrentPartyMember].Actor.CurrentState == "stressed" && skill.Name != "GUARD")
+		if (!skill.MeetsRequirements(CurrentParty[CurrentPartyMember].Actor))
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
 			return;
@@ -453,12 +483,7 @@ public partial class BattleManager : Node
 		}
 
 		Item i = SelectedAction as Item;
-		// convert item name to CamelCase for dictionary lookup
-		string name = i.Name.Capitalize();
-		// Godot's Captialize treats '-' as a regular character and puts a space after it
-		// manually fix that for sno-cone
-		if (i.Name == "SNO-CONE")
-			name = "Sno-Cone";
+		string name = CaptializeItemName(i);
 		Items[name]--;
 		if (Items[name] == 0)
 			Items.Remove(name);
@@ -473,6 +498,15 @@ public partial class BattleManager : Node
 		GD.Print("Entering Phase: " + phase);
 		Phase = phase;
 
+		double delayTime = SettingsMenuManager.Instance.ActionDelay switch
+		{
+			1 => 1.25d,
+			2 => 1d,
+			4 => 0.5d,
+			5 => 0.25d,
+			_ => 1d
+		};
+		
 		switch (Phase)
 		{
 			case BattlePhase.FightRun:
@@ -486,13 +520,13 @@ public partial class BattleManager : Node
 				break;
 			case BattlePhase.PreCommand:
 				CheckBattleOver();
-				Delay.Start(0.75d);
+				Delay.Start(delayTime);
 				break;
 			case BattlePhase.CommandExecute:
 				HandleCommandExecute(); 
 				break;
 			case BattlePhase.PostCommand:
-				Delay.Start(0.75d);
+				Delay.Start(delayTime);
 				break;
 			case BattlePhase.EnemyDying:
 				HandleEnemyDying();
@@ -506,6 +540,13 @@ public partial class BattleManager : Node
 		switch (Phase)
 		{
 			case BattlePhase.PreCommand:
+				if (RestartLabel.Visible)
+				{
+					Reset();
+					ReloadPreset();
+					return;
+				}
+				
 				GD.Print("Command Index: " + CommandIndex);
 				if (CommandIndex >= Commands.Count)
 				{
@@ -518,16 +559,31 @@ public partial class BattleManager : Node
 				break;
 			case BattlePhase.PostCommand:
 				{
-					CurrentParty.ForEach(x =>
+					foreach (PartyMemberComponent member in CurrentParty)
 					{
-						x.Actor.SetHurt(false);
-						if (x.Actor.CurrentHP == 0 && x.Actor.CurrentState != "toast")
+						member.Actor.SetHurt(false);
+						if (member.Actor.CurrentHP == 0 && member.Actor.CurrentState != "toast")
 						{
-							x.Actor.SetState("toast", true);
-							x.Actor.RemoveAllStatModifiers();
+							member.Actor.SetState("toast", true);
+							member.Actor.RemoveAllStatModifiers();
 							AudioManager.Instance.PlaySFX("SYS_you died_2", 1.2f);
 						}
-					});
+
+						if (SettingsMenuManager.Instance.ShowStateIcons)
+						{
+							member.UpdateStateIcons();
+						}
+
+						// this needs to be bundled in with the rest of the plotarmor changes
+						// because this is hard to look at
+						if (member.Actor is Omori omori && omori.CurrentState == "plotarmor" && !omori.HasAnnouncedPlotArmor)
+						{
+							DialogueManager.Instance.QueueMessage("OMORI did not succumb.");
+							await DialogueManager.Instance.WaitForDialogue();
+							omori.HasAnnouncedPlotArmor = true;
+						}
+					}
+					
 					if (Commands[CommandIndex].Actor is PartyMember && Commands[CommandIndex].Action.Name.EndsWith("Attack"))
 					{
 						PartyMemberComponent component = CurrentParty.First(x => x.Actor == Commands[CommandIndex].Actor);
@@ -551,6 +607,7 @@ public partial class BattleManager : Node
 							Enemies.Remove(enemy);
 						}
 					}
+					
 					CommandIndex++;
 					if (DyingEnemies.Count > 0)
 						SetPhase(BattlePhase.EnemyDying);
@@ -597,6 +654,11 @@ public partial class BattleManager : Node
 		{
 			foreach (PartyMemberComponent member in CurrentParty.Where(x => x.Actor.CurrentState != "toast"))
 			{
+				if (member.Actor is Omori omori && omori.CurrentState == "plotarmor")
+				{
+					omori.RemovePlotArmor();
+					omori.RemoveStatModifier("SecondChance");
+				}
 				if (!member.Actor.HasStatModifier("ReleaseEnergyBasil")) 
 					continue;
 				int heal = (int)Math.Round(member.Actor.CurrentStats.MaxHP * 0.1f, MidpointRounding.AwayFromZero);
@@ -612,10 +674,18 @@ public partial class BattleManager : Node
 			ProcessedStartOfTurn = true;
 		}
 		GameManager.Instance.DiscordManager.SetBattling(Enemies.Count);
-		if (CurrentParty.Count > 1)
-			BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " and friends do?");
-		else
-			BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " do?");
+		switch (CurrentParty.Count)
+		{
+			case 1:
+				BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " do?");
+				break;
+			case 2:
+				BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " and " + CurrentParty[1].Actor.Name.ToUpper() + " do?");
+				break;
+			default:
+				BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[0].Actor.Name.ToUpper() + " and friends do?");
+				break;
+		}
 		MenuManager.Instance.ShowButtons(CurrentParty[0].Actor.IsRealWorld);
 		MenuManager.Instance.ShowMenu(MenuState.Party);
 	}
@@ -633,7 +703,15 @@ public partial class BattleManager : Node
 				return;
 			}
 		}
-		BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[CurrentPartyMember].Actor.Name.ToUpper() + " do?");
+
+		if (SettingsMenuManager.Instance.ShowMoreInfo)
+		{
+			Stats stats = CurrentParty[CurrentPartyMember].Actor.CurrentStats;
+			BattleLogManager.Instance.ClearAndShowMessage($"What will {CurrentParty[CurrentPartyMember].Actor.Name.ToUpper()} do?" + 
+			                                              $"\n(ATK: {stats.ATK}, DEF: {stats.DEF}, SPD: {stats.SPD}, LCK: {stats.LCK})");
+		}
+		else
+			BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[CurrentPartyMember].Actor.Name.ToUpper() + " do?");
 		MenuManager.Instance.ShowButtons(CurrentParty[CurrentPartyMember].Actor.IsRealWorld);
 	}
 
@@ -656,7 +734,8 @@ public partial class BattleManager : Node
 				return;
 			case SkillTarget.AllyOrEnemy:
 				CurrentPartyMemberTarget = CurrentParty[CurrentPartyMember].Position;
-				BattleLogManager.Instance.ClearAndShowMessage("Use on whom?\nPress SHIFT to switch sides.");
+				string key = OS.GetKeycodeString(SettingsMenuManager.Instance.GetKeybindForAction("SwitchSides")).ToUpper();	
+				BattleLogManager.Instance.ClearAndShowMessage($"Use on whom?\nPress {key} to switch sides.");
 				MenuManager.Instance.ShowMenu(MenuState.None);
 				return;
 		}
@@ -752,7 +831,7 @@ public partial class BattleManager : Node
 			if (Commands[CommandIndex].Action is Item item)
 			{
 				// refund items if the character died before using it
-				string name = item.Name.Capitalize();
+				string name = CaptializeItemName(item);
 				Items[name]++;
 			}
 			CommandIndex++;
@@ -782,6 +861,17 @@ public partial class BattleManager : Node
 				break;
 			case SkillTarget.AllEnemies:
 				resolvedTargets.AddRange(currentAction.Actor is Enemy ? GetAlivePartyMembers().Select(x => x.Actor) : GetAllEnemies());
+				break;
+			case SkillTarget.XRandomEnemies:
+				foreach (Actor target in currentAction.Targets)
+				{
+					if (target.CurrentState is "toast")
+						resolvedTargets.Add(target is Enemy ? GetRandomAliveEnemy() : GetRandomAlivePartyMember());
+					else
+					{
+						resolvedTargets.Add(target);
+					}
+				}
 				break;
 			case SkillTarget.Ally:
 			case SkillTarget.Enemy:
@@ -967,6 +1057,15 @@ public partial class BattleManager : Node
 	{
 		if (!ProcessedEndOfTurn)
 		{
+			// tick down stat turn timers
+			// vanilla omori bug: stats decrease before of end of turn enemy skills
+			CurrentParty.ForEach(x =>
+			{
+				x.Actor.DecreaseStatTurnCounter();
+				x.UpdateStateIcons();
+			});
+			Enemies.ForEach(x => x.Actor.DecreaseStatTurnCounter());
+			
 			for (int i = 0; i < Enemies.Count; i++)
 			{
 				await Enemies[i].Actor.ProcessEndOfTurn();
@@ -980,10 +1079,6 @@ public partial class BattleManager : Node
 			SetPhase(BattlePhase.PreCommand);
 			return;
 		}
-		
-		// tick down stat turn timers
-		CurrentParty.ForEach(x => x.Actor.DecreaseStatTurnCounter());
-		Enemies.ForEach(x => x.Actor.DecreaseStatTurnCounter());
 
 		CheckBattleOver();
 
@@ -1000,7 +1095,7 @@ public partial class BattleManager : Node
 	private void HandleEnemyDying()
 	{
 		Tween tween = CreateTween();
-		tween.TweenInterval(0.5f);
+		tween.TweenInterval(0.75f);
 		foreach (Node2D enemy in DyingEnemies)
 		{
 			tween.Parallel().TweenProperty(enemy, "position", enemy.Position + new Vector2(0, 400f), 0.50f);
@@ -1072,13 +1167,14 @@ public partial class BattleManager : Node
 	/// <param name="target">The target/defender.</param>
 	/// <param name="damageFunc">The damage function to use in the damage calculation.<br/><br/>
 	/// A common example is the calculation for basic attacks, as shown by this example:<br/>
-	/// <c>() => { return self.CurrentStats.ATK * 2 - target.CurrentStats.DEF; }</c></param>
+	/// <c>() => self.CurrentStats.ATK * 2 - target.CurrentStats.DEF;</c></param>
 	/// <param name="neverMiss">If this attack should never miss.</param>
 	/// <param name="variance">The damage variance. Damage will be multiplied between (1 - variance) and (1 + variance).</param>
 	/// <param name="guaranteeCrit">If this attack should guarantee a critical hit.</param>
 	/// <param name="neverCrit">If this attack should never be a critical hit.</param>
+	/// <param name="ignoreEmotion">If this attack should ignore emotion advantage.</param>
 	/// <returns>The final damage after all critical, emotion, juice loss, and stat modifications have been applied.</returns>
-	public int Damage(Actor self, Actor target, Func<float> damageFunc, bool neverMiss = true, float variance = 0.2f, bool guaranteeCrit = false, bool neverCrit = false)
+	public int Damage(Actor self, Actor target, Func<float> damageFunc, bool neverMiss = true, float variance = 0.2f, bool guaranteeCrit = false, bool neverCrit = false, bool ignoreEmotion = false)
 	{
 		if (!neverMiss)
 		{
@@ -1101,49 +1197,49 @@ public partial class BattleManager : Node
 			selfState = (self.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
 		}
 
+		// TODO: replace once plot armor is improved
+		if (selfState is "plotarmor")
+		{
+			selfState = (self as Omori).OldEmotion;
+		}
+
 		if (target.HasLockedEmotion())
 		{
 			targetState = (target.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
 		}
+
+		ApplyOverrides(DamagePhase.PreEmotion, ref damage, self, target, false);
 		
-		damage = CalculateEmotionModifiers(selfState, targetState, damage, out int effectiveness);
-		bool critical = self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit || target.HasStatModifier("Tickle");
+		int effectiveness = 0;
+		if (!ignoreEmotion)
+			damage = CalculateEmotionModifiers(selfState, targetState, damage, out effectiveness);
+		bool critical =
+			(self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit ||
+			 target.HasStatModifier("Tickle")) && !neverCrit;
 		
-		if (critical && !neverCrit)
+		// even though we know if the attack is a crit or not at this stage, pass false
+		// this may change in the future depending on feedback and use case
+		ApplyOverrides(DamagePhase.PreCrit, ref damage, self, target, false);
+		
+		if (critical)
 		{
 			damage *= 1.5f;
 			BattleLogManager.Instance.QueueMessage("IT HIT RIGHT IN THE HEART!");
 			AudioManager.Instance.PlaySFX("BA_CRITICAL_HIT", volume: 2f);
 		}
 		
-		foreach (StatModifier mod in self.StatModifiers.Values)
-		{
-			// omori calculates flex damage after everything else
-			if (mod is FlexStatModifier)
-				continue;
-			mod.OverrideDamage(ref damage, self, target, true);
-		}
-		
-		foreach (StatModifier mod in target.StatModifiers.Values)
-		{
-			// omori calculates guard after variance
-			if (mod is GuardStatModifier or PlotArmorStatModifier)
-				continue;
-			mod.OverrideDamage(ref damage, self, target, false);
-		}
+		ApplyOverrides(DamagePhase.PreFlatCrit, ref damage, self, target, critical);
 
-		if (critical && !neverCrit)
+		if (critical)
 		{
 			damage += 1.5f;
 		}
+		
+		ApplyOverrides(DamagePhase.PreVariance, ref damage, self, target, critical);
 
 		damage = CalculateVariance(damage, variance);
 
-		if (target.HasStatModifier("Guard"))
-		{
-			StatModifier mod = target.StatModifiers["Guard"];
-			mod.OverrideDamage(ref damage, self, target, false);
-		}
+		ApplyOverrides(DamagePhase.PreRounding, ref damage, self, target, critical);
 		
 		float rounded = (float)Math.Round(damage, MidpointRounding.AwayFromZero);
 				
@@ -1152,12 +1248,7 @@ public partial class BattleManager : Node
 		if (!SettingsMenuManager.Instance.DisableDamageLimit && rounded > 9999)
 			rounded = 9999;
 
-		if (self.HasStatModifier("Flex"))
-		{
-			StatModifier mod = self.StatModifiers["Flex"];
-			mod.OverrideDamage(ref rounded, self, target, true);
-			self.RemoveStatModifier("Flex");
-		}
+		ApplyOverrides(DamagePhase.PreJuice, ref rounded, self, target, critical);
 		
 		int juiceLost = 0;
 		switch (target.CurrentState)
@@ -1181,23 +1272,20 @@ public partial class BattleManager : Node
 			rounded = 0;
 		if (!SettingsMenuManager.Instance.DisableDamageLimit && rounded > 9999)
 			rounded = 9999;
+		
+		rounded = (float)Math.Round(rounded, MidpointRounding.AwayFromZero);
+		
+		ApplyOverrides(DamagePhase.PreApply, ref rounded, self, target, critical);
 
-		if (target.HasStatModifier("PlotArmor"))
-		{
-			StatModifier mod = target.StatModifiers["PlotArmor"];
-			mod.OverrideDamage(ref rounded, self, target, false);
-		}
-		
-		int roundedInt = (int)Math.Round(rounded, MidpointRounding.AwayFromZero);
-		
+		int roundedInt = (int)rounded;
 		target.Damage(roundedInt);
 		if (target is PartyMember)
 		{
 			Energy = Math.Min(10, Energy + 1);
 		}
-		SpawnDamageNumber(roundedInt, target.CenterPoint, critical: (critical && !neverCrit));
+		SpawnDamageNumber(roundedInt, target.CenterPoint, critical: critical);
 		// we don't need to play a hitsound if the attack is a critical or if there's no damage
-		if (!critical && rounded > 0)
+		if (!critical && roundedInt > 0)
 		{
 			GD.Print("Effectiveness: " + effectiveness);
 			if (effectiveness > 0)
@@ -1217,18 +1305,28 @@ public partial class BattleManager : Node
 		
 		if (juiceLost > 0)
 		{
-			BattleLogManager.Instance.QueueMessage(self, target, "[target] lost " + juiceLost + " juice...");
+			BattleLogManager.Instance.QueueMessage(self, target, "[target] lost " + juiceLost + " JUICE...");
 			SpawnDamageNumber(juiceLost, target.CenterPoint, DamageType.JuiceLoss);
 		}
+		
+		ApplyOverrides(DamagePhase.PostApply, ref rounded, self, target, critical);
 
 		return roundedInt;
+	}
+
+	private void ApplyOverrides(DamagePhase phase, ref float damage, Actor attacker, Actor defender, bool isCritical)
+	{
+		foreach (StatModifier mod in attacker.StatModifiers.Values)
+			mod.OverrideDamage(phase, ref damage, attacker, defender, true, isCritical);
+		foreach (StatModifier mod in defender.StatModifiers.Values)
+			mod.OverrideDamage(phase, ref damage, attacker, defender, false, isCritical);
 	}
 
 	/// <summary>
 	/// Calculates juice damage. Misses, critical hits, emotion effectiveness, and stat modifiers are all taken into account. Sadness damage reduction, however, is not.
 	/// </summary>
 	/// /// <remarks>
-	/// Unlike <see cref="Damage(Actor, Actor, Func{float}, bool, float, bool, bool)"/>, this method does not play hit sounds, however it does display damage numbers and queues the battle log.
+	/// Unlike <see cref="Damage(Actor, Actor, Func{float}, bool, float, bool, bool, bool)"/>, this method does not play hit sounds, however it does display damage numbers and queues the battle log.
 	/// </remarks>
 	/// <param name="self">The attacker.</param>
 	/// <param name="target">The target/defender.</param>
@@ -1237,8 +1335,9 @@ public partial class BattleManager : Node
 	/// <param name="variance">The damage variance. Damage will be multiplied between (1 - variance) and (1 + variance).</param>
 	/// <param name="guaranteeCrit">If this attack should guarantee a critical hit.</param>
 	/// <param name="neverCrit">If this attack should never be a critical hit.</param>
+	/// <param name="ignoreEmotion">If this attack should ignore emotion advantage.</param>
 	/// <returns>The final juice damage after all critical, emotion, and stat modifications have been applied.</returns>
-	public int DamageJuice(Actor self, Actor target, Func<float> damageFunc, bool neverMiss = true, float variance = 0.2f, bool guaranteeCrit = false, bool neverCrit = false)
+	public int DamageJuice(Actor self, Actor target, Func<float> damageFunc, bool neverMiss = true, float variance = 0.2f, bool guaranteeCrit = false, bool neverCrit = false, bool ignoreEmotion = false)
 	{
 		if (!neverMiss)
 		{
@@ -1260,50 +1359,46 @@ public partial class BattleManager : Node
 		{
 			selfState = (self.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
 		}
+		
+		// TODO: replace once plot armor is improved
+		if (selfState is "plotarmor")
+		{
+			selfState = (self as Omori).OldEmotion;
+		}
 
 		if (target.HasLockedEmotion())
 		{
 			targetState = (target.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
 		}
 		
-		damage = CalculateEmotionModifiers(selfState, targetState, damage, out int effectiveness);
-		bool critical = self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit || target.HasStatModifier("Tickle");
+		ApplyOverrides(DamagePhase.PreEmotion, ref damage, self, target, false);
 		
-		if (critical && !neverCrit)
+		damage = CalculateEmotionModifiers(selfState, targetState, damage, out _);
+		bool critical =
+			(self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit ||
+			 target.HasStatModifier("Tickle")) && !neverCrit;
+		
+		ApplyOverrides(DamagePhase.PreCrit, ref damage, self, target, false);
+		
+		if (critical)
 		{
 			damage *= 1.5f;
 			BattleLogManager.Instance.QueueMessage("IT HIT RIGHT IN THE HEART!");
 			AudioManager.Instance.PlaySFX("BA_CRITICAL_HIT", volume: 2f);
 		}
 		
-		foreach (StatModifier mod in self.StatModifiers.Values)
-		{
-			// omori calculates flex damage after everything else
-			if (mod is FlexStatModifier)
-				continue;
-			mod.OverrideDamage(ref damage, self, target, true);
-		}
-		
-		foreach (StatModifier mod in target.StatModifiers.Values)
-		{
-			// omori calculates guard after variance
-			if (mod is GuardStatModifier)
-				continue;
-			mod.OverrideDamage(ref damage, self, target, false);
-		}
+		ApplyOverrides(DamagePhase.PreFlatCrit, ref damage, self, target, critical);
 
-		if (critical && !neverCrit)
+		if (critical)
 		{
 			damage += 1.5f;
 		}
+		
+		ApplyOverrides(DamagePhase.PreVariance, ref damage, self, target, critical);
 
 		damage = CalculateVariance(damage, variance);
 
-		if (target.HasStatModifier("Guard"))
-		{
-			StatModifier mod = target.StatModifiers["Guard"];
-			mod.OverrideDamage(ref damage, self, target, false);
-		}
+		ApplyOverrides(DamagePhase.PreRounding, ref damage, self, target, critical);
 		
 		float rounded = (float)Math.Round(damage, MidpointRounding.AwayFromZero);
 				
@@ -1312,17 +1407,14 @@ public partial class BattleManager : Node
 		if (!SettingsMenuManager.Instance.DisableDamageLimit && rounded > 9999)
 			rounded = 9999;
 		
-		if (self.HasStatModifier("Flex"))
-		{
-			StatModifier mod = self.StatModifiers["Flex"];
-			mod.OverrideDamage(ref rounded, self, target, true);
-			self.RemoveStatModifier("Flex");
-		}
+		ApplyOverrides(DamagePhase.PreJuice, ref rounded, self, target, critical);
+		ApplyOverrides(DamagePhase.PreApply, ref rounded, self, target, critical);
 		
 		int roundedInt = (int)rounded;
 		target.DamageJuice(roundedInt);
 		SpawnDamageNumber(roundedInt, target.CenterPoint, DamageType.JuiceLoss);
-		BattleLogManager.Instance.QueueMessage(self, target, "[target] lost " + roundedInt + " juice...");
+		BattleLogManager.Instance.QueueMessage(self, target, "[target] lost " + roundedInt + " JUICE...");
+		ApplyOverrides(DamagePhase.PostApply, ref rounded, self, target, critical);
 		return roundedInt;
 	}
 
@@ -1520,11 +1612,10 @@ public partial class BattleManager : Node
 	/// <param name="critical">If true, the damage number will blink red when spawned.</param>
 	public void SpawnDamageNumber(int damage, Vector2 position, DamageType type = DamageType.Damage, bool critical = false)
 	{
-		DamageNumber dmg = new(damage, type, critical)
-		{
-			ZAsRelative = false,
-			ZIndex = 5
-		};
+		if (DamageNumbersDisabled)
+			return;
+		
+		DamageNumber dmg = new(damage, type, critical);
 		while (DamageNumbers.Contains(position))
 		{
 			position.Y += 40;
@@ -1533,8 +1624,7 @@ public partial class BattleManager : Node
 		AddChild(dmg);
 		DamageNumbers.Add(position);
 
-		SceneTreeTimer timer = GetTree().CreateTimer(1.5f);
-		timer.Timeout += () =>
+		GetTree().CreateTimer(1.5f).Timeout += () =>
 		{
 			dmg.Despawn();
 			DamageNumbers.Remove(position);
@@ -1547,7 +1637,7 @@ public partial class BattleManager : Node
 	/// <param name="who">Which enemy to spawn.</param>
 	/// <param name="position">The screen position to spawn the enemy at. The enemy will spawn centered at this position.</param>
 	/// <param name="startingEmotion">The enemy's starting emotion.</param>
-	/// <param name="fallsOffScreen">Whether or not this enemy should fall off screen when defeated.</param>
+	/// <param name="fallsOffScreen">Whether this enemy should fall off-screen when defeated.</param>
 	/// <param name="layer">The layer to spawn this enemy on.</param>
 	/// <returns>The <see cref="EnemyComponent"/> of the spawned enemy.</returns>
 	public EnemyComponent SummonEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)
@@ -1563,7 +1653,7 @@ public partial class BattleManager : Node
 		Enemies.Add(enemy);
 		return enemy;
 	}
-
+	
 	/// <summary>
 	/// Adds the given <paramref name="amount"/> to the energy bar, up to a maximum of 10.
 	/// </summary>
@@ -1722,10 +1812,19 @@ public partial class BattleManager : Node
 
 		return result;
 	}
+
+	// converts item name to CamelCase for dictionary lookup
+	private string CaptializeItemName(Item item)
+	{
+		// Godot's Captialize treats '-' as a regular character and puts a space after it
+		// manually fix that for sno-cone
+		return item.Name == "SNO-CONE" ? "Sno-Cone" : item.Name.Capitalize();
+	}
 }
 
 internal enum BattlePhase
 {
+	PreBattle,
 	FightRun,
 	PlayerCommand,
 	TargetSelection,

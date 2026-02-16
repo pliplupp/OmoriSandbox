@@ -13,6 +13,23 @@ namespace OmoriSandbox.Actors;
 // Faraway Town Enemies
 // Omori
 
+/* TODO: Alt enemies
+- Kite Kid - done?
+- Ye Old Sprout - done
+- Download Window - done
+- Space Ex-Bf - done
+- Earth - done
+- King Crawler - done
+- Sir Maximus I/II/III
+- Sweetheart - done
+- Unbread Twins - done
+- Mr Jawsum + Gator Guys - done
+- Pluto (Expanded) - done?
+- Slime Girls - done
+
+!!! Fix HP requirements on alt enemies !!!
+*/
+
 /// <summary>
 /// An <see cref="Actor"/> that is considered an enemy. Can be inherited to create a new enemy.
 /// </summary>

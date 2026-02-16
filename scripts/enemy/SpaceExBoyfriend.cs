@@ -87,15 +87,15 @@ internal sealed class SpaceExBoyfriend : Enemy
     laser:
         return new BattleCommand(this, SelectTarget(), Skills["SpaceLaser"]);
     bullet:
-        return new BattleCommand(this, SelectAllTargets(), Skills["BulletHell"]);
+        return new BattleCommand(this, SelectTargets(4), Skills["BulletHell"]);
     }
 
     public override async Task ProcessBattleConditions()
     {
         if (CurrentHP <= 0)
         {
-            DialogueManager.Instance.QueueMessage(this, "Ugh...@ my heart...");
-            DialogueManager.Instance.QueueMessage(this, "It...@ hurts...");
+            DialogueManager.Instance.QueueMessage(this, @"[br]Ugh...\! my heart...");
+            DialogueManager.Instance.QueueMessage(this, @"[br]It...\! hurts...");
             await DialogueManager.Instance.WaitForDialogue();
             return;
         }
@@ -105,7 +105,7 @@ internal sealed class SpaceExBoyfriend : Enemy
 
         if (CurrentHP < 1013 && Stage == 0)
         {
-            DialogueManager.Instance.QueueMessage(this, "My rage cannot be contained...@ You cannot placate me!");
+            DialogueManager.Instance.QueueMessage(this, "[br]My rage cannot be contained...[br]You cannot placate me!");
             await DialogueManager.Instance.WaitForDialogue();
             ForceState("SpaceExAngry", "angry");
             DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND became ANGRY!");
@@ -118,8 +118,8 @@ internal sealed class SpaceExBoyfriend : Enemy
         if (CurrentHP < 675 && Stage <= 1)
         {
             EmotionLocked = false;
-            DialogueManager.Instance.QueueMessage(this, "Gah! How are you still moving!?");
-            DialogueManager.Instance.QueueMessage(this, "I...@ I won't let you defeat me!");
+            DialogueManager.Instance.QueueMessage(this, @"[br]Gah!\! How are you still moving!?");
+            DialogueManager.Instance.QueueMessage(this, @"[br]I...\! I won't let you defeat me!");
             await DialogueManager.Instance.WaitForDialogue();
             ForceState("SpaceExEnraged", "enraged");
             DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND became ENRAGED!");
@@ -131,8 +131,8 @@ internal sealed class SpaceExBoyfriend : Enemy
         if (CurrentHP < 338 && Stage <= 2)
         {
             EmotionLocked = false;
-            DialogueManager.Instance.QueueMessage(this, "Out of my way, earthly scum!");
-            DialogueManager.Instance.QueueMessage(this, "This is your last chance!");
+            DialogueManager.Instance.QueueMessage(this, "[br]Out of my way, earthly scum!");
+            DialogueManager.Instance.QueueMessage(this, "[br]This is your last chance!");
             await DialogueManager.Instance.WaitForDialogue();
             ForceState("SpaceExFurious", "furious");
             DialogueManager.Instance.QueueMessage("SPACE EX-BOYFRIEND became FURIOUS!");
@@ -146,8 +146,8 @@ internal sealed class SpaceExBoyfriend : Enemy
     {
         if (!victory)
         {
-            DialogueManager.Instance.QueueMessage(this, "You should have thought twice before challenging me.");
-            DialogueManager.Instance.QueueMessage(this, "You are nothing but earthly scum!");
+            DialogueManager.Instance.QueueMessage(this, "[br]You should have thought twice before challenging me.");
+            DialogueManager.Instance.QueueMessage(this, "[br]You are nothing but earthly scum!");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }

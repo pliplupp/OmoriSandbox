@@ -1,0 +1,56 @@
+using System.Threading.Tasks;
+using Godot;
+using OmoriSandbox.Animation;
+using OmoriSandbox.Battle;
+
+namespace OmoriSandbox.Actors;
+
+internal sealed class HumphreyGrande : Enemy
+{
+    public override string Name => "HUMPHREY GRANDE";
+    public override SpriteFrames Animation => ResourceLoader.Load<SpriteFrames>("res://animations/humphrey_grande.tres");
+    protected override Stats Stats => new(3700, 425, 68, 30, 1, 10, 95);
+    protected override string[] EquippedSkills => ["HUGAttack"];
+    
+    public override bool IsStateValid(string state)
+    {
+        return state is "neutral" or "sad" or "happy" or "angry" or "toast";
+    }
+    
+    public override BattleCommand ProcessAI()
+    {
+        return new BattleCommand(this, SelectTarget(), Skills["HUGAttack"]);
+    }
+
+    public override Task OnStartOfBattle()
+    {
+        AddStatModifier("Immortal");
+        return Task.CompletedTask;
+    }
+
+    public override async Task ProcessBattleConditions()
+    {
+        if (CurrentHP < 370)
+        {
+            DialogueManager.Instance.QueueMessage("HUMPHREY", CenterPoint, @"[wave freq=10.0]Just a warning... it's about to get smelly!\| It's time for you all to get in my belly![/wave]");
+            await DialogueManager.Instance.WaitForDialogue();
+            await AnimationManager.Instance.WaitForTintScreen(Colors.Black, 0.5f);
+            await Task.Delay(1000);
+            AnimationManager.Instance.TintScreen(Colors.Transparent, 0.1f);
+            await AnimationManager.Instance.WaitForHumphreySwallow();
+            AnimationManager.Instance.TintScreen(Colors.Black);
+            BattleLogManager.Instance.ClearBattleLog();
+            foreach (PartyMember member in SelectAllTargets())
+                BattleManager.Instance.Damage(this, member, () => member.CurrentStats.MaxHP * 0.25f, true, 0.5f, neverCrit: true);
+            EnemyComponent face = BattleManager.Instance.SummonEnemy("HumphreyFace", CenterPoint, fallsOffScreen: false, layer: Layer);
+            // face gets a turn after spawning
+            BattleCommand command = face.Actor.ProcessAI();
+            BattleManager.Instance.ForceCommand(face.Actor, command.Targets, command.Action as Skill);
+            RemoveStatModifier("Immortal");
+            CurrentHP = 0;
+            SetState("toast", true);
+            await Task.Delay(2000);
+            await AnimationManager.Instance.WaitForTintScreen(Colors.Transparent, 1f);
+        }
+    }
+}

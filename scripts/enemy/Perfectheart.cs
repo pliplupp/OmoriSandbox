@@ -42,7 +42,7 @@ internal sealed class Perfectheart : Enemy
     {
         if (CurrentHP < 3500 && !SecondPhase)
         {
-            DialogueManager.Instance.QueueMessage(this, "Oh...@ You are quite strong.");
+            DialogueManager.Instance.QueueMessage(this, @"Oh...\! You are quite strong.");
             DialogueManager.Instance.QueueMessage(this, "It seems I must try a bit harder.");
             await DialogueManager.Instance.WaitForDialogue();
             AudioManager.Instance.PlaySFX("GEN_shine", 0.5f, 0.9f);
@@ -58,8 +58,8 @@ internal sealed class Perfectheart : Enemy
 
         if (CurrentHP < 2500 && !HasSpoken)
         {
-            DialogueManager.Instance.QueueMessage(this, "Hm?@ W-what's this?@ A drop of sweat?");
-            DialogueManager.Instance.QueueMessage(this, "My, my...@ I cannot believe this.");
+            DialogueManager.Instance.QueueMessage(this, @"Hm?\! W-what's this?\! A drop of sweat?");
+            DialogueManager.Instance.QueueMessage(this, @"My, my...\! I cannot believe this.");
             await DialogueManager.Instance.WaitForDialogue();
             HasSpoken = true;
         }
@@ -67,15 +67,15 @@ internal sealed class Perfectheart : Enemy
         if (CurrentHP <= 0)
         {
             OverlaySprite?.QueueFree();
-            DialogueManager.Instance.QueueMessage(this, "Ah.@ You have bested me.");
-            DialogueManager.Instance.QueueMessage(this, "Right, then.@ I know when to admit defeat.");
+            DialogueManager.Instance.QueueMessage(this, @"Ah.\! You have bested me.");
+            DialogueManager.Instance.QueueMessage(this, @"Right, then.\! I know when to admit defeat.");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }
 
     public override async Task OnStartOfBattle()
     {
-        DialogueManager.Instance.QueueMessage(this, "Remember, children...@ You brought this upon yourselves!");
+        DialogueManager.Instance.QueueMessage(this, @"Remember, children...\! You brought this upon yourselves!");
         await DialogueManager.Instance.WaitForDialogue();
     }
 

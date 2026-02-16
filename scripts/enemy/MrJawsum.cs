@@ -33,7 +33,7 @@ internal sealed class MrJawsum : Enemy
         return new BattleCommand(this, SelectAllEnemies(), Skills["MJAttackOrder"]);
     }
 
-    public void SpawnGatorGuy()
+    internal void SpawnGatorGuy()
     {
         if (GatorGuys.Count == 0)
            GatorGuys.Add(BattleManager.Instance.SummonEnemy("GatorGuyJawsum", new Vector2(CenterPoint.X - 145, CenterPoint.Y + 65), layer: Math.Max(0, Layer - 1)));
@@ -42,7 +42,6 @@ internal sealed class MrJawsum : Enemy
         else
         {
             GD.PushWarning("Tried to summon more than 2 gator guys!");
-            return;
         }
     }
 
@@ -61,23 +60,23 @@ internal sealed class MrJawsum : Enemy
         if (Stage > 2) 
             return;
         
-        if (CurrentHP < 297 && Stage == 0)
+        if (CurrentHP < 495 && Stage == 0)
         {
             DialogueManager.Instance.QueueMessage(this, "I WANT THESE KIDS GONE YOU UNDERSTAND!?");
             await DialogueManager.Instance.WaitForDialogue();
             Stage = 1;
         }
         
-        if (CurrentHP < 225 && Stage <= 1)
+        if (CurrentHP < 375 && Stage <= 1)
         {
-            DialogueManager.Instance.QueueMessage(this, "The GATOR GUY who runs them out gets free pizza...@ on me!");
+            DialogueManager.Instance.QueueMessage(this, @"The GATOR GUY who runs them out gets free pizza...\![br][shake rate=20]on me!");
             await DialogueManager.Instance.WaitForDialogue();
             Stage = 2;
         }
         
-        if (CurrentHP < 150 && Stage <= 2)
+        if (CurrentHP < 250 && Stage <= 2)
         {
-            DialogueManager.Instance.QueueMessage(this, "What do you mean we're running low on henchmen!?@ That's impossible!");
+            DialogueManager.Instance.QueueMessage(this, @"What do you mean we're running low on henchmen!?\! That's impossible!");
             await DialogueManager.Instance.WaitForDialogue();
             Stage = 3;
         }
@@ -88,14 +87,14 @@ internal sealed class MrJawsum : Enemy
         AddStatModifier("MrJawsumBarrier");
         SpawnGatorGuy();
         SpawnGatorGuy();
-        DialogueManager.Instance.QueueMessage(this, "Boys...@ would you be so kind as to show these kids the way out?");
+        DialogueManager.Instance.QueueMessage(this, @"Boys...\! would you be so kind as to show these kids the way out?");
         await DialogueManager.Instance.WaitForDialogue();
     }
     public override async Task OnEndOfBattle(bool victory)
     {
         if (!victory) {
-            DialogueManager.Instance.QueueMessage(this, "JAWHAW HAW HAW!!!");
-            DialogueManager.Instance.QueueMessage(this, "That's what happens when you mess with Mr. Jawsum!");
+            DialogueManager.Instance.QueueMessage("[shake amp=50.0][font_size=36]JAWHAW[font_size=48]HAW[font_size=60]HAW!!!");
+            DialogueManager.Instance.QueueMessage(this, "That's what happens when you mess with MR. JAWSUM!");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }

@@ -1,6 +1,7 @@
 using Godot;
 using OmoriSandbox.Actors;
 using System;
+using OmoriSandbox.Battle.Modifier;
 
 namespace OmoriSandbox;
 
@@ -12,13 +13,12 @@ public partial class PartyMemberComponent : Node
 	private PartyMember PartyMember;
 	private StateAnimator StateAnimator;
 	private TextureRect SelectedBox;
+	private HFlowContainer StateIcons;
 	private TextureProgressBar HPBar;
 	private TextureProgressBar JuiceBar;
 	private Label HPLabel;
 	private Label JuiceLabel;
-
-
-	private const float LerpSpeed = 9.2f;
+	
 	private float DisplayedHP;
 	private float DisplayedJuice;
 	private float TargetHP;
@@ -39,6 +39,12 @@ public partial class PartyMemberComponent : Node
     /// </summary>
     public bool HasFollowup => FollowupBubbles != null;
 
+    private Timer HurtTimer = new()
+    {
+	    Autostart = false,
+	    OneShot = true
+    };
+
     internal void SetPartyMember(PartyMember partyMember, PackedScene followup, int position, string initialState, int level, string weapon, string charm, string[] skills)
 	{
 		PartyMember = partyMember;
@@ -52,6 +58,12 @@ public partial class PartyMemberComponent : Node
 		JuiceLabel = GetNode<Label>("../Battlecard/JuiceLabel");
 		JuiceBar = GetNode<TextureProgressBar>("../Battlecard/Juice");
 		SelectedBox = GetNode<TextureRect>("../SelectedCard");
+		StateIcons = GetNode<HFlowContainer>("../StateIcons");
+		if (position % 2 == 0)
+		{
+			StateIcons.Position = new Vector2(0, -65);
+			StateIcons.ReverseFill = true;
+		}
 
 		HPBar.MaxValue = PartyMember.CurrentHP;
 		HPBar.Value = PartyMember.CurrentHP;
@@ -75,7 +87,10 @@ public partial class PartyMemberComponent : Node
 		PartyMember.OnStateChanged += StateChanged;
 		PartyMember.OnHPChanged += HPChanged;
 		PartyMember.OnJuiceChanged += JuiceChanged;
-
+		PartyMember.OnDamaged += Damaged;
+		HurtTimer.Timeout += () => PartyMember.SetHurt(false);
+		AddChild(HurtTimer);
+		
 		PartyMember.Sprite.Animation = initialState;
 		PartyMember.CurrentState = initialState;
 		// delay this call to let everything initialize
@@ -97,6 +112,12 @@ public partial class PartyMemberComponent : Node
 		TargetJuice = PartyMember.CurrentJuice;
 	}
 
+	private void Damaged(object sender, EventArgs e)
+	{
+		PartyMember.SetHurt(true);
+		HurtTimer.Start(1d);
+	}
+
 	public override void _Process(double delta)
 	{
 		float dt = (float)delta;
@@ -109,6 +130,27 @@ public partial class PartyMemberComponent : Node
 
 		HPLabel.Text = $"{Mathf.RoundToInt(DisplayedHP)}/{HPBar.MaxValue}";
 		JuiceLabel.Text = $"{Mathf.RoundToInt(DisplayedJuice)}/{JuiceBar.MaxValue}";
+	}
+
+	internal void UpdateStateIcons()
+	{
+		// this may need to be optimized, not the best practice to fully replace nodes
+		foreach (Node child in StateIcons.GetChildren())
+			child.Free();
+		
+		foreach (StatModifier modifier in PartyMember.StatModifiers.Values)
+		{
+			StateIcon[] icons = modifier.GetStateIcons();
+			foreach (StateIcon icon in icons)
+			{
+				TextureRect rect = new()
+				{
+					Texture = ResourceLoader.Load<Texture2D>($"res://assets/stateicons/{icon.AssetName}.png"),
+					TooltipText = icon.Description
+				};
+				StateIcons.AddChild(rect);
+			}
+		}
 	}
 
 	internal bool SelectionBoxVisible

@@ -24,6 +24,11 @@ public abstract class Actor
 	/// Fired whenever the actor's Juice changes.
 	/// </summary>
 	public event EventHandler OnJuiceChanged;
+	/// <summary>
+	/// Fired whenever the actor takes damage.
+	/// </summary>
+	public event EventHandler OnDamaged;
+	
 
 	/// <summary>
 	/// The name of the actor.
@@ -182,7 +187,7 @@ public abstract class Actor
 		if (StatModifiers.TryGetValue(modifier, out StatModifier m))
 		{
 			TierStatModifier existing = m as TierStatModifier;
-			bool success = existing.SetTier(tier);
+			bool success = existing.CurrentTier < tier ? existing.SetTier(tier) : existing.IncreaseTier();
 			if (success)
 			{
                 GD.Print("Increased tier of " + modifier + " on " + Name + " to " + existing.CurrentTier);
@@ -229,17 +234,15 @@ public abstract class Actor
 	{
 		foreach (var mod in StatModifiers)
 		{
-			if (this is Omori omori && mod.Key == "PlotArmor")
+			if (this is Omori omori && omori.CurrentState == "plotarmor")
 			{
-				// set the emotion background back to what it was before
-				SetState(omori.OldEmotion, true);
-				omori.OldEmotion = null;
-				StatModifiers.Remove(mod.Key);
+				omori.RemovePlotArmor();
+				StatModifiers.Remove("SecondChance");
 			}
 			if (mod.Value.TurnsLeft != -1)
 			{
 				mod.Value.DecreaseTurns();
-				if (mod.Value.TurnsLeft == 0)
+				if (mod.Value.TurnsLeft <= 0)
 				{
 					GD.Print("Removed modifier " + mod.Key + " from " + Name);
 					StatModifiers.Remove(mod.Key);
@@ -257,6 +260,38 @@ public abstract class Actor
 	public bool HasStatModifier(string modifier)
 	{
 		return StatModifiers.ContainsKey(modifier);
+	}
+
+	/// <summary>
+	/// Returns the current tier of a stat modifier.
+	/// </summary>
+	/// <remarks>
+	/// If the actor does not have the requested modifier or if it is not a tiered stat modifier, -1 is returned.
+	/// </remarks>
+	/// <param name="modifier">The modifier to get the current tier of.</param>
+	/// <returns>The current tier if the actor has the tiered modifier, otherwise -1.</returns>
+	public int GetStatModifierTier(string modifier)
+	{
+		if (!StatModifiers.TryGetValue(modifier, out StatModifier mod))
+			return -1;
+		if (mod is TierStatModifier tier)
+			return tier.CurrentTier;
+		return -1;
+	}
+
+	/// <summary>
+	/// Returns the current turns left of a stat modifier.
+	/// </summary>
+	/// <remarks>
+	/// If the actor does not have the requested modifier or is an infinite modifier, -1 is returned.
+	/// </remarks>
+	/// <param name="modifier">The modifier to get the turns left of.</param>
+	/// <returns>The current number of turns left, otherwise -1.</returns>
+	public int GetStatModifierTurnsLeft(string modifier)
+	{
+		if (!StatModifiers.TryGetValue(modifier, out StatModifier mod))
+			return -1;
+		return mod.TurnsLeft;
 	}
 
 	/// <summary>
@@ -283,19 +318,20 @@ public abstract class Actor
 		CurrentHP -= damage;
 		if (CurrentHP < 0)
 			CurrentHP = 0;
-		SetHurt(true);
-
+		
 		// TODO: allow other characters to have plot armor if desired
 		if (this is Omori omori && CurrentHP == 0 && !omori.HasUsedPlotArmor)
 		{
 			CurrentHP = 1;
-			SetHurt(false);
 			// keep track of omori's old emotion for when plot armor expires
 			omori.OldEmotion = omori.CurrentState;
 			SetState("plotarmor", true);
-			AddStatModifier("PlotArmor");
+			AddStatModifier("SecondChance");
 			omori.HasUsedPlotArmor = true;
+			return;
 		}
+		
+		OnDamaged?.Invoke(this, EventArgs.Empty);
 	}
 
     /// <summary>
@@ -339,9 +375,9 @@ public abstract class Actor
 	}
 
 	/// <summary>
-	/// Makes this actor appear visually hurt. Removed at the end of turn.
+	/// Makes this actor appear visually hurt.
 	/// </summary>
-	/// <param name="hurt">Whether or not this actor should appear hurt.</param>
+	/// <param name="hurt">Whether this actor should appear hurt.</param>
 	public virtual void SetHurt(bool hurt)
 	{
 		Sprite.Animation = hurt ? "hurt" : CurrentState;

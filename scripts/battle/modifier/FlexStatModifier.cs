@@ -7,10 +7,16 @@ namespace OmoriSandbox.Battle.Modifier;
 /// </summary>
 public sealed class FlexStatModifier : StatModifier
 {
+    /// <inheritdoc/>
     public FlexStatModifier(params StatBonus[] bonuses) : base(bonuses) { }
-    public override void OverrideDamage(ref float damage, Actor attacker, Actor defender, bool isAttacking)
+    
+    /// <inheritdoc/>
+    public override void OverrideDamage(DamagePhase phase, ref float damage, Actor attacker, Actor defender, bool isAttacking, bool isCritical)
     {
-        if (isAttacking)
+        if (phase is DamagePhase.PreJuice && isAttacking)
+        {
             damage *= 2.5f;
+            TurnsLeft = 0;
+        }
     }
 }

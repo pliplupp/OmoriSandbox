@@ -5,6 +5,7 @@ using OmoriSandbox.Modding;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace OmoriSandbox.Editor;
 
@@ -13,6 +14,16 @@ internal partial class MainMenuManager : Node
 	public override void _Ready()
 	{
 		Instance = this;
+	}
+
+	private bool PreviewingBGM = false;
+
+	public override void _Process(double delta)
+	{
+		if (PreviewingBGM && !BGMPlayer.Editable)
+		{
+			BGMPlayer.Value = BGMPreview.GetPlaybackPosition() + AudioServer.GetTimeSinceLastMix();
+		}
 	}
 
 	public void Init()
@@ -66,6 +77,11 @@ internal partial class MainMenuManager : Node
 			Settings.Visible = true;
 		};
 
+		QuitButton.Pressed += () =>
+		{
+			GetTree().Quit();
+		};
+
 		DataFolderButton.Pressed += () =>
 		{
 			Error error = OS.ShellOpen(ProjectSettings.GlobalizePath("user://presets"));
@@ -109,10 +125,29 @@ internal partial class MainMenuManager : Node
 
 		ReturnButton.Pressed += () =>
 		{
-			AudioManager.Instance.PlayBGM("ow_cattail_fields");
-			MainMenu.Visible = true;
-			Editor.Visible = false;
-			GameManager.Instance.DiscordManager.SetMainMenu();
+			
+			ConfirmationDialog dialog = new()
+			{
+				Title = "Confirmation",
+				DialogText = "Are you sure you return?\nAll unsaved progress will be lost.",
+				Unresizable = true
+			};
+			dialog.Confirmed += () =>
+			{
+				int index = TitlePresetDropdown.GetItemIndex(LastLoadedPreset);
+				if (index > -1)
+					TitlePresetDropdown.Selected = index;
+				AudioManager.Instance.PlayBGM("ow_cattail_fields");
+				MainMenu.Visible = true;
+				Editor.Visible = false;
+				GameManager.Instance.DiscordManager.SetMainMenu();
+				ResetToDefault();
+				dialog.QueueFree();
+			};
+			dialog.Canceled += dialog.QueueFree;
+			AddChild(dialog);
+			dialog.PopupCentered();
+			dialog.Show();
 		};
 
 		foreach (Control control in AddActorControls)
@@ -161,7 +196,16 @@ internal partial class MainMenuManager : Node
 		foreach (string bgm in ResourceLoader.ListDirectory("res://audio/bgm"))
 			BGMDropdown.AddItem(StringExtensions.GetBaseName(bgm));
 		BGMDropdown.Selected = BGMDropdown.GetItemIndex("battle_vf");
-
+		if (AudioManager.Instance.TryGetBGM("battle_vf", out AudioStreamOggVorbis stream))
+		{
+			BGMPreview.Stream = stream;
+			BGMPlayer.MaxValue = stream.GetLength();
+			LoopPoint.MaxValue = stream.GetLength();
+			BGMPlayButton.Text = "Play";
+			BGMPreview.Play();
+			BGMPreview.StreamPaused = true;
+		}
+		
 		BattlebackDropdown.Selected = BattlebackDropdown.GetItemIndex("battleback_vf_default");
 		BattlebackDropdown.ItemSelected += (idx) =>
 		{
@@ -173,20 +217,79 @@ internal partial class MainMenuManager : Node
 			else
 				GD.PrintErr("Failed to load battleback: " + battleback);			
 		};
-
-		PreviewButton.Pressed += () =>
+		
+				
+		BGMDropdown.ItemSelected += (idx) =>
 		{
-			if (PreviewButton.Text == "Preview")
+			if (PreviewingBGM)
 			{
-				string bgm = BGMDropdown.GetItemText(BGMDropdown.Selected);
-				AudioManager.Instance.PlayBGM(StringExtensions.GetBaseName(bgm), 1f, (float)BGMPitch.Value);
-				PreviewButton.Text = "Stop";
+				BGMPreview.Stop();
+				BGMPlayerTimer.Text = "00:00.00";
+				BGMPlayer.Value = 0;
+				BGMPlayer.MaxValue = 0;
+				BGMPlayer.Editable = false;
+				BGMPlayButton.Text = "Play";
+				BGMPitch.Value = 1;
+				LoopPoint.Value = 0;
+				LoopPoint.MaxValue = 0;
+			}
+
+			PreviewingBGM = false;
+			string bgm = BGMDropdown.GetItemText(BGMDropdown.Selected);
+			if (AudioManager.Instance.TryGetBGM(bgm, out AudioStreamOggVorbis s))
+			{
+				BGMPreview.Stream = s;
+				BGMPlayer.MaxValue = s.GetLength();
+				LoopPoint.MaxValue = s.GetLength();
+				BGMPlayButton.Text = "Play";
+				BGMPreview.Play();
+				BGMPreview.StreamPaused = true;
+			}
+		};
+		
+		BGMPlayButton.Pressed += () =>
+		{
+			if (BGMDropdown.Selected == -1)
+				return;
+
+			if (BGMPlayButton.Text == "Play")
+			{
+				BGMPlayButton.Text = "Pause";
+				BGMPreview.StreamPaused = false;
+				BGMPreview.Seek((float)BGMPlayer.Value);
+				BGMPlayer.Editable = false;
+				PreviewingBGM = true;
 			}
 			else
 			{
-				AudioManager.Instance.StopBGM();
-				PreviewButton.Text = "Preview";
+				BGMPlayButton.Text = "Play";
+				BGMPreview.StreamPaused = true;
+				BGMPlayer.Editable = true;
 			}
+		};
+		
+		LoopSetCurrentButton.Pressed += () =>
+		{
+			LoopPoint.Value = BGMPlayer.Value;
+		};
+
+		LoopPoint.ValueChanged += (value) =>
+		{
+			if (BGMPreview.Stream is AudioStreamOggVorbis s)
+			{
+				if (value < s.GetLength())
+					s.LoopOffset = value;
+			}
+		};
+
+		BGMPlayer.ValueChanged += (value) =>
+		{
+			BGMPlayerTimer.Text = TimeSpan.FromSeconds(value).ToString(@"mm\:ss\.ff");
+		};
+
+		BGMPitch.ValueChanged += (value) =>
+		{
+			BGMPreview.PitchScale = (float)value;
 		};
 
 		AddItemButton.Pressed += () =>
@@ -219,13 +322,7 @@ internal partial class MainMenuManager : Node
 		{
 			Results.Text = "Loading...";
 			List<string> results = [];
-			foreach (string skill in Database.GetAllSkillNames())
-			{
-				if (skill.Contains(SearchInput.Text, System.StringComparison.CurrentCultureIgnoreCase))
-				{
-					results.Add(skill);
-				}
-			}
+			results.AddRange(Database.GetAllSkillNames().Where(skill => skill.Contains(SearchInput.Text, StringComparison.CurrentCultureIgnoreCase)));
 			Results.Text = string.Join(", ", results);
 		};
 
@@ -254,6 +351,12 @@ internal partial class MainMenuManager : Node
 		if (ActorTabs.GetChildCount() == 0)
 		{
 			ShowWindow("Error", "Preset must have at least one actor");
+			return;
+		}
+
+		if (EnemyTabs.GetChildCount() == 0)
+		{
+			ShowWindow("Error", "Preset must have at least one enemy");
 			return;
 		}
 
@@ -289,10 +392,12 @@ internal partial class MainMenuManager : Node
 			{ "battleback", BattlebackDropdown.GetItemText(BattlebackDropdown.Selected) },
 			{ "bgm", BGMDropdown.GetItemText(BGMDropdown.Selected) },
 			{ "bgmPitch", BGMPitch.Value },
+			{ "bgmLoopPoint", LoopPoint.Value },
 			{ "followupTier", (int)FollowupTierSlider.Value },
 			{ "basilFollowups", BasilFollowupsCheckbox.ButtonPressed },
 			{ "basilReleaseEnergy", BasilReleaseEnergyCheckbox.ButtonPressed },
 			{ "disableDialogue", DisableDialogue.ButtonPressed },
+			{ "disableDamageNumbers", DisableDamageNumbers.ButtonPressed },
 		};
 
 		Godot.Collections.Dictionary<string, int> items = [];
@@ -367,6 +472,7 @@ internal partial class MainMenuManager : Node
 
 		ShowWindow("Success", "Saved preset to user://presets/" + PresetInput.Text + ".json");
 
+		LastLoadedPreset = PresetInput.Text;
 		PresetInput.Text = "";
 		ResetPresetDropdown();
 	}
@@ -403,12 +509,18 @@ internal partial class MainMenuManager : Node
 			double bgmPitch = 1.0d;
 			if (dict.TryGetValue("bgmPitch", out Variant value))
 				bgmPitch = value.AsDouble();
+			double bgmLoopPoint = 0d;
+			if (dict.TryGetValue("bgmLoopPoint", out value))
+				bgmLoopPoint = value.AsDouble();
 			int followupTier = (int)dict["followupTier"];
 			bool basilFollowups = (bool)dict["basilFollowups"];
 			bool basilReleaseEnergy = (bool)dict["basilReleaseEnergy"];
 			bool disableDialogue = false;
 			if (dict.TryGetValue("disableDialogue", out value))
 				disableDialogue = value.AsBool();
+			bool disableDamageNumbers = false;
+			if (dict.TryGetValue("disableDamageNumbers", out value))
+				disableDamageNumbers = value.AsBool();
 			Godot.Collections.Dictionary<string, int> items = dict["items"].AsGodotDictionary<string, int>();
 			Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>> actors = dict["actors"].AsGodotArray<Godot.Collections.Dictionary<string, Variant>>();
 			Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>> enemies = dict["enemies"].AsGodotArray<Godot.Collections.Dictionary<string, Variant>>();
@@ -426,11 +538,14 @@ internal partial class MainMenuManager : Node
 			if (BGMDropdown.Selected == -1)
 				BGMDropdown.Selected = 0;
 			BGMPitch.Value = Math.Clamp(bgmPitch, 0.1d, 2.0d);
+			GD.Print(bgmLoopPoint);
+			LoopPoint.Value = bgmLoopPoint;
 
 			FollowupTierSlider.Value = Math.Clamp(followupTier, 1, 3);
 			BasilFollowupsCheckbox.ButtonPressed = basilFollowups;
 			BasilReleaseEnergyCheckbox.ButtonPressed = basilReleaseEnergy;
 			DisableDialogue.ButtonPressed = disableDialogue;
+			DisableDamageNumbers.ButtonPressed = disableDamageNumbers;
 
 			foreach (var entry in items)
 			{
@@ -529,6 +644,7 @@ internal partial class MainMenuManager : Node
 			}
 
 			PresetInput.Text = presetName;
+			LastLoadedPreset = presetName;
 		}
 		catch (KeyNotFoundException ex)
 		{
@@ -680,12 +796,18 @@ internal partial class MainMenuManager : Node
 		BasilFollowupsCheckbox.ButtonPressed = false;
 		BasilReleaseEnergyCheckbox.ButtonPressed = false;
 		DisableDialogue.ButtonPressed = false;
+		DisableDamageNumbers.ButtonPressed = false;
 
-		if (PreviewButton.Text == "Stop")
-		{
-			AudioManager.Instance.StopBGM();
-			PreviewButton.Text = "Preview";
-		}
+		BGMPreview.Stop();
+		PreviewingBGM = false;
+		PlayButton.Text = "Play";
+		LoopPoint.Value = 0; 
+		LoopPoint.MaxValue = 0;
+		BGMPlayer.MaxValue = 0;
+		BGMPlayer.Value = 0;
+		BGMPlayer.Editable = false;
+		BGMPlayerTimer.Text = "00:00.000";
+		BGMPitch.Value = 1;
 	}
 
 	private void ShowWindow(string title, string message)
@@ -720,6 +842,7 @@ internal partial class MainMenuManager : Node
 	public static MainMenuManager Instance;
 	public string LastLoadedPreset { get; private set; } = "";
 
+	[Export] private AudioStreamPlayer BGMPreview;
 	[Export] private Control[] AddActorControls;
 	[Export] private Control AddEnemyControl;
 	[Export] private PackedScene PartyMemberEditor;
@@ -735,6 +858,7 @@ internal partial class MainMenuManager : Node
 	[Export] private Button PlayButton;
 	[Export] private Button ConfigureButton;
 	[Export] private Button SettingsButton;
+	[Export] private Button QuitButton;
 	[Export] private VBoxContainer MainControls;
 	[Export] private SettingsMenuManager Settings;
 	[Export] private Button DataFolderButton;
@@ -746,12 +870,17 @@ internal partial class MainMenuManager : Node
 	[Export] private OptionButton BattlebackDropdown;
 	[Export] private OptionButton BGMDropdown;
 	[Export] private SpinBox BGMPitch;
-	[Export] private Button PreviewButton;
+	[Export] private Button BGMPlayButton;
+	[Export] private Button LoopSetCurrentButton;
+	[Export] private SpinBox LoopPoint;
+	[Export] private Label BGMPlayerTimer;
+	[Export] private HSlider BGMPlayer;
 	[Export] private HSlider FollowupTierSlider;
 	[Export] private Label FollowupTierValue;
 	[Export] private CheckBox BasilFollowupsCheckbox;
 	[Export] private CheckBox BasilReleaseEnergyCheckbox;
 	[Export] private CheckBox DisableDialogue;
+	[Export] private CheckBox DisableDamageNumbers;
 	[Export] private Button AddItemButton;
 	[Export] private GridContainer ItemContainer;
 	[Export] private LineEdit SearchInput;

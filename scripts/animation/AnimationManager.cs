@@ -24,9 +24,14 @@ public partial class AnimationManager : Node
 	[Export] private AnimatedSprite2D RedHands;
 	[Export] private AnimatedSprite2D FlowerCrown;
 	[Export] private ColorRect Photograph;
+	[Export] private TextureRect Snaley;
+	[Export] private TextureRect HumphreySwarm;
+	[Export] private AnimatedSprite2D HumphreySwallow;
+	[Export] private AnimatedSprite2D HumphreyFaceSwallow;
 	[Export] private PackedScene PerfectheartOverlaySprite;
 	[Export] private Node2D PerfectheartOverlayParent;
 	[Export] private Node2D FullScreenEffectNode;
+	[Export] private ColorRect ScreenTint;
 
 	private Dictionary<int, RPGMAnimatedSprite> Animations = [];
 
@@ -204,7 +209,7 @@ public partial class AnimationManager : Node
 	/// Mainly used for animation layering, such as skill animations that target enemies and need to display underneath the UI.</param>
 	public void PlayScreenAnimation(int id, bool targetsEnemy)
 	{
-		StartAnimation(id, new Vector2(320, 240), targetsEnemy);
+		StartAnimation(id, new Vector2(315, 240), targetsEnemy);
 	}
 
 	/// <summary>
@@ -213,22 +218,13 @@ public partial class AnimationManager : Node
 	/// </summary>
 	/// <param name="id">The animation ID to play. Uses the same ID numbers as OMORI for all vanilla animations.</param>
 	/// <param name="target">The <see cref="Actor"/> that this animation will play centered on.</param>
-	/// <param name="targetsEnemy">Whether or not this animation targets an enemy.<br/>
+	/// <param name="targetsEnemy">Whether this animation targets an enemy.<br/>
 	/// Mainly used for animation layering, such as skill animations that target enemies and need to display underneath the UI.</param>
 	/// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
-	public Task WaitForAnimation(int id, Actor target)
+	public async Task WaitForAnimation(int id, Actor target)
 	{
-		TaskCompletionSource tcs = new();
-
-		void Handle()
-		{
-			AnimationFinished -= Handle;
-			tcs.SetResult();
-		}	
-
 		PlayAnimation(id, target);
-		AnimationFinished += Handle;
-		return tcs.Task;
+		await ToSignal(this, SignalName.AnimationFinished);
 	}
 
 	/// <summary>
@@ -236,58 +232,34 @@ public partial class AnimationManager : Node
 	/// Use <see cref="PlayScreenAnimation(int, bool)"/> if you want the animation to play without waiting.
 	/// </summary>
 	/// <param name="id">The animation ID to play. Uses the same ID numbers as OMORI for all vanilla animations.</param>
-	/// <param name="targetsEnemy">Whether or not this animation targets an enemy.<br/>
+	/// <param name="targetsEnemy">Whether this animation targets an enemy.<br/>
 	/// Mainly used for animation layering, such as skill animations that target enemies and need to display underneath the UI.</param>
 	/// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
-	public Task WaitForScreenAnimation(int id, bool targetsEnemy)
+	public async Task WaitForScreenAnimation(int id, bool targetsEnemy)
 	{
-		TaskCompletionSource tcs = new();
-
-		void Handle()
-		{
-			AnimationFinished -= Handle;
-			tcs.SetResult();
-		}
-
 		PlayScreenAnimation(id, targetsEnemy);
-		AnimationFinished += Handle;
-		return tcs.Task;
+		await ToSignal(this, SignalName.AnimationFinished);
 	}
 
 	/// <summary>
 	/// Plays the Omori version of the Release Energy animation, and waits for it to finish.
 	/// </summary>
 	/// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
-	public Task WaitForReleaseEnergy()
+	public async Task WaitForReleaseEnergy()
 	{
-		TaskCompletionSource tcs = new();
-		void Handle()
-		{
-			ReleaseEnergy.AnimationFinished -= Handle;
-			ReleaseEnergy.Visible = false;
-			tcs.SetResult();
-		}
-
 		ReleaseEnergy.Visible = true;
 		AudioManager.Instance.PlaySFX("BA_release_energy", 1, 0.9f);
 		ReleaseEnergy.Play();
-		ReleaseEnergy.AnimationFinished += Handle;
-		return tcs.Task;
+		await ToSignal(ReleaseEnergy, AnimatedSprite2D.SignalName.AnimationFinished);
+		ReleaseEnergy.Visible = false;
 	}
 
 	/// <summary>
 	/// Plays the Basil version of the Release Energy animation, and waits for it to finish.
 	/// </summary>
 	/// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
-	public Task WaitForReleaseEnergyBasil()
+	public  async Task WaitForReleaseEnergyBasil()
 	{
-		TaskCompletionSource tcs = new();
-		void Handle()
-		{
-			ReleaseEnergyBasil.Visible = false;
-			tcs.SetResult();
-		}
-
 		ReleaseEnergyBasil.Visible = true;
 		ReleaseEnergyBasil.Modulate = Colors.Transparent;
 		AudioManager.Instance.PlaySFX("BA_release_energy", 1, 0.9f);
@@ -296,58 +268,39 @@ public partial class AnimationManager : Node
 		tween.TweenProperty(ReleaseEnergyBasil, "modulate:a", 1f, 0.5f);
 		tween.TweenInterval(2.25f);
 		tween.TweenProperty(ReleaseEnergyBasil, "modulate:a", 0f, 0.5f);
-		tween.TweenCallback(Callable.From(Handle));
-
-		return tcs.Task;
+		await ToSignal(tween, Tween.SignalName.Finished);
+		ReleaseEnergyBasil.Visible = false;
 	}
 
 	/// <summary>
 	/// Plays the Red Hands skill animation, and waits for it to finish.
 	/// </summary>
 	/// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
-	public Task WaitForRedHands()
+	public async Task WaitForRedHands()
 	{
-		TaskCompletionSource tcs = new();
-		void Handle()
-		{
-			RedHands.AnimationFinished -= Handle;
-			RedHands.Visible = false;
-			tcs.SetResult();
-		}
-
 		RedHands.Visible = true;
 		AudioManager.Instance.PlaySFX("SE_red_hands", 0.8f, 0.9f);
 		RedHands.Play();
-		RedHands.AnimationFinished += Handle;
-		return tcs.Task;
+		await ToSignal(RedHands, AnimatedSprite2D.SignalName.AnimationFinished);
+		RedHands.Visible = false;
 	}
 
 	/// <summary>
 	/// Plays the Flower Crown skill animation, and waits for it to finish.
 	/// </summary>
 	/// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
-	public Task WaitForFlowerCrown()
+	public async Task WaitForFlowerCrown()
 	{
-		TaskCompletionSource tcs = new();
-		void Handle()
-		{
-			FlowerCrown.AnimationFinished -= Handle;
-			FlowerCrown.Visible = false;
-			tcs.SetResult();
-		}
-
 		FlowerCrown.Visible = true;
 		AudioManager.Instance.PlaySFX("SE_red_hands", 0.8f, 0.9f);
 		FlowerCrown.Play();
-		FlowerCrown.AnimationFinished += Handle;
-		return tcs.Task;
+		await ToSignal(FlowerCrown, AnimatedSprite2D.SignalName.AnimationFinished);
+		FlowerCrown.Visible = false;
 	}
 
 
-	internal Task WaitForOmoriSpecialAnimation(string overlay, string effect)
+	internal async Task WaitForOmoriSpecialAnimation(string overlay, string effect)
 	{
-		TaskCompletionSource tcs = new();
-
 		Sprite2D effectTex = new()
 		{
 			Texture = ResourceLoader.Load<Texture2D>(effect),
@@ -366,13 +319,6 @@ public partial class AnimationManager : Node
 		};
 		FullScreenEffectNode.AddChild(overlayTex);
 
-		void Finished()
-		{
-			overlayTex.QueueFree();
-			effectTex.QueueFree();
-			tcs.SetResult();
-		}
-
 		Tween overlayTween = GetTree().CreateTween();
 		overlayTween.TweenProperty(overlayTex, "modulate:a", 0.60f, 1f);
 		overlayTween.TweenInterval(0.66f);
@@ -387,16 +333,14 @@ public partial class AnimationManager : Node
 		effectTween.Parallel().TweenProperty(effectTex, "position:y", 150f, 0.66f);
 		effectTween.Parallel().TweenProperty(effectTex, "scale", new Vector2(2f, 2f), 0.66f);
 		effectTween.TweenInterval(0.33f);
-		// only one tween needs to call Finished
-		effectTween.TweenCallback(Callable.From(Finished));
-
-		return tcs.Task;
+		
+		await ToSignal(effectTween, Tween.SignalName.Finished);
+		overlayTex.QueueFree();
+		effectTex.QueueFree();
 	}
 
-	internal Task WaitForBasilSpecialAnimation(string effect, int animationId)
+	internal async Task WaitForBasilSpecialAnimation(string effect, int animationId)
 	{
-		TaskCompletionSource tcs = new();
-
 		Sprite2D effectTex = new()
 		{
 			Texture = ResourceLoader.Load<Texture2D>(effect),
@@ -405,12 +349,6 @@ public partial class AnimationManager : Node
 			Modulate = Colors.Transparent
 		};
 		FullScreenEffectNode.AddChild(effectTex);
-
-		void Finished()
-		{
-			effectTex.QueueFree();
-			tcs.SetResult();
-		}
 
 		Tween effectTween = GetTree().CreateTween();
 		effectTween.TweenProperty(effectTex, "modulate:a", 1f, 1f);
@@ -422,10 +360,9 @@ public partial class AnimationManager : Node
 		effectTween.Parallel().TweenProperty(effectTex, "position:y", 150f, 0.66f);
 		effectTween.Parallel().TweenProperty(effectTex, "scale", new Vector2(2f, 2f), 0.66f);
 		effectTween.TweenInterval(0.33f);
-		// only one tween needs to call Finished
-		effectTween.TweenCallback(Callable.From(Finished));
-
-		return tcs.Task;
+		
+		await ToSignal(effectTween, Tween.SignalName.Finished);
+		effectTex.QueueFree();
 	}
 
 	/// <summary>
@@ -443,6 +380,38 @@ public partial class AnimationManager : Node
 		}));
 	}
 
+	/// <summary>
+	/// Applies a screen tint above the enemies. Can be applied over a duration, in seconds.
+	/// </summary>
+	/// <remarks>
+	/// If you would like to wait for the screen tint to finish, use <see cref="WaitForTintScreen"/>.
+	/// </remarks>
+	/// <param name="color">The Color to set the screen tint to. This includes alpha.</param>
+	/// <param name="duration">The duration of the tint. If left as 0, the tint will be instant.</param>
+	public void TintScreen(Color color, float duration = 0f)
+	{
+		if (duration == 0f)
+			ScreenTint.Color = color;
+		else
+		{
+			Tween tween = GetTree().CreateTween();
+			tween.TweenProperty(ScreenTint, "color", color, duration);
+		}
+	}
+
+	/// <summary>
+	/// Applies a screen tint above the enemies and waits for it to finish.
+	/// </summary>
+	/// <param name="color">The Color to set the screen tint to. This includes alpha.</param>
+	/// <param name="duration">The duration of the tint.</param>
+	/// <returns></returns>
+	public async Task WaitForTintScreen(Color color, float duration)
+	{
+		Tween tween = GetTree().CreateTween();
+		tween.TweenProperty(ScreenTint, "color", color, duration);
+		await ToSignal(tween, Tween.SignalName.Finished);
+	}
+
 	internal Sprite2D SpawnPerfectheartOverlay(Vector2 position)
 	{
 		Sprite2D sprite = PerfectheartOverlaySprite.Instantiate<Sprite2D>();
@@ -452,6 +421,53 @@ public partial class AnimationManager : Node
 		Tween tween = sprite.CreateTween();
 		tween.TweenProperty(sprite, "modulate:a", 1f, 1f);
 		return sprite;
+	}
+
+	internal async Task WaitForSnaley()
+	{
+		Snaley.Visible = true;
+		Snaley.Position = new Vector2(400f, 0f);
+		Snaley.Modulate = Colors.Transparent;
+		AudioManager.Instance.PlaySFX("BA_release_energy", volume: 0.9f);
+		Tween tween = GetTree().CreateTween();
+		tween.TweenProperty(Snaley, "position:x", 55f, 1.5f);
+		tween.Parallel().TweenProperty(Snaley, "modulate:a", 1f, 1.5f);
+		tween.TweenProperty(Snaley, "position:x", -200f, 1.5f);
+		tween.Parallel().TweenProperty(Snaley, "modulate:a", 0f, 1.5f);
+		tween.TweenInterval(2f);
+		await ToSignal(tween, Tween.SignalName.Finished);
+		Snaley.Visible = false;
+	}
+
+	internal async Task WaitForHumphreySwarm()
+	{
+		HumphreySwarm.Visible = true;
+		HumphreySwarm.Position = new Vector2(0, -65);
+		Tween tween = GetTree().CreateTween();
+		tween.TweenCallback(Callable.From(() => AudioManager.Instance.PlaySFX("ba_goop", 0.9f, 0.9f))).SetDelay(0.33f);
+		tween.TweenProperty(HumphreySwarm, "position:y", -450f, 0.5f);
+		tween.TweenCallback(Callable.From(() => TintScreen(Colors.Black)));
+		tween.TweenInterval(0.5f);
+		await ToSignal(tween, Tween.SignalName.Finished);
+		HumphreySwarm.Visible = false;
+	}
+
+	internal async Task WaitForHumphreySwallow()
+	{
+		HumphreySwallow.Visible = true;
+		AudioManager.Instance.PlaySFX("SE_humphrey_burp", volume: 0.9f);
+		HumphreySwallow.Play();
+		await ToSignal(HumphreySwallow, AnimatedSprite2D.SignalName.AnimationFinished);
+		HumphreySwallow.Visible = false;
+	}
+	
+	internal async Task WaitForHumphreyFaceSwallow()
+	{
+		HumphreyFaceSwallow.Visible = true;
+		AudioManager.Instance.PlaySFX("SE_humphrey_burp", volume: 0.9f);
+		HumphreyFaceSwallow.Play();
+		await ToSignal(HumphreyFaceSwallow, AnimatedSprite2D.SignalName.AnimationFinished);
+		HumphreyFaceSwallow.Visible = false;
 	}
 
 	internal void DespawnAll()

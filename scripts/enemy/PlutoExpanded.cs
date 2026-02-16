@@ -35,8 +35,8 @@ internal sealed class PlutoExpanded : Enemy
 
     public override async Task OnStartOfBattle()
     {
-        DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, "Behold...@\nThis is my final form.");
-        DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, "Can you...@ feel the heat?");
+        DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, @"Behold...\![br]This is my final form.");
+        DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, @"Can you...\! feel the heat?");
         await DialogueManager.Instance.WaitForDialogue();
     }
 
@@ -45,17 +45,17 @@ internal sealed class PlutoExpanded : Enemy
     {
         if (CurrentHP <= 0)
         {
-            DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, "Hm. Well done, children.@\nYou've come a long way.");
-            DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, "But...@\nI am not finished yet.");
+            DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, @"Hm.\! Well done, children.\![br]You've come a long way.");
+            DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, @"But...\![br]I am not finished yet.");
             await DialogueManager.Instance.WaitForDialogue();
             return;
         }
         
         if (CurrentHP < 1500 && !HasSpoken)
         {
-            DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, "... Ah, I see.");
+            DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, @"...\! Ah.\! I see.");
             DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, "You have all gotten stronger.");
-            DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, "But...@ so have I.");
+            DialogueManager.Instance.QueueMessage("PLUTO", CenterPoint, @"But...\! so have I.");
             await DialogueManager.Instance.WaitForDialogue();
             HasSpoken = true;
         }

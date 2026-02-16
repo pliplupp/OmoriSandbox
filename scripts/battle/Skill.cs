@@ -24,6 +24,19 @@ public class Skill : BattleAction
 	public bool Hidden { get; private set; }
 
 	/// <summary>
+	/// Whether the given <param name="actor"> meets the requirements to use this skill.</param>
+	/// </summary>
+	/// <remarks>
+	/// By default, all skills have the requirement that the user is not afraid or stressed.
+	/// Juice cost is an inherent requirement for all skills and cannot be modified.
+	/// </remarks>
+	/// <param name="actor">The actor to check.</param>
+	/// <returns>True if the actor can use this skill at the given moment.</returns>
+	public bool MeetsRequirements(Actor actor) => Requirement(actor);
+	
+	private Func<Actor, bool> Requirement = actor => actor.CurrentState is not "afraid" and not "stressed";
+
+	/// <summary>
 	/// Creates a new single-target skill. Must be registered via <see cref="Modding.Mod.RegisterSkill(string, Skill)"/> to appear in-game.
 	/// </summary>
 	/// <param name="name">The name of the skill.</param>
@@ -57,5 +70,20 @@ public class Skill : BattleAction
 		Cost = cost;
 		Hidden = hidden;
 		GoesFirst = goesFirst;
+	}
+
+	/// <summary>
+	/// Adds a custom requirement for this skill to be used.
+	/// If the actor does not meet the requirements to use the skill, the skill will be greyed out in the menu.
+	/// </summary>
+	/// <remarks>
+	/// By default, all skills have the requirement that the user is not afraid or stressed.
+	/// By adding a custom requirement, you must also re-add those checks in yourself if necessary.<br/>
+	/// Juice cost is an inherent requirement for all skills and cannot be modified.
+	/// </remarks>
+	public Skill WithCustomRequirement(Func<Actor, bool> requirement)
+	{
+		Requirement = requirement;
+		return this;
 	}
 }

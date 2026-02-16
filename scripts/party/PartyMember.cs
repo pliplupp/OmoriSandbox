@@ -2,6 +2,7 @@ using Godot;
 using System.Linq;
 using System.Threading.Tasks;
 using OmoriSandbox.Battle;
+using OmoriSandbox.Battle.Modifier;
 
 namespace OmoriSandbox.Actors;
 
@@ -23,8 +24,8 @@ public abstract class PartyMember : Actor
 		Sprite.SpriteFrames = animation;
 		Sprite.Animation = initialState;
 		Sprite.Play();
-		CurrentState = initialState;
-
+		SetState(initialState, true);
+		
         // init stats
         Level = level;
         int idx = level - 1;

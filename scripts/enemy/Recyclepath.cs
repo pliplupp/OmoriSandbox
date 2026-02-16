@@ -53,16 +53,16 @@ internal sealed class Recyclepath : Enemy
     {
         if (CurrentHP <= 0)
         {
-            DialogueManager.Instance.QueueMessage(this, "Oh why, holy bin?");
-            DialogueManager.Instance.QueueMessage(this, "Have you forsaken us!?");
+            DialogueManager.Instance.QueueMessage("THE RECYCLEPATH", CenterPoint, "[br]Oh why, HOLY BIN?");
+            DialogueManager.Instance.QueueMessage("THE RECYCLEPATH", CenterPoint, "[br]Have you forsaken us!?");
             await DialogueManager.Instance.WaitForDialogue();
             return;
         }
         
         if (CurrentHP < 500 && !HasSpoken)
         {
-            DialogueManager.Instance.QueueMessage(this, "Oh, holy bin in the sky...");
-            DialogueManager.Instance.QueueMessage(this, "Please grant me the power to recycle thy enemies!");
+            DialogueManager.Instance.QueueMessage("THE RECYCLEPATH", CenterPoint, "[br]Oh, HOLY BIN in the sky...");
+            DialogueManager.Instance.QueueMessage("THE RECYCLEPATH", CenterPoint, "[br]Please grant me the power to recycle thy enemies!");
             await DialogueManager.Instance.WaitForDialogue();
             HasSpoken = true;
         }
@@ -81,8 +81,8 @@ internal sealed class Recyclepath : Enemy
     {
         if (!victory)
         {
-            DialogueManager.Instance.QueueMessage(this, "Huzzah! We have been blessed with victory!");
-            DialogueManager.Instance.QueueMessage(this, "All hail the holy bin in the sky!");
+            DialogueManager.Instance.QueueMessage("THE RECYCLEPATH", CenterPoint,"[br]Huzzah! We have been blessed with victory!");
+            DialogueManager.Instance.QueueMessage("THE RECYCLEPATH", CenterPoint, "[br]All hail the HOLY BIN in the sky!");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }

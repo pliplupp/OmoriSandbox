@@ -63,7 +63,7 @@ internal sealed class SirMaximusI : Enemy
         if (CurrentHP < 120 && !UltimateAttack)
         {
             DialogueManager.Instance.QueueMessage(this, "Behold! My family has spent generations perfecting this technique...");
-            DialogueManager.Instance.QueueMessage(this, "This is my ultimate attack!");
+            DialogueManager.Instance.QueueMessage(this, "[br]This is my ultimate attack!");
             await DialogueManager.Instance.WaitForDialogue();
             BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["SMIUltimateAttack"]);
             UltimateAttack = true;
@@ -72,7 +72,7 @@ internal sealed class SirMaximusI : Enemy
         
         if (CurrentHP < 300 && !FirstDialogue)
         {
-            DialogueManager.Instance.QueueMessage(this, "No... @I...I cannot fail now.");
+            DialogueManager.Instance.QueueMessage(this, @"No... \!I...\![br]I cannot fail now.");
             DialogueManager.Instance.QueueMessage(this, "My son needs me!");
             await DialogueManager.Instance.WaitForDialogue();
             FirstDialogue = true;

@@ -19,7 +19,7 @@ internal partial class ModManager : Node
 	public readonly Dictionary<string, Texture2D> Battlebacks = new();
 	public readonly List<ModMetadata> LoadedMods = new();
 
-    public override void _Ready()
+	public override void _Ready()
 	{
 		Instance = this;
 
@@ -77,9 +77,9 @@ internal partial class ModManager : Node
 		{
 			if (!LoadModAssembly($"{dirName}/{modDll}"))
 				return false;
-        }
+		}
 
-        foreach (string modDir in DirAccess.GetDirectoriesAt("user://mods/" + dirName))
+		foreach (string modDir in DirAccess.GetDirectoriesAt("user://mods/" + dirName))
 		{
 			bool success = true;
 			switch (modDir.ToLower())
@@ -123,7 +123,7 @@ internal partial class ModManager : Node
 			AssemblyLoadContext context = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
 			if (context == null)
 				return false;
-            Assembly asm = context.LoadFromAssemblyPath(ProjectSettings.GlobalizePath("user://mods/" + path));
+			Assembly asm = context.LoadFromAssemblyPath(ProjectSettings.GlobalizePath("user://mods/" + path));
 			var type = asm.GetTypes().FirstOrDefault(t => t.IsSubclassOf(typeof(Mod)) && !t.IsAbstract);
 			if (type == null)
 			{
@@ -137,15 +137,15 @@ internal partial class ModManager : Node
 				return false;
 			}
 
-            AddChild(new ModContainer(instance));
+			AddChild(new ModContainer(instance));
 			return true;
 		}
 		catch (Exception ex)
 		{
 			GD.PrintErr("Failed to load assembly " + path + ": " + ex);
-            return false;
+			return false;
 		}
-    }
+	}
 
 	private bool LoadActors(string root)
 	{
@@ -260,9 +260,9 @@ internal partial class ModManager : Node
 			spriteFrames.SetAnimationLoop(data.Emotion, true);
 			foreach (int idx in data.Frames)
 			{
-                int column = idx % columns;
-                int row = idx / columns;
-                AtlasTexture tex = new()
+				int column = idx % columns;
+				int row = idx / columns;
+				AtlasTexture tex = new()
 				{
 					Atlas = texture,
 					Region = new Rect2(column * width, row * height, width, height)

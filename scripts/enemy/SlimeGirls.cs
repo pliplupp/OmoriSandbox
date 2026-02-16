@@ -84,9 +84,9 @@ internal sealed class SlimeGirls : Enemy
 	{
 		if (CurrentHP <= 0)
 		{
-            DialogueManager.Instance.QueueMessage("MARINA", CenterPoint, "You kids...@ are a lot tougher than you look.");
-            DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, "Hmph...@ This is much more trouble than it's worth.");
-            DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, "Sigh...@ What a predicament...@ How will we feed HUMPHREY now?");
+            DialogueManager.Instance.QueueMessage("MARINA", CenterPoint, "You kids... are a lot tougher than you look.");
+            DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, @"Hmph...\! This is much more trouble than it's worth.");
+            DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, @"Sigh...\! What a predicament...\! How will we feed HUMPHREY now?");
             await DialogueManager.Instance.WaitForDialogue();
 			return;
         }
@@ -96,9 +96,9 @@ internal sealed class SlimeGirls : Enemy
 
 		if (CurrentHP < 4275 && Stage == 0)
 		{
-			DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, "Hmph...@ You kids are more resilient than expected.");
-			DialogueManager.Instance.QueueMessage("MARINA", CenterPoint, "You know what that means.@ It's time to get serious!");
-			DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, "Oh...@ I'm having so much fun~!");
+			DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, @"Hmph...\! You kids are more resilient than expected.");
+			DialogueManager.Instance.QueueMessage("MARINA", CenterPoint, @"You know what that means.\! It's time to get serious!");
+			DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, "Oh...[br]I'm having so much fun~!");
 			await DialogueManager.Instance.WaitForDialogue();
 			ForceState("angry");
 			BattleLogManager.Instance.ClearAndShowMessage("SLIME GIRLS becomes ANGRIER!");
@@ -107,9 +107,9 @@ internal sealed class SlimeGirls : Enemy
 		
 		if (CurrentHP < 2850 && Stage <= 1)
 		{
-			DialogueManager.Instance.QueueMessage("MARINA", CenterPoint, "Hey, MEDUSA!@ Are you thinkin' what I'm thinkin'?");
-			DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, "Yes, sister...@ I think it's about time we switched things up.");
-			DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, "Just relax, children...@ This won't hurt a bit~");
+			DialogueManager.Instance.QueueMessage("MARINA", CenterPoint, "Hey, MEDUSA![br]Are you thinkin' what I'm thinkin'?");
+			DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, @"Yes, sister...\! I think it's about time we switched things up.");
+			DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, @"Just relax, children...\![br]This won't hurt a bit~");
 			await DialogueManager.Instance.WaitForDialogue();
 			BattleManager.Instance.ForceCommand(this, SelectAllTargets(), Skills["Swap"]);
 			Stage = 2;
@@ -127,8 +127,8 @@ internal sealed class SlimeGirls : Enemy
         if (!victory)
 		{
             DialogueManager.Instance.QueueMessage("MARINA", CenterPoint, "Now you belong to us!");
-            DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, "Hush, hush, darlings...@ Don't cry...@ You'll get used to your new life soon~");
-            DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, "It's time to take apart the small one.@ Let's get started, dolls.");
+            DialogueManager.Instance.QueueMessage("MOLLY", CenterPoint, @"Hush, hush, darlings...[br]Don't cry...\! You'll get used to your new life soon~");
+            DialogueManager.Instance.QueueMessage("MEDUSA", CenterPoint, @"It's time to take apart the small one.\! Let's get started, dolls.");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }

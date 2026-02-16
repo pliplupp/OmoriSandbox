@@ -50,7 +50,7 @@ internal sealed class HeroBoss : Enemy
 		
 		if (aliveEnemies.Count > 2 && Roll() < 26)
 		{
-			Enemy kel = aliveEnemies.FirstOrDefault(x => x is HeroBoss);
+			Enemy kel = aliveEnemies.FirstOrDefault(x => x is KelBoss);
 			// check if kel is alive, if not just choose a random other enemy
 			BattleManager.Instance.ForceCommand(this, kel ?? aliveEnemies.FirstOrDefault(x => x != this), Skills["HBossCallKel"]);
 			return new BattleCommand(this, SelectTarget(), Skills["HAttack"]);

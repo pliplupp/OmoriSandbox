@@ -9,8 +9,12 @@ namespace OmoriSandbox.Battle.Modifier;
 /// </summary>
 public sealed class MrJawsumStatModifier : StatModifier
 {
-    public override void OverrideDamage(ref float damage, Actor attacker, Actor defender, bool isAttacking)
+    /// <inheritdoc/>
+    public override void OverrideDamage(DamagePhase phase, ref float damage, Actor attacker, Actor defender, bool isAttacking, bool isCritical)
     {
+        if (phase is not DamagePhase.PreApply) 
+            return;
+        
         if (isAttacking)
             return;
 
@@ -33,6 +37,7 @@ public sealed class MrJawsumStatModifier : StatModifier
                 jawsum.GatorGuys.RemoveAt(i);
             }
         }
+
         damage = 0f;
     }
 }

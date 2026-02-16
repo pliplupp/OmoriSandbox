@@ -17,6 +17,14 @@ internal sealed class Omori : PartyMember
 
     public override bool IsRealWorld => false;
 
+    public bool HasAnnouncedPlotArmor = false;
     public bool HasUsedPlotArmor = false;
     public string OldEmotion;
+
+    public void RemovePlotArmor()
+    {
+        // set the emotion background back to what it was before
+        SetState(OldEmotion, true);
+        OldEmotion = null;
+    }
 }

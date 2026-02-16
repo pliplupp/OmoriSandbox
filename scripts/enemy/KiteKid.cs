@@ -29,9 +29,6 @@ internal sealed class KiteKid : Enemy
     public override async Task OnStartOfBattle()
     {
         KidsKite = BattleManager.Instance.SummonEnemy("KidsKite", CenterPoint - new Vector2(125, 0), layer: Layer + 1);
-        DialogueManager.Instance.QueueMessage(this, "We are one with the wind!");
-        DialogueManager.Instance.QueueMessage(this, "As long as it blows, we are unbeatable!");
-        await DialogueManager.Instance.WaitForDialogue();
     }
 
     public override async Task ProcessEndOfTurn()
@@ -60,8 +57,8 @@ internal sealed class KiteKid : Enemy
         
         if (CurrentHP < 188 && !HasSpoken)
         {
-            DialogueManager.Instance.QueueMessage(this, "No...@ This can't be...");
-            DialogueManager.Instance.QueueMessage(this, "The wind...\nIt's getting weaker!");
+            DialogueManager.Instance.QueueMessage(this, "No... This can't be...");
+            DialogueManager.Instance.QueueMessage(this, @"The wind...\![br]It's getting weaker!");
             await DialogueManager.Instance.WaitForDialogue();
             HasSpoken = true;
         }
@@ -71,7 +68,7 @@ internal sealed class KiteKid : Enemy
     {
         if (!victory)
         {
-            DialogueManager.Instance.QueueMessage(this, "Haha! As the wind predicted! Me and my kite are unbeatable.");
+            DialogueManager.Instance.QueueMessage(this, @"Haha! As the wind predicted!\! Me and my kite are unbeatable.");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }

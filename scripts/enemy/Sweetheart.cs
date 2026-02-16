@@ -87,9 +87,9 @@ internal sealed class Sweetheart : Enemy
 	{
 		if (CurrentHP <= 0)
 		{
-            DialogueManager.Instance.QueueMessage(this, "No...@ Is this...@ What they call defeat?");
-            DialogueManager.Instance.QueueMessage(this, "I cannot accept this...@ I will not accept this!");
-            DialogueManager.Instance.QueueMessage(this, "You're all nothing but a bunch of lowly peasants!");
+            DialogueManager.Instance.QueueMessage(this, @"No...\! Is this...\![br]What they call defeat?");
+            DialogueManager.Instance.QueueMessage(this, @"[br]I cannot accept this...\![br]I will not accept this!");
+            DialogueManager.Instance.QueueMessage(this, "[br]You're all nothing but a bunch of lowly peasants!");
             await DialogueManager.Instance.WaitForDialogue();
 			return;
         }
@@ -99,7 +99,7 @@ internal sealed class Sweetheart : Enemy
 		
 		if (CurrentHP < 2640 && Stage == 0)
 		{
-			DialogueManager.Instance.QueueMessage(this, "It's pointless, you fools!@ You cannot dampen my positive energy!");
+			DialogueManager.Instance.QueueMessage(this, @"It's pointless, you fools!\! You cannot dampen my positive energy!");
 			await DialogueManager.Instance.WaitForDialogue();
 			ForceState("SweetheartHappy", "happy");
 			DialogueManager.Instance.QueueMessage("SWEETHEART became HAPPY!");
@@ -112,7 +112,7 @@ internal sealed class Sweetheart : Enemy
 		if (CurrentHP < 2145 && Stage <= 1)
 		{
 			DialogueManager.Instance.QueueMessage(this, "You dare raise your fists at me!?");
-			DialogueManager.Instance.QueueMessage(this, "Fools!@ You should be grovelling on your knees!");
+			DialogueManager.Instance.QueueMessage(this, @"Fools!\! You should be grovelling on your knees!");
 			await DialogueManager.Instance.WaitForDialogue();
 			Stage = 2;
 		}
@@ -120,7 +120,7 @@ internal sealed class Sweetheart : Enemy
 		if (CurrentHP < 1650 && Stage <= 2)
 		{
 			EmotionLocked = false;
-			DialogueManager.Instance.QueueMessage(this, "Oho!@ My beauty and grace is boundless and everlasting...");
+			DialogueManager.Instance.QueueMessage(this, @"Oho!\! My beauty and grace is boundless and everlasting...");
 			DialogueManager.Instance.QueueMessage(this, "It's a shame that you won't be able to enjoy it for much longer!");
 			await DialogueManager.Instance.WaitForDialogue();
 			ForceState("SweetheartEcstatic", "ecstatic");
@@ -135,7 +135,7 @@ internal sealed class Sweetheart : Enemy
 			EmotionLocked = false;
 			DialogueManager.Instance.QueueMessage(this, "Hmph! I see you are still standing.");
 			DialogueManager.Instance.QueueMessage(this, "Cockroaches are resilient, I suppose!");
-			DialogueManager.Instance.QueueMessage("OHOHOHOHOHOHO!!");
+			DialogueManager.Instance.QueueMessage("[wave freq=10.0][font_size=36]OHOHOH[font_size=48]OHOHOHO!!");
 			await DialogueManager.Instance.WaitForDialogue();
 			ForceState("SweetheartManic", "manic");
 			DialogueManager.Instance.QueueMessage("SWEETHEART became MANIC!");
@@ -145,13 +145,25 @@ internal sealed class Sweetheart : Enemy
 		}
 	}
 
-    public override async Task OnEndOfBattle(bool victory)
+	public override Task OnStartOfBattle()
+	{
+		OnStateChanged += (_, _) =>
+		{
+			if (CurrentState is "ecstatic" or "manic")
+				BaseStats = new(3300, 1650, 30, 25, 40, 30, 90);
+			else
+				BaseStats = new(3300, 1650, 30, 25, 40, 10, 90);
+		};
+		return Task.CompletedTask;
+	}
+
+	public override async Task OnEndOfBattle(bool victory)
     {
         if (!victory)
 		{
-            DialogueManager.Instance.QueueMessage(this, "OHOHOH OHOHOHO!");
-            DialogueManager.Instance.QueueMessage(this, "This was child's play!@ You're all nothing but a bunch of lowly peasants!");
-            DialogueManager.Instance.QueueMessage(this, "To the dungeon with you!");
+			DialogueManager.Instance.QueueMessage("[wave freq=10.0][font_size=36]OHOHOH[font_size=48]OHOHOHO!!");
+            DialogueManager.Instance.QueueMessage(this, @"This was child's play!\! You're all nothing but a bunch of lowly peasants!");
+            DialogueManager.Instance.QueueMessage(this, "[br]To [color=#64f7ed]THE DUNGEON[/color] with you!");
             await DialogueManager.Instance.WaitForDialogue();
         }
 

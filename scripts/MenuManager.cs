@@ -110,7 +110,7 @@ internal partial class MenuManager : Node
 		}
 
         EnergyText.Text = $"{BattleManager.Instance.Energy:00}";
-        EnergyBar.RegionRect = new Rect2(0, (float)Math.Ceiling(BattleManager.Instance.Energy / 3f) * 45f, 362f, 49f);
+        EnergyBar.RegionRect = new Rect2(0, (float)Math.Ceiling(BattleManager.Instance.Energy / 3f) * 45f, 362f, 48f);
     }
 
 	public void Select()

@@ -73,7 +73,7 @@ internal sealed class SirMaximusII : Enemy
     {
         if (CurrentHP < 375 && !FirstDialogue)
         {
-            DialogueManager.Instance.QueueMessage(this, "No... @I cannot let my father's death be in vain!");
+            DialogueManager.Instance.QueueMessage(this, "No... I cannot let my father's death be in vain!");
             DialogueManager.Instance.QueueMessage(this, "Now for my ultimate attack!");
             await DialogueManager.Instance.WaitForDialogue();
             FirstDialogue = true;
@@ -87,8 +87,8 @@ internal sealed class SirMaximusII : Enemy
 
         if (CurrentHP <= 0)
         {
-            DialogueManager.Instance.QueueMessage(this, "Father... Forgive me.");
-            DialogueManager.Instance.QueueMessage(this, "I'm sorry... I have failed you.");
+            DialogueManager.Instance.QueueMessage(this, "Father...[br]Forgive me.");
+            DialogueManager.Instance.QueueMessage(this, @"I'm sorry...\![br]I have failed you.");
             await DialogueManager.Instance.WaitForDialogue();
         }
     }
