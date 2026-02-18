@@ -60,8 +60,7 @@ internal partial class MenuManager : Node
 	{
 		if (CurrentState != MenuState.None)
 		{
-			CurrentMenu.OnClose();
-			CurrentMenu.MoveDown(immediate);
+			CurrentMenu.MoveDown(state, immediate);
 		}
 
 		CurrentState = state;

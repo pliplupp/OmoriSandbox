@@ -42,10 +42,6 @@ internal abstract partial class Menu : Sprite2D
 		Show();
 		UpdateCursor();
 	}
-	public virtual void OnClose() 
-	{ 
-		Hide();
-	}
 
 	// TODO: make all menus the same size so these don't have to be overridden
 	public virtual void MoveUp(bool immediate)
@@ -62,7 +58,7 @@ internal abstract partial class Menu : Sprite2D
 		}
 	}
 
-    public virtual void MoveDown(bool immediate)
+    public virtual void MoveDown(MenuState newState, bool immediate)
     {
         Tween?.Kill();
         if (immediate)
@@ -73,6 +69,7 @@ internal abstract partial class Menu : Sprite2D
         {
             Tween = CreateTween();
             Tween.TweenProperty(this, "position", new Vector2(Position.X, 537), 0.2f).SetTrans(Tween.TransitionType.Sine);
+			Tween.TweenCallback(Callable.From(Hide));
         }
     }
 }

@@ -49,7 +49,7 @@ internal partial class PartyMenu : Menu
         }
     }
 
-    public override void MoveDown(bool immediate)
+    public override void MoveDown(MenuState newState, bool immediate)
     {
         Tween?.Kill();
         if (immediate)
@@ -60,6 +60,7 @@ internal partial class PartyMenu : Menu
         {
             Tween = CreateTween();
             Tween.TweenProperty(this, "position", new Vector2(Position.X, 529), 0.2f).SetTrans(Tween.TransitionType.Sine);
+			Tween.TweenCallback(Callable.From(Hide));
         }
     }
 }

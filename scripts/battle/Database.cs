@@ -1134,9 +1134,9 @@ public class Database
 				AnimationManager.Instance.PlayAnimation(142, target);
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForAnimation(3, target);
-				PartyMember first = BattleManager.Instance.GetPartyMember(0);
+				PartyMember first = BattleManager.Instance.GetPartyMemberAtPosition(0);
 				BattleLogManager.Instance.QueueMessage(self, first, "[actor] and [target] vent their ANGER!");
-				BattleManager.Instance.Damage(self, target, () => ((first.CurrentStats.ATK * 1.5f) + (self.CurrentStats.ATK * 1.5f) - target.CurrentStats.DEF), true, 0.1f);
+				BattleManager.Instance.Damage(self, target, () => (first.CurrentStats.ATK * 1.5f) + (self.CurrentStats.ATK * 1.5f) - target.CurrentStats.DEF, true, 0.1f);
 				MakeAngry(first);
 				MakeAngry(self);
 			}
@@ -1149,7 +1149,7 @@ public class Database
 			cost: 0,
 			effect: async (self, targets) =>
 			{
-				PartyMember first = BattleManager.Instance.GetPartyMember(0);
+				PartyMember first = BattleManager.Instance.GetPartyMemberAtPosition(0);
 				BattleLogManager.Instance.QueueMessage(self, first, "[actor] and [target] mull over SAD thoughts.");
 				foreach (Actor member in targets)
 				{
@@ -1170,7 +1170,7 @@ public class Database
 			cost: 0,
 			effect: async (self, targets) =>
 			{
-				PartyMember first = BattleManager.Instance.GetPartyMember(0);
+				PartyMember first = BattleManager.Instance.GetPartyMemberAtPosition(0);
 				foreach (Actor member in targets)
 				{
 					AnimationManager.Instance.PlayAnimation(212, member);
@@ -1471,7 +1471,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember other = BattleManager.Instance.GetPartyMember(0);
+				PartyMember other = BattleManager.Instance.GetPartyMemberAtPosition(0);
 				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(35, false);
@@ -1489,7 +1489,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember other = BattleManager.Instance.GetPartyMember(0);
+				PartyMember other = BattleManager.Instance.GetPartyMemberAtPosition(0);
 				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(36, false);
@@ -1507,7 +1507,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember other = BattleManager.Instance.GetPartyMember(0);
+				PartyMember other = BattleManager.Instance.GetPartyMemberAtPosition(0);
 				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(37, false);
@@ -1526,7 +1526,7 @@ public class Database
 			cost: 0,
 			effect: async(Actor self, Actor target) =>
 			{
-				PartyMember other = BattleManager.Instance.GetPartyMember(2);
+				PartyMember other = BattleManager.Instance.GetPartyMemberAtPosition(2);
 				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(38, false);
@@ -1544,7 +1544,7 @@ public class Database
 			cost: 0,
 			effect: async(Actor self, Actor target) =>
 		   {
-			   PartyMember other = BattleManager.Instance.GetPartyMember(2);
+			   PartyMember other = BattleManager.Instance.GetPartyMemberAtPosition(2);
 			   BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 			   await Task.Delay(1000);
 			   AnimationManager.Instance.PlayScreenAnimation(39, false);
@@ -1567,7 +1567,7 @@ public class Database
 		  cost: 0,
 		  effect: async (Actor self, Actor target) =>
 		  {
-			  PartyMember other = BattleManager.Instance.GetPartyMember(2);
+			  PartyMember other = BattleManager.Instance.GetPartyMemberAtPosition(2);
 			  BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 			  await Task.Delay(1000);
 			  AnimationManager.Instance.PlayScreenAnimation(40, false);
@@ -1590,7 +1590,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember other = BattleManager.Instance.GetPartyMember(3);
+				PartyMember other = BattleManager.Instance.GetPartyMemberAtPosition(3);
 				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(41, false);
@@ -1611,7 +1611,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember other = BattleManager.Instance.GetPartyMember(3);
+				PartyMember other = BattleManager.Instance.GetPartyMemberAtPosition(3);
 				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(42, false);
@@ -1635,7 +1635,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember other = BattleManager.Instance.GetPartyMember(3);
+				PartyMember other = BattleManager.Instance.GetPartyMemberAtPosition(3);
 				BattleLogManager.Instance.QueueMessage(self, other, "[actor] looks at [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(43, false);
@@ -1980,7 +1980,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor _) =>
 			{
-				PartyMember first = BattleManager.Instance.GetPartyMember(0);
+				PartyMember first = BattleManager.Instance.GetPartyMemberAtPosition(0);
 				BattleLogManager.Instance.QueueMessage(self, first, "[actor] passes to [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(62, false);
@@ -1998,7 +1998,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember first = BattleManager.Instance.GetPartyMember(0);
+				PartyMember first = BattleManager.Instance.GetPartyMemberAtPosition(0);
 				BattleLogManager.Instance.QueueMessage(self, first, "[actor] passes to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(63, false);
@@ -2016,7 +2016,7 @@ public class Database
 		   cost: 0,
 		   effect: async (self, target) =>
 		   {
-			   PartyMember first = BattleManager.Instance.GetPartyMember(0);
+			   PartyMember first = BattleManager.Instance.GetPartyMemberAtPosition(0);
 			   BattleLogManager.Instance.QueueMessage(self, first, "[actor] passes to [target].");
 			   await Task.Delay(1000);
 			   await AnimationManager.Instance.WaitForScreenAnimation(64, false);
@@ -2034,7 +2034,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember second = BattleManager.Instance.GetPartyMember(1);
+				PartyMember second = BattleManager.Instance.GetPartyMemberAtPosition(1);
 				BattleLogManager.Instance.QueueMessage(self, second, "[actor] passes to [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(65, true);
@@ -2052,7 +2052,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember second = BattleManager.Instance.GetPartyMember(1);
+				PartyMember second = BattleManager.Instance.GetPartyMemberAtPosition(1);
 				BattleLogManager.Instance.QueueMessage(self, second, "[actor] passes to [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(65, true);
@@ -2070,7 +2070,7 @@ public class Database
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				PartyMember second = BattleManager.Instance.GetPartyMember(1);
+				PartyMember second = BattleManager.Instance.GetPartyMemberAtPosition(1);
 				BattleLogManager.Instance.QueueMessage(self, second, "[actor] passes to [target].");
 				await Task.Delay(1000);
 				AnimationManager.Instance.PlayScreenAnimation(79, true);
@@ -2088,8 +2088,8 @@ public class Database
 			cost: 0,
 			effect: async (self, targets) =>
 			{
-				PartyMember second = BattleManager.Instance.GetPartyMember(1);
-				PartyMember third = BattleManager.Instance.GetPartyMember(3);
+				PartyMember second = BattleManager.Instance.GetPartyMemberAtPosition(1);
+				PartyMember third = BattleManager.Instance.GetPartyMemberAtPosition(3);
 				BattleLogManager.Instance.QueueMessage(self, third, "[actor] passes to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(69, true);
@@ -2109,8 +2109,8 @@ public class Database
 			cost: 0,
 			effect: async (self, targets) =>
 			{
-				PartyMember second = BattleManager.Instance.GetPartyMember(1);
-				PartyMember third = BattleManager.Instance.GetPartyMember(3);
+				PartyMember second = BattleManager.Instance.GetPartyMemberAtPosition(1);
+				PartyMember third = BattleManager.Instance.GetPartyMemberAtPosition(3);
 				BattleLogManager.Instance.QueueMessage(self, third, "[actor] passes to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(70, true);
@@ -2130,8 +2130,8 @@ public class Database
 		   cost: 0,
 		   effect: async (self, targets) =>
 		   {
-			   PartyMember second = BattleManager.Instance.GetPartyMember(1);
-			   PartyMember third = BattleManager.Instance.GetPartyMember(3);
+			   PartyMember second = BattleManager.Instance.GetPartyMemberAtPosition(1);
+			   PartyMember third = BattleManager.Instance.GetPartyMemberAtPosition(3);
 			   BattleLogManager.Instance.QueueMessage(self, third, "[actor] passes to [target].");
 			   await Task.Delay(1000);
 			   await AnimationManager.Instance.WaitForScreenAnimation(71, true);
@@ -2457,7 +2457,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember first = BattleManager.Instance.GetPartyMember(0);
+				PartyMember first = BattleManager.Instance.GetPartyMemberAtPosition(0);
 				BattleLogManager.Instance.QueueMessage(self, first, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(93, false);
@@ -2477,7 +2477,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember first = BattleManager.Instance.GetPartyMember(0);
+				PartyMember first = BattleManager.Instance.GetPartyMemberAtPosition(0);
 				BattleLogManager.Instance.QueueMessage(self, first, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(93, false);
@@ -2500,7 +2500,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember first = BattleManager.Instance.GetPartyMember(0);
+				PartyMember first = BattleManager.Instance.GetPartyMemberAtPosition(0);
 				BattleLogManager.Instance.QueueMessage(self, first, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(93, false);
@@ -2524,7 +2524,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember second = BattleManager.Instance.GetPartyMember(1);
+				PartyMember second = BattleManager.Instance.GetPartyMemberAtPosition(1);
 				BattleLogManager.Instance.QueueMessage(self, second, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(94, false);
@@ -2545,7 +2545,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember second = BattleManager.Instance.GetPartyMember(1);
+				PartyMember second = BattleManager.Instance.GetPartyMemberAtPosition(1);
 				BattleLogManager.Instance.QueueMessage(self, second, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(94, false);
@@ -2569,7 +2569,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember second = BattleManager.Instance.GetPartyMember(1);
+				PartyMember second = BattleManager.Instance.GetPartyMemberAtPosition(1);
 				BattleLogManager.Instance.QueueMessage(self, second, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(94, false);
@@ -2593,7 +2593,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember fourth = BattleManager.Instance.GetPartyMember(2);
+				PartyMember fourth = BattleManager.Instance.GetPartyMemberAtPosition(2);
 				BattleLogManager.Instance.QueueMessage(self, fourth, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(95, false);
@@ -2614,7 +2614,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember fourth = BattleManager.Instance.GetPartyMember(2);
+				PartyMember fourth = BattleManager.Instance.GetPartyMemberAtPosition(2);
 				BattleLogManager.Instance.QueueMessage(self, fourth, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(95, false);
@@ -2638,7 +2638,7 @@ public class Database
 			cost: 0,
 			effect: async (Actor self, Actor target) =>
 			{
-				PartyMember fourth = BattleManager.Instance.GetPartyMember(2);
+				PartyMember fourth = BattleManager.Instance.GetPartyMemberAtPosition(2);
 				BattleLogManager.Instance.QueueMessage(self, fourth, "[actor] calls out to [target].");
 				await Task.Delay(1000);
 				await AnimationManager.Instance.WaitForScreenAnimation(95, false);
@@ -5417,7 +5417,7 @@ public class Database
 		Skills["ABossLookAtKel"] = new Skill(
 			name: "ABossLookAtKel",
 			description: "ABossLookAtKel",
-			target: SkillTarget.Self,
+			target: SkillTarget.Ally,
 			cost: 0,
 			effect: async (self, target) =>
 			{
@@ -5435,7 +5435,7 @@ public class Database
 		Skills["ABossLookAtHero"] = new Skill(
 			name: "ABossLookAtHero",
 			description: "ABossLookAtHero",
-			target: SkillTarget.Self,
+			target: SkillTarget.Ally,
 			cost: 0,
 			effect: async (self, target) =>
 			{
@@ -5495,7 +5495,7 @@ public class Database
 		Skills["KBossPassToAubrey"] = new Skill(
 			name: "KBossPassToAubrey",
 			description: "KBossPassToAubrey",
-			target: SkillTarget.Self,
+			target: SkillTarget.Ally,
 			cost: 0,
 			effect: async (self, target) =>
 			{
@@ -5513,7 +5513,7 @@ public class Database
 		Skills["KBossPassToHero"] = new Skill(
 			name: "KBossPassToHero",
 			description: "KBossPassToHero",
-			target: SkillTarget.Self,
+			target: SkillTarget.Ally,
 			cost: 0,
 			effect: async (self, target) =>
 			{
@@ -5564,7 +5564,7 @@ public class Database
 		Skills["HBossCallAubrey"] = new Skill(
 			name: "HBossCallAubrey",
 			description: "HBossCallAubrey",
-			target: SkillTarget.Self,
+			target: SkillTarget.Ally,
 			cost: 0,
 			effect: async (self, target) =>
 			{
@@ -5582,7 +5582,7 @@ public class Database
 		Skills["HBossCallKel"] = new Skill(
 			name: "HBossCallKel",
 			description: "HBossCallKel",
-			target: SkillTarget.Self,
+			target: SkillTarget.Ally,
 			cost: 0,
 			effect: async (self, target) =>
 			{
@@ -7172,6 +7172,7 @@ public class Database
 			new StatBonus(StatType.ATK, 20), new StatBonus(StatType.DEF, 20), new StatBonus(StatType.SPD, 20),
 			new StatBonus(StatType.LCK, 20)
 		]);
+		Charms["Chef's Hat"] = new Charm("Chef's Hat", new StatBonus(StatType.DEF, 15));
 
 		#endregion
 	}

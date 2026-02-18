@@ -30,8 +30,8 @@ public partial class PartyMemberComponent : Node
     public PartyMember Actor => PartyMember;
 	private FollowupBubbles FollowupBubbles;
     /// <summary>
-    /// The position of the <see cref="Actors.PartyMember"/> in the party.<br/>
-	/// See <see cref="BattleManager.GetPartyMember(int)"/> for valid positions.
+    /// The on-screen position of the <see cref="Actors.PartyMember"/>.<br/>
+	/// See <see cref="BattleManager.GetPartyMemberAtPosition(int)"/> for valid positions.
     /// </summary>
     public int Position { get; private set; }
     /// <summary>

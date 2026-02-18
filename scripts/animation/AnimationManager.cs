@@ -192,8 +192,6 @@ public partial class AnimationManager : Node
 	/// </summary>
 	/// <param name="id">The animation ID to play. Uses the same ID numbers as OMORI for all vanilla animations.</param>
 	/// <param name="target">The <see cref="Actor"/> that this animation will play centered on.</param>
-	/// <param name="b"></param>
-	/// <param name="targetsEnemy">Whether or not this animation targets an enemy.<br/>
 	/// Mainly used for animation layering, such as skill animations that target enemies and need to display underneath the UI.</param>
 	public void PlayAnimation(int id, Actor target)
 	{
@@ -218,7 +216,6 @@ public partial class AnimationManager : Node
 	/// </summary>
 	/// <param name="id">The animation ID to play. Uses the same ID numbers as OMORI for all vanilla animations.</param>
 	/// <param name="target">The <see cref="Actor"/> that this animation will play centered on.</param>
-	/// <param name="targetsEnemy">Whether this animation targets an enemy.<br/>
 	/// Mainly used for animation layering, such as skill animations that target enemies and need to display underneath the UI.</param>
 	/// <returns>An awaitable <see cref="Task"/> that will complete whenever the animation finishes playing.</returns>
 	public async Task WaitForAnimation(int id, Actor target)

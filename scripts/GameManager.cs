@@ -54,8 +54,8 @@ namespace OmoriSandbox;
  - Perfectheart exploit breaks with plot armor - fixed?
  - Fix menu wrapping - done
  - Fix Skill/Snack/Toy menu back going back to menu it came from - done
- - Make skill/toy menu appear on top of battle menu
- - Fix followups (party and bosses) with less than 4 party members
+ - Make skill/toy menu appear on top of battle menu - done
+ - Fix followups (party and bosses) with less than 4 party members - done (needs testing for bosses)
  */
 
 internal partial class GameManager : Node

@@ -88,17 +88,18 @@ internal partial class BattleMenu : Menu
         }
     }
 
-    public override void MoveDown(bool immediate)
+    public override void MoveDown(MenuState newState, bool immediate)
     {
         Tween?.Kill();
         if (immediate)
         {
             Position = new Vector2(Position.X, 529);
         }
-        else
+        else if (newState is MenuState.None)
         {
             Tween = CreateTween();
             Tween.TweenProperty(this, "position", new Vector2(Position.X, 529), 0.2f).SetTrans(Tween.TransitionType.Sine);
+			Tween.TweenCallback(Callable.From(Hide));
         }
     }
 }

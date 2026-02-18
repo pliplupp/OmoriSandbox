@@ -56,12 +56,4 @@ public partial class EnemyComponent : Node
 		Enemy.SetHurt(true);
 		HurtTimer.Start(0.75d);
 	}
-
-	/// <summary>
-	/// Immediately despawns the enemy from the scene.
-	/// </summary>
-	public void Despawn()
-	{
-		GetParent().QueueFree();
-	}
 }

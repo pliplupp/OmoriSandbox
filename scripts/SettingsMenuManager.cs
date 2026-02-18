@@ -5,8 +5,6 @@ namespace OmoriSandbox.Editor;
 
 internal partial class SettingsMenuManager : Control
 {
-	// TODO: extra settings: Swap T3 speed buff pc/console values, vertigo uses attack in JP/KR, CJK toys affected by emotion damage
-	
 	public override void _Ready()
 	{
 		ConfigFile config = new();

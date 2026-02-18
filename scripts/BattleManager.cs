@@ -142,8 +142,8 @@ public partial class BattleManager : Node
 		if (UseBasilFollowups)
 		{
 			FollowupTable[(2, InputDirection.Down)] = (0, "Comfort");
-			FollowupTable[(2, InputDirection.Left)] = (1, "Mull");
-			FollowupTable[(2, InputDirection.Up)] = (3, "Vent");
+			FollowupTable[(2, InputDirection.Left)] = (0, "Mull");
+			FollowupTable[(2, InputDirection.Up)] = (0, "Vent");
 		}
 		else
 		{
@@ -654,19 +654,26 @@ public partial class BattleManager : Node
 		{
 			foreach (PartyMemberComponent member in CurrentParty.Where(x => x.Actor.CurrentState != "toast"))
 			{
+				// TODO: properly handle start of turn effects in stat modifiers and charms
 				if (member.Actor is Omori omori && omori.CurrentState == "plotarmor")
 				{
 					omori.RemovePlotArmor();
 					omori.RemoveStatModifier("SecondChance");
 				}
-				if (!member.Actor.HasStatModifier("ReleaseEnergyBasil")) 
-					continue;
-				int heal = (int)Math.Round(member.Actor.CurrentStats.MaxHP * 0.1f, MidpointRounding.AwayFromZero);
-				int juice = (int)Math.Round(member.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
-				member.Actor.Heal(heal);
-				member.Actor.HealJuice(juice);
-				SpawnDamageNumber(heal, member.Actor.CenterPoint, DamageType.Heal);
-				SpawnDamageNumber(juice, member.Actor.CenterPoint, DamageType.JuiceGain);
+				else if (member.Actor.HasStatModifier("ReleaseEnergyBasil")) {
+					int heal = (int)Math.Round(member.Actor.CurrentStats.MaxHP * 0.1f, MidpointRounding.AwayFromZero);
+					int juice = (int)Math.Round(member.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
+					member.Actor.Heal(heal);
+					member.Actor.HealJuice(juice);
+					SpawnDamageNumber(heal, member.Actor.CenterPoint, DamageType.Heal);
+					SpawnDamageNumber(juice, member.Actor.CenterPoint, DamageType.JuiceGain);
+				}
+				else if (member.Actor.Charm.Name == "Chef's Hat")
+				{
+					int juice = (int)Math.Round(member.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
+					member.Actor.HealJuice(juice);
+					SpawnDamageNumber(juice, member.Actor.CenterPoint, DamageType.JuiceGain);
+				}
 			}
 			
 			for (int i = 0; i < Enemies.Count; i++)
@@ -978,8 +985,8 @@ public partial class BattleManager : Node
 		if (!FollowupTable.TryGetValue((current.Position, direction), out var pair))
 			return false;
 
-		PartyMemberComponent target = CurrentParty.First(x => x.Position == pair.Target);
-		if (target.Actor.CurrentState == "toast")
+		PartyMemberComponent target = CurrentParty.FirstOrDefault(x => x.Position == pair.Target);
+		if (target == null || target.Actor.CurrentState == "toast")
 			return false;
 
 		string name = pair.SkillName;
@@ -1740,16 +1747,34 @@ public partial class BattleManager : Node
 	}
 
 	/// <summary>
-	/// Retrieves the <see cref="PartyMember"/> at the given <paramref name="index"/> in the party.
+	/// Retrieves the <see cref="PartyMember"/> at the given internal array <paramref name="index"/> in the party.
 	/// </summary>
 	/// <remarks>
-	/// Valid <paramref name="index"/> values include 0 (Bottom Left), 1 (Top Left), 2 (Bottom Right), and 3 (Top Right).
+	/// This is the <i>order the PartyMembers are added to the party</i>, not their on-screen position.<br/>
+	/// Use <see cref="GetPartyMemberAtPosition"/> for that purpose instead.
 	/// </remarks>
 	/// <param name="index"></param>
 	public PartyMember GetPartyMember(int index)
 	{
 		// eh who needs bounds checks these days
 		return CurrentParty[Math.Clamp(index, 0, 3)].Actor;
+	}
+
+	/// <summary>
+	/// Retrieves the <see cref="PartyMember"/> at the given <paramref name="position"/> in the party.
+	/// If no party member is present at the given position, null is returned instead.
+	/// </summary>
+	/// <remarks>
+	/// Valid <paramref name="position"/> values include 0 (Bottom Left), 1 (Top Left), 2 (Bottom Right), and 3 (Top Right).
+	/// </remarks>
+	/// <param name="position">The position to retrieve.</param>
+	/// <returns>The corresponding <see cref="PartyMember"/> if present, otherwise null.</returns>
+	public PartyMember GetPartyMemberAtPosition(int position)
+	{
+		PartyMemberComponent member = CurrentParty.FirstOrDefault(x => x.Position == position);
+		if (member == null)
+			return null;
+		return member.Actor;
 	}
 
 	/// <summary>

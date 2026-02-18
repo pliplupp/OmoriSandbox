@@ -9,7 +9,7 @@ using OmoriSandbox.Battle.Modifier;
 namespace OmoriSandbox.Actors;
 
 // TODO: Remaining enemies
-// Humphrey
+// Humphrey - done?
 // Faraway Town Enemies
 // Omori
 
