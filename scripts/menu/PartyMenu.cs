@@ -20,8 +20,15 @@ internal partial class PartyMenu : Menu
 			AudioManager.Instance.PlaySFX("SYS_move");
 	}
 
+    public override void OnOpen(SelectionMemory memory)
+    {
+        CursorSprite.StartBounce();
+		base.OnOpen(memory);
+    }
+
 	protected override void OnSelect()
 	{
+		CursorSprite.StopBounce();
 		if (CursorIndex == 0)
 		{
 			BattleManager.Instance.OnFightSelected();
@@ -49,18 +56,19 @@ internal partial class PartyMenu : Menu
         }
     }
 
-    public override void MoveDown(MenuState newState, bool immediate)
+    public override void MoveDown(MenuState newState, bool immediate, bool noHide = false)
     {
         Tween?.Kill();
         if (immediate)
         {
             Position = new Vector2(Position.X, 529);
+			Visible = noHide;
         }
         else
         {
             Tween = CreateTween();
             Tween.TweenProperty(this, "position", new Vector2(Position.X, 529), 0.2f).SetTrans(Tween.TransitionType.Sine);
-			Tween.TweenCallback(Callable.From(Hide));
+			Tween.TweenCallback(Callable.From(() => Visible = noHide));
         }
     }
 }

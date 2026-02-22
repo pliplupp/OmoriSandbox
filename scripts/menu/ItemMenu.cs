@@ -43,6 +43,7 @@ internal partial class ItemMenu : Menu
 			CursorIndex = 0;
 			Page = 0;
         }
+		CursorSprite.StartBounce();
 		UpdatePage();
         Show();
 	}
@@ -128,5 +129,6 @@ internal partial class ItemMenu : Menu
 		if (Empty) return;
 		Item selected = DisplayedItems[CursorIndex].Item1;
         BattleManager.Instance.OnSelectItem(selected);
+		CursorSprite.StopBounce();
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using OmoriSandbox.Editor;
 
 namespace OmoriSandbox.Battle;
 
@@ -65,6 +66,8 @@ public struct Stats
     /// <param name="value">The value to set the stat to.</param>"
     public void SetStat(StatType stat, int value)
     {
+        if (!SettingsMenuManager.Instance.DisableStatLimit)
+            value = Math.Clamp(value, 0, 999);
         switch (stat)
         {
             case StatType.MaxHP: MaxHP = value; break;

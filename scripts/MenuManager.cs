@@ -2,6 +2,7 @@ using Godot;
 using OmoriSandbox.Actors;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OmoriSandbox.Menu;
 
@@ -58,23 +59,22 @@ internal partial class MenuManager : Node
 
 	public void ShowMenu(MenuState state, bool immediate = false, bool ignoreMemory = false)
 	{
-		if (CurrentState != MenuState.None)
-		{
-			CurrentMenu.MoveDown(state, immediate);
-		}
-
 		CurrentState = state;
 		if (CurrentState == MenuState.None)
 		{
+			foreach (Menu open in Menus.Values.Where(x => x.Visible)) {
+				open.MoveDown(state, immediate);
+			}
 			CurrentMenu = null;
 			MoveEnergyBarDown(immediate);
 			return;
 		}
 
+		CurrentMenu?.MoveDown(state, immediate);
 		CurrentMenu = Menus[CurrentState];
 		PartyMember currentPartyMember = BattleManager.Instance.GetCurrentPartyMember();
 
-        if (CurrentMenu is SkillMenu skill)
+		if (CurrentMenu is SkillMenu skill)
 		{
 			skill.Populate(currentPartyMember);
 		}
@@ -94,6 +94,22 @@ internal partial class MenuManager : Node
 		MoveEnergyBarUp(immediate);
 	}
 
+	public void MoveDownOpenMenus(bool immediate)
+	{
+		foreach (var menu in Menus) {
+			if (menu.Value.Visible)
+				menu.Value.MoveDown(menu.Key, immediate, true);
+		}
+		MoveEnergyBarDown(immediate);	
+	}
+
+	public void MoveUpOpenMenus(bool immediate)
+	{
+		foreach (Menu open in Menus.Values.Where(x => x.Visible))
+			open.MoveUp(immediate);
+		MoveEnergyBarUp(immediate);
+	}
+
 	public override void _Process(double delta)
 	{
 		if (CurrentState != MenuState.None)
@@ -108,15 +124,15 @@ internal partial class MenuManager : Node
 				CurrentMenu.OnInput(Vector2I.Right);
 		}
 
-        EnergyText.Text = $"{BattleManager.Instance.Energy:00}";
-        EnergyBar.RegionRect = new Rect2(0, (float)Math.Ceiling(BattleManager.Instance.Energy / 3f) * 45f, 362f, 48f);
-    }
+		EnergyText.Text = $"{BattleManager.Instance.Energy:00}";
+		EnergyBar.RegionRect = new Rect2(0, (float)Math.Ceiling(BattleManager.Instance.Energy / 3f) * 45f, 362f, 48f);
+	}
 
 	public void Select()
 	{
 		if (CurrentState != MenuState.None)
 		{ 
-            CurrentMenu.OnInput(Vector2I.Zero);
+			CurrentMenu.OnInput(Vector2I.Zero);
 		}
 	}
 
@@ -131,21 +147,21 @@ internal partial class MenuManager : Node
 		if (CurrentMenu is ItemMenu itemMenu)
 		{
 			LastSelected[member] = new(CurrentState, itemMenu.CursorIndex, itemMenu.Page);
-            GD.Print($"Saved {member.Name} selection as {CurrentState} at index {CurrentMenu.CursorIndex}, page {itemMenu.Page}");
-        }
+			GD.Print($"Saved {member.Name} selection as {CurrentState} at index {CurrentMenu.CursorIndex}, page {itemMenu.Page}");
+		}
 		else
 		{
 			LastSelected[member] = new(CurrentState, CurrentMenu.CursorIndex);
 			GD.Print($"Saved {member.Name} selection as {CurrentState} at index {CurrentMenu.CursorIndex}");
 		}
-    }
+	}
 
 	public void ClearLastSelected()
 	{
 		LastSelected.Clear();
 	}
 
-    private void MoveEnergyBarDown(bool immediate)
+	private void MoveEnergyBarDown(bool immediate)
 	{
 		if (immediate)
 		{
@@ -154,22 +170,22 @@ internal partial class MenuManager : Node
 		else
 		{
 			EnergyBarTween?.Kill();
-            EnergyBarTween = CreateTween();
-            EnergyBarTween.TweenProperty(EnergyBar, "position", new Vector2(320f, 450f), 0.2f).SetTrans(Tween.TransitionType.Sine);
+			EnergyBarTween = CreateTween();
+			EnergyBarTween.TweenProperty(EnergyBar, "position", new Vector2(320f, 450f), 0.2f).SetTrans(Tween.TransitionType.Sine);
 		}
 	}
 
 	private void MoveEnergyBarUp(bool immediate)
 	{
-        if (immediate)
-        {
-            EnergyBar.Position = new Vector2(320f, 360f);
-        }
-        else
-        {
-            EnergyBarTween?.Kill();
-            EnergyBarTween = CreateTween();
-            EnergyBarTween.TweenProperty(EnergyBar, "position", new Vector2(320f, 360f), 0.2f).SetTrans(Tween.TransitionType.Sine);
-        }
-    }
+		if (immediate)
+		{
+			EnergyBar.Position = new Vector2(320f, 360f);
+		}
+		else
+		{
+			EnergyBarTween?.Kill();
+			EnergyBarTween = CreateTween();
+			EnergyBarTween.TweenProperty(EnergyBar, "position", new Vector2(320f, 360f), 0.2f).SetTrans(Tween.TransitionType.Sine);
+		}
+	}
 }

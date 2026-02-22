@@ -54,6 +54,8 @@ internal partial class SettingsMenuManager : Control
 		BackButton.Pressed += () =>
 		{
 			MainControls.Visible = true;
+			Logo.Visible = true;
+			OmoriFace.Visible = true;
 			Visible = false;
 		};
 		
@@ -63,6 +65,7 @@ internal partial class SettingsMenuManager : Control
 		SFXSlider.Value = (float)config.GetValue("Settings", "SFXVolume", 1f);
 		BGMSlider.Value = (float)config.GetValue("Settings", "BGMVolume", 0.5f);
 		DisableDamageLimitCheckbox.ButtonPressed = (bool)config.GetValue("Settings", "DisableDamageLimit", false);
+		DisableStatLimitCheckbox.ButtonPressed = (bool)config.GetValue("Settings", "DisableStatLimit", false);
 		ShowMoreInfoCheckbox.ButtonPressed = (bool)config.GetValue("Settings", "ShowMoreInfo", false);
 		ShowStateIconsCheckbox.ButtonPressed = (bool)config.GetValue("Settings", "ShowStateIcons", false);
 		UseConsoleSpdCheckbox.ButtonPressed = (bool)config.GetValue("Settings", "UseConsoleSpd", false);
@@ -113,11 +116,12 @@ internal partial class SettingsMenuManager : Control
 		config.SetValue("Settings", "SFXVolume", AudioServer.GetBusVolumeLinear(AudioServer.GetBusIndex("SFX")));
 		config.SetValue("Settings", "BattlelogSpeed", (int)BattlelogSpeedSlider.Value);
 		config.SetValue("Settings", "ActionDelay", (int)ActionDelaySlider.Value);
-		config.SetValue("Settings",  "DisableDamageLimit", DisableDamageLimitCheckbox.ButtonPressed);
+		config.SetValue("Settings", "DisableDamageLimit", DisableDamageLimitCheckbox.ButtonPressed);
+		config.SetValue("Settings", "DisableStatLimit", DisableStatLimitCheckbox.ButtonPressed);
 		config.SetValue("Settings", "ShowMoreInfo", ShowMoreInfoCheckbox.ButtonPressed);
 		config.SetValue("Settings", "ShowStateIcons", ShowStateIconsCheckbox.ButtonPressed);
-		config.SetValue("Settings","UseConsoleSpd", UseConsoleSpdCheckbox.ButtonPressed);
-		config.SetValue("Settings","UseConsoleDef", UseConsoleDefCheckbox.ButtonPressed);
+		config.SetValue("Settings", "UseConsoleSpd", UseConsoleSpdCheckbox.ButtonPressed);
+		config.SetValue("Settings", "UseConsoleDef", UseConsoleDefCheckbox.ButtonPressed);
 		config.SetValue("Settings", "InfiniteBuffsDebuffs", InfiniteBuffsDebuffsCheckbox.ButtonPressed);
 		config.SetValue("Settings", "VertigoUsesAtk", VertigoUsesAtkCheckbox.ButtonPressed);
 		config.SetValue("Settings", "ToysUseEmotionDamage", ToysUseEmotionDamageCheckbox.ButtonPressed);
@@ -151,6 +155,7 @@ internal partial class SettingsMenuManager : Control
 		config.SetValue("Settings", "BattlelogSpeed", 3);
 		config.SetValue("Settings", "ActionDelay", 3);
 		config.SetValue("Settings", "DisableDamageLimit", false);
+		config.SetValue("Settings", "DisableStatLimit", false);
 		config.SetValue("Settings", "ShowMoreInfo", false);
 		config.SetValue("Settings", "ShowStateIcons", false);
 		config.SetValue("Settings","UseConsoleSpd", false);
@@ -180,6 +185,7 @@ internal partial class SettingsMenuManager : Control
 
 	public static SettingsMenuManager Instance;
 	public bool DisableDamageLimit => DisableDamageLimitCheckbox.ButtonPressed;
+	public bool DisableStatLimit => DisableStatLimitCheckbox.ButtonPressed;
 	public bool ShowMoreInfo => ShowMoreInfoCheckbox.ButtonPressed;
 	public bool ShowStateIcons => ShowStateIconsCheckbox.ButtonPressed;
 	public bool UseConsoleSpeed => UseConsoleSpdCheckbox.ButtonPressed;
@@ -191,6 +197,8 @@ internal partial class SettingsMenuManager : Control
 	public int BattlelogSpeed => (int)BattlelogSpeedSlider.Value;
 	public int ActionDelay => (int)ActionDelaySlider.Value;
 
+	[Export] private TextureRect Logo;
+	[Export] private AnimatedSprite2D OmoriFace;
 	[Export] private HSlider MasterSlider;
 	[Export] private HSlider BGMSlider;
 	[Export] private HSlider SFXSlider;
@@ -199,6 +207,7 @@ internal partial class SettingsMenuManager : Control
 	[Export] private HSlider BattlelogSpeedSlider;
 	[Export] private HSlider ActionDelaySlider;
 	[Export] private CheckBox DisableDamageLimitCheckbox;
+	[Export] private CheckBox DisableStatLimitCheckbox;
 	[Export] private CheckBox ShowMoreInfoCheckbox;
 	[Export] private CheckBox ShowStateIconsCheckbox;
 	[Export] private CheckBox UseConsoleSpdCheckbox;

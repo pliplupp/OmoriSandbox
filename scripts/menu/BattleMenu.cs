@@ -25,6 +25,7 @@ internal partial class BattleMenu : Menu
 			CursorIndex = 3;
         else
 			CursorIndex = 0;
+		CursorSprite.StartBounce();
 		UpdateCursor();
 		Show();
     }
@@ -56,6 +57,7 @@ internal partial class BattleMenu : Menu
 
 	protected override void OnSelect()
 	{
+		CursorSprite.StopBounce();
 		switch (Options[CursorIndex])
 		{
 			case "Attack":
@@ -88,18 +90,24 @@ internal partial class BattleMenu : Menu
         }
     }
 
-    public override void MoveDown(MenuState newState, bool immediate)
+    public override void MoveDown(MenuState newState, bool immediate, bool noHide = false)
     {
+		// don't move down the battle menu for these three states
+		// recreates the "slide over" effect from the original game
+		if (newState is MenuState.Skill or MenuState.Snack or MenuState.Toy)
+			return;	
+
         Tween?.Kill();
         if (immediate)
         {
             Position = new Vector2(Position.X, 529);
+			Visible = noHide;
         }
-        else if (newState is MenuState.None)
+        else
         {
             Tween = CreateTween();
             Tween.TweenProperty(this, "position", new Vector2(Position.X, 529), 0.2f).SetTrans(Tween.TransitionType.Sine);
-			Tween.TweenCallback(Callable.From(Hide));
+			Tween.TweenCallback(Callable.From(() => Visible = noHide));
         }
     }
 }

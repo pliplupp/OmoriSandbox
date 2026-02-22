@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace OmoriSandbox.Actors;
 
 /// <summary>
-/// An generic actor. See <see cref="PartyMember"/> and <see cref="Enemy"/>.
+/// A generic actor. See <see cref="PartyMember"/> and <see cref="Enemy"/>.
 /// </summary>
 public abstract class Actor
 {
@@ -234,11 +234,14 @@ public abstract class Actor
 	{
 		foreach (var mod in StatModifiers)
 		{
-			if (this is Omori omori && omori.CurrentState == "plotarmor")
+			if (mod.Value is PlotArmorStatModifier)
 			{
-				omori.RemovePlotArmor();
-				StatModifiers.Remove("SecondChance");
+				StatModifiers.Remove("PlotArmor");
+				SetState(CurrentState, true);
+				GD.Print("Removed modifier " + mod.Key + " from " + Name);
+				continue;
 			}
+			
 			if (mod.Value.TurnsLeft != -1)
 			{
 				mod.Value.DecreaseTurns();
@@ -249,7 +252,6 @@ public abstract class Actor
 				}
 			}
 		}
-
 	}
 
 	/// <summary>
@@ -318,19 +320,21 @@ public abstract class Actor
 		CurrentHP -= damage;
 		if (CurrentHP < 0)
 			CurrentHP = 0;
-		
-		// TODO: allow other characters to have plot armor if desired
-		if (this is Omori omori && CurrentHP == 0 && !omori.HasUsedPlotArmor)
+
+		if (this is PartyMember member && member.HasPlotArmor && CurrentHP == 0 && !member.HasUsedPlotArmor)
 		{
 			CurrentHP = 1;
-			// keep track of omori's old emotion for when plot armor expires
-			omori.OldEmotion = omori.CurrentState;
-			SetState("plotarmor", true);
-			AddStatModifier("SecondChance");
-			omori.HasUsedPlotArmor = true;
+			AddStatModifier("PlotArmor");
+			member.HasUsedPlotArmor = true;
+			string temp = CurrentState;
+			// temporarily set our state to plotarmor to properly update the StateAnimator
+			CurrentState = "plotarmor";
+			OnStateChanged?.Invoke(this, EventArgs.Empty);
+			Sprite.Animation = CurrentState;
+			CurrentState = temp;
 			return;
 		}
-		
+
 		OnDamaged?.Invoke(this, EventArgs.Empty);
 	}
 
@@ -380,6 +384,9 @@ public abstract class Actor
 	/// <param name="hurt">Whether this actor should appear hurt.</param>
 	public virtual void SetHurt(bool hurt)
 	{
+		if (HasStatModifier("PlotArmor"))
+			return;
+
 		Sprite.Animation = hurt ? "hurt" : CurrentState;
 	}
 
@@ -400,7 +407,6 @@ public abstract class Actor
 	{
 		if (IsStateValid(state))
 		{
-			Sprite.Animation = state;
 			CurrentState = state;
 			if (!silent)
 			{
@@ -415,12 +421,9 @@ public abstract class Actor
 			}
 
 			OnStateChanged?.Invoke(this, EventArgs.Empty);
-
-			// bug fix for when omori changes state during the plot armor turn
-			// this REAALLLY needs to be handled better soon...
-			if (this is Omori omori && omori.OldEmotion != null && state != "plotarmor")
-			{
-				omori.OldEmotion = state;
+			// only update the face sprite if we're not in plot armor
+			if (!HasStatModifier("PlotArmor")) {
+				Sprite.Animation = state;
 			}
 		}
 		else

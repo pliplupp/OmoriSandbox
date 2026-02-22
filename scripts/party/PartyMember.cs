@@ -143,4 +143,12 @@ public abstract class PartyMember : Actor
 	/// If this party member is considered to be a "real world" member. Mainly used to change the UI buttons.
 	/// </summary>
 	public abstract bool IsRealWorld { get; }
+	/// <summary>
+	/// Whether this party member has plot armor (survives one fatal hit per battle).
+	/// </summary>
+	public virtual bool HasPlotArmor => false;
+	/// <summary>
+	/// Whether this party member has already used their plot armor this battle.
+	/// </summary>
+	internal bool HasUsedPlotArmor = false;
 }

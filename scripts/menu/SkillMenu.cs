@@ -74,6 +74,7 @@ internal partial class SkillMenu : Menu
         if (Empty) return;
         Skill selected = Skills[CursorIndex];
 		BattleManager.Instance.OnSelectSkill(selected);
+		CursorSprite.StopBounce();
 	}
 
 	public override void OnOpen(SelectionMemory memory)
@@ -87,5 +88,6 @@ internal partial class SkillMenu : Menu
 		else
 			base.OnOpen(memory);
 		ShowSkillInfo();
+		CursorSprite.StartBounce();
     }
 }

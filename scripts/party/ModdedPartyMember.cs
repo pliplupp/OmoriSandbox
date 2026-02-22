@@ -31,4 +31,6 @@ internal class ModdedPartyMember : PartyMember
     public override bool IsRealWorld => JsonActor.RealWorld;
 
     public override string Name => JsonActor.Name;
+
+    public override bool HasPlotArmor => JsonActor.PlotArmor;
 }

@@ -6477,6 +6477,7 @@ public class Database
 		Modifiers.Add("Guard", () => new GuardStatModifier(1)
 			.WithStateIcons(new StateIcon("bnw_guard", "Guard: x0.5 incoming damage")));
 		Modifiers.Add("SecondChance", () => new SecondChanceStatModifier(1));
+		Modifiers.Add("PlotArmor", () => new PlotArmorStatModifier());
 		Modifiers.Add("Immortal", () => new ImmortalStatModifier());
 		Modifiers.Add("Tickle", () => new StatModifier(1));
 		Modifiers.Add("SweetheartHappy", () => new EmotionLockStatModifier("happy", new StatBonus(StatType.LCK, 2f), new StatBonus(StatType.SPD, 1.25f), new StatBonus(StatType.HIT, -10)));
@@ -7055,10 +7056,10 @@ public class Database
 		#endregion
 
 		#region CHARMS
-		// TODO: missing charms (special behavior/unused): sales tag, chef's chat, abbi's eye, unused charms
+		// TODO: missing charms (special behavior/unused): sales tag, abbi's eye, unused charms
 		Charms["3-leaf Clover"] = new Charm("3-leaf Clover", new StatBonus(StatType.LCK, 3));
 		Charms["4-leaf Clover"] = new Charm("4-leaf Clover", [new StatBonus(StatType.MaxHP, 4), new StatBonus(StatType.LCK, 4)]);
-		Charms["5-leaf Clover"] = new Charm("5-leaf Clover", () =>
+		Charms["5-leaf Clover"] = new Charm("5-leaf Clover").WithApplyEffect(() =>
 		{
 			return [new StatBonus(StatType.LCK, 2 + BattleManager.Instance.Energy)];
 		});
@@ -7077,18 +7078,18 @@ public class Database
 		Charms["Cough Mask"] = new Charm("Cough Mask", [new StatBonus(StatType.MaxHP, 25), new StatBonus(StatType.MaxJuice, 25), 
 			new StatBonus(StatType.ATK, 10), new StatBonus(StatType.DEF, 10), 
 			new StatBonus(StatType.SPD, 10), new StatBonus(StatType.LCK, 10)]);
-		Charms["Daisy"] = new Charm("Daisy", [new StatBonus(StatType.MaxHP, 10)], (actor) =>
+		Charms["Daisy"] = new Charm("Daisy", [new StatBonus(StatType.MaxHP, 10)]).WithStartOfBattleEffect((actor) =>
 		{
 			actor.SetState("happy", true);
 		});
 		Charms["Eye Patch"] = new Charm("Eye Patch", [new StatBonus(StatType.ATK, 7), new StatBonus(StatType.HIT, -25)]);
 		Charms["Faux Tail"] = new Charm("Faux Tail", new StatBonus(StatType.SPD, 15));
 		Charms["Fedora"] = new Charm("Fedora", [new StatBonus(StatType.DEF, 5), new StatBonus(StatType.DEF, 5)]);
-		Charms["Finger"] = new Charm("Finger", [new StatBonus(StatType.ATK, 10), new StatBonus(StatType.DEF, -5)], (actor) =>
+		Charms["Finger"] = new Charm("Finger", [new StatBonus(StatType.ATK, 10), new StatBonus(StatType.DEF, -5)]).WithStartOfBattleEffect((actor) =>
 		{
 			actor.SetState("angry", true);
 		});
-		Charms["Fox Tail"] = new Charm("Fox Tail", () =>
+		Charms["Fox Tail"] = new Charm("Fox Tail").WithApplyEffect(() =>
 		{
 			return [new StatBonus(StatType.SPD, 5 + (3 * BattleManager.Instance.Energy))];
 		});
@@ -7098,20 +7099,20 @@ public class Database
 		Charms["Hard Hat"] = new Charm("Hard Hat", new StatBonus(StatType.DEF, 6));
 		Charms["Headband"] = new Charm("Headband", [new StatBonus(StatType.MaxJuice, 20), new StatBonus(StatType.ATK, 10), 
 			new StatBonus(StatType.DEF, 3), new StatBonus(StatType.SPD, 15)]);
-		Charms["Heart String"] = new Charm("Heart String", [new StatBonus(StatType.MaxHP, 30)], (actor) =>
+		Charms["Heart String"] = new Charm("Heart String", [new StatBonus(StatType.MaxHP, 30)]).WithStartOfBattleEffect((actor) =>
 		{
 			actor.SetState("happy", true);
 		});
 		Charms["High Heels"] = new Charm("High Heels", [new StatBonus(StatType.ATK, 10), new StatBonus(StatType.SPD, 10)]);
-		Charms["Homework"] = new Charm("Homework", [], (actor) =>
+		Charms["Homework"] = new Charm("Homework").WithStartOfBattleEffect((actor) =>
 		{
 			actor.SetState("sad", true);
 		});
-		Charms["Inner Tube"] = new Charm("Inner Tube", () =>
+		Charms["Inner Tube"] = new Charm("Inner Tube").WithApplyEffect(() =>
 		{
 			return [new StatBonus(StatType.DEF, 2 + BattleManager.Instance.Energy)];
 		});
-		Charms["Magical Bean"] = new Charm("Magical Bean", [], (actor) =>
+		Charms["Magical Bean"] = new Charm("Magical Bean").WithStartOfBattleEffect((actor) =>
 		{
 			BattleManager.Instance.RandomEmotion(actor);
 		});
@@ -7119,23 +7120,23 @@ public class Database
 		Charms["Paper Bag"] = new Charm("Paper Bag", [new StatBonus(StatType.MaxHP, 40), new StatBonus(StatType.DEF, 13)]);
 		Charms["Hector"] = new Charm("Hector", []);
 		Charms["Pretty Bow"] = new Charm("Pretty Bow", [new StatBonus(StatType.MaxHP, 50), new StatBonus(StatType.ATK, 10), new StatBonus(StatType.DEF, 3)]);
-		Charms["Punching Bag"] = new Charm("Punching Bag",[], (actor) =>
+		Charms["Punching Bag"] = new Charm("Punching Bag").WithStartOfBattleEffect((actor) =>
 		{
 			actor.SetState("angry", true);
 		});
 		Charms["Rabbit Foot"] = new Charm("Rabbit Foot", [new StatBonus(StatType.SPD, 15), new StatBonus(StatType.LCK, 10)] );
-		Charms["Red Ribbon"] = new Charm("Red Ribbon", () =>
+		Charms["Red Ribbon"] = new Charm("Red Ribbon").WithApplyEffect(() =>
 		{
 			return [new StatBonus(StatType.ATK, 1 + (2 * BattleManager.Instance.Energy)), new StatBonus(StatType.DEF, 5)];
 		});
-		Charms["Deep Poetry Book"] = new Charm("Deep Poetry Book", [], (actor) =>
+		Charms["Deep Poetry Book"] = new Charm("Deep Poetry Book").WithStartOfBattleEffect((actor) =>
 		{
 			actor.SetState("sad", true);
 		});
 		Charms["Rubber Duck"] = new Charm("Rubber Duck", new StatBonus(StatType.DEF, 7));
 		Charms["Seer Goggles"] = new Charm("Seer Goggles", [new StatBonus(StatType.DEF, 1), new StatBonus(StatType.LCK, 3), new StatBonus(StatType.HIT, 200)]);
 		Charms["Top Hat"] = new Charm("Top Hat", [new StatBonus(StatType.MaxHP, 13), new StatBonus(StatType.DEF, 13), new StatBonus(StatType.LCK, 13)]);
-		Charms["Hector Jr."] = new Charm("Hector Jr.", () =>
+		Charms["Hector Jr."] = new Charm("Hector Jr.").WithApplyEffect(() =>
 		{
 			int energy = BattleManager.Instance.Energy;
 			return
@@ -7145,7 +7146,8 @@ public class Database
 			];
 		});
 		Charms["Wedding Ring"] = new Charm("Wedding Ring", [new StatBonus(StatType.MaxHP, 10), new StatBonus(StatType.MaxJuice, 10), 
-			new StatBonus(StatType.ATK, 3), new StatBonus(StatType.DEF, 3), new StatBonus(StatType.SPD, 3), new StatBonus(StatType.LCK, 3)], (actor) =>
+			new StatBonus(StatType.ATK, 3), new StatBonus(StatType.DEF, 3), new StatBonus(StatType.SPD, 3), new StatBonus(StatType.LCK, 3)])
+			.WithStartOfBattleEffect((actor) =>
 		{
 			actor.SetState("happy", true);
 		});
@@ -7172,7 +7174,12 @@ public class Database
 			new StatBonus(StatType.ATK, 20), new StatBonus(StatType.DEF, 20), new StatBonus(StatType.SPD, 20),
 			new StatBonus(StatType.LCK, 20)
 		]);
-		Charms["Chef's Hat"] = new Charm("Chef's Hat", new StatBonus(StatType.DEF, 15));
+		Charms["Chef's Hat"] = new Charm("Chef's Hat", new StatBonus(StatType.DEF, 15)).WithStartOfTurnEffect((actor) =>
+		{
+			int juice = (int)Math.Round(actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
+			actor.HealJuice(juice);
+			BattleManager.Instance.SpawnDamageNumber(juice, actor.CenterPoint, DamageType.JuiceGain);
+		});
 
 		#endregion
 	}
@@ -7389,8 +7396,6 @@ public class Database
 	{
 		string state = "sad";
 		string current = who.CurrentState;
-		if (who is Omori omori && omori.CurrentState == "plotarmor")
-			current = omori.OldEmotion;
 		switch (current)
 		{
 			case "miserable":
@@ -7417,8 +7422,6 @@ public class Database
 	{
 		string state = "happy";
 		string current = who.CurrentState;
-		if (who is Omori omori && omori.CurrentState == "plotarmor")
-			current = omori.OldEmotion;
 		switch (current)
 		{
 			case "manic":
@@ -7445,8 +7448,6 @@ public class Database
 	{
 		string state = "angry";
 		string current = who.CurrentState;
-		if (who is Omori omori && omori.CurrentState == "plotarmor")
-			current = omori.OldEmotion;
 		switch (current)
 		{
 			case "furious":

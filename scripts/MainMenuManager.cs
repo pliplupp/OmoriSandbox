@@ -1,4 +1,5 @@
 using Godot;
+using OmoriSandbox.Animation;
 using OmoriSandbox.Battle;
 using OmoriSandbox.Extensions;
 using OmoriSandbox.Modding;
@@ -74,6 +75,8 @@ internal partial class MainMenuManager : Node
 		SettingsButton.Pressed += () =>
 		{
 			MainControls.Visible = false;
+			Logo.Visible = false;
+			OmoriFace.Visible = false;
 			Settings.Visible = true;
 		};
 
@@ -137,6 +140,7 @@ internal partial class MainMenuManager : Node
 				int index = TitlePresetDropdown.GetItemIndex(LastLoadedPreset);
 				if (index > -1)
 					TitlePresetDropdown.Selected = index;
+				AnimationManager.Instance.StopAllAnimations();
 				AudioManager.Instance.PlayBGM("ow_cattail_fields");
 				MainMenu.Visible = true;
 				Editor.Visible = false;
@@ -842,6 +846,8 @@ internal partial class MainMenuManager : Node
 	public static MainMenuManager Instance;
 	public string LastLoadedPreset { get; private set; } = "";
 
+	[Export] private TextureRect Logo;
+	[Export] private AnimatedSprite2D OmoriFace; 
 	[Export] private AudioStreamPlayer BGMPreview;
 	[Export] private Control[] AddActorControls;
 	[Export] private Control AddEnemyControl;

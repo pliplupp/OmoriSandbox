@@ -11,8 +11,8 @@ internal class RPGMAnimatedSprite
 
 	public int Id { get; private set; }
 	public int Layer { get; private set; }
-	private AtlasTexture Texture;
-	private AtlasTexture AltTexture;
+	internal AtlasTexture Texture { get; init; }
+	internal AtlasTexture AltTexture { get; init; }
 	private readonly List<List<Frame>> Frames = [];
 	private readonly Dictionary<int, List<SFX>> FrameSFX = [];
 	private readonly Dictionary<int, Shake> FrameShake = [];

@@ -510,6 +510,33 @@ public partial class AnimationManager : Node
 		PlayingAnimations.Add(playing);
 	}
 
+	internal PlayingAnimation PreviewAnimation(int id)
+	{
+		if (!Animations.TryGetValue(id, out RPGMAnimatedSprite animation))
+			return null;
+
+		if (animation.TryGetFrameSFX(0, out List<SFX> sfx))
+		{
+			sfx.ForEach(AudioManager.Instance.PlaySFX);
+		}
+
+		PlayingAnimation playing = new(animation, new Vector2(224, 144), 10);
+		PlayingAnimations.Add(playing);
+		return playing;
+	}
+
+	internal void StopAllAnimations()
+	{
+		foreach (PlayingAnimation animation in PlayingAnimations)
+		{
+			animation.QueueFree();
+		}
+		PlayingAnimations.Clear();
+		FrameTimer = 0f;
+		ResetShake();
+		EmitSignal(SignalName.AnimationFinished);
+	}
+
 	internal IEnumerable<RPGMAnimatedSprite> GetAllAnimations()
 	{
 		return Animations.Values;

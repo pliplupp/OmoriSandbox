@@ -555,7 +555,7 @@ texture = ExtResource("11_eb6dy")
 offset_left = -122.0
 offset_top = -8.58332
 offset_right = -69.0
-offset_bottom = 15.4167
+offset_bottom = 15.416699
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 
@@ -571,7 +571,7 @@ theme_override_font_sizes/font_size = 20
 offset_left = 50.0
 offset_top = -8.58332
 offset_right = 127.0
-offset_bottom = 15.4167
+offset_bottom = 15.416699
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 20
 

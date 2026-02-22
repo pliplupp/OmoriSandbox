@@ -5,7 +5,7 @@ namespace OmoriSandbox.Menu;
 
 internal abstract partial class Menu : Sprite2D
 {
-	[Export] protected Sprite2D CursorSprite;
+	[Export] protected CursorBounce CursorSprite;
 	protected List<string> Options = [];
 	protected List<Vector2I> CursorPositions = [];
 	public int CursorIndex { get; protected set; } = 0;
@@ -43,7 +43,6 @@ internal abstract partial class Menu : Sprite2D
 		UpdateCursor();
 	}
 
-	// TODO: make all menus the same size so these don't have to be overridden
 	public virtual void MoveUp(bool immediate)
 	{
 		Tween?.Kill();
@@ -58,18 +57,19 @@ internal abstract partial class Menu : Sprite2D
 		}
 	}
 
-    public virtual void MoveDown(MenuState newState, bool immediate)
+    public virtual void MoveDown(MenuState newState, bool immediate, bool noHide = false)
     {
         Tween?.Kill();
         if (immediate)
         {
             Position = new Vector2(Position.X, 537);
+			Visible = noHide;
         }
         else
         {
             Tween = CreateTween();
             Tween.TweenProperty(this, "position", new Vector2(Position.X, 537), 0.2f).SetTrans(Tween.TransitionType.Sine);
-			Tween.TweenCallback(Callable.From(Hide));
+			Tween.TweenCallback(Callable.From(() => Visible = noHide));
         }
     }
 }

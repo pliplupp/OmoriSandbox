@@ -69,6 +69,16 @@ public class StatModifier
     public virtual void OnAdd() { }
 
     /// <summary>
+    /// Called at the start of every turn.
+    /// </summary>
+    /// <remarks>
+    /// If an actor is given a stat modifier at the start of the turn, this will not trigger.
+    /// Use <see cref="OnAdd"/> instead.
+    /// </remarks>
+    /// <param name="actor">The <see cref="Actor"/> this modifier is attached to.</param>
+    public virtual void OnStartOfTurn(Actor actor) {}
+
+    /// <summary>
     /// Called when the stats are applied.
     /// </summary>
     /// <param name="stats">A reference to the <see cref="Stats"/> before any stats are applied.</param>
@@ -110,7 +120,6 @@ public class StatModifier
         TurnsLeft = Math.Min(turnsLeft, MaxTurns);
     }
 
-    // TODO: replace
     internal void SetMaxTurns(int turns)
     {
         MaxTurns = turns;

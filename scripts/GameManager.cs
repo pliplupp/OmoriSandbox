@@ -15,9 +15,9 @@ namespace OmoriSandbox;
  Features:
  - Modify text speed - done
  - More Info / State Icons - in testing
- - Edit BGM loop point - in testing
+ - Edit BGM loop point - done
  - Queue restart via keybind during battle - done
- - Text effects - in testing
+ - Text effects - done
  - Boss Alt Stats - in progress
  - Minibosses (Snaley, Shady Mole, etc.) - done
  - Skip dialogue with 'X' - done

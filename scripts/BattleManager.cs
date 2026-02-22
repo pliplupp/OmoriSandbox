@@ -8,6 +8,7 @@ using OmoriSandbox.Menu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace OmoriSandbox;
@@ -286,11 +287,13 @@ public partial class BattleManager : Node
 				{
 					CurrentPartyMemberTarget = -1;
 					CurrentEnemyTarget = 0;
+					MenuManager.Instance.MoveDownOpenMenus(false);
 				}
 				else
 				{
 					CurrentPartyMemberTarget = CurrentParty.First(x => x != null).Position;
 					CurrentEnemyTarget = -1;
+					MenuManager.Instance.MoveUpOpenMenus(false);
 				}
 			}
 		}
@@ -304,9 +307,9 @@ public partial class BattleManager : Node
 			
 			// if the restart is requested during a turn, queue it to prevent anything breaking
 			if (Phase is BattlePhase.PreCommand or
-			    BattlePhase.CommandExecute or
-			    BattlePhase.WaitForBattleLog or
-			    BattlePhase.PostCommand or
+				BattlePhase.CommandExecute or
+				BattlePhase.WaitForBattleLog or
+				BattlePhase.PostCommand or
 				BattlePhase.EnemyDying)
 				RestartLabel.Visible = true;
 			else
@@ -439,6 +442,7 @@ public partial class BattleManager : Node
 	{
 		SelectedAction = CurrentParty[CurrentPartyMember].Actor.Skills.Values.First();
 		MenuManager.Instance.SaveLastSelected(CurrentParty[CurrentPartyMember].Actor);
+		MenuManager.Instance.ShowMenu(MenuState.None);
 		SetPhase(BattlePhase.TargetSelection);
 	}
 
@@ -574,13 +578,13 @@ public partial class BattleManager : Node
 							member.UpdateStateIcons();
 						}
 
-						// this needs to be bundled in with the rest of the plotarmor changes
-						// because this is hard to look at
-						if (member.Actor is Omori omori && omori.CurrentState == "plotarmor" && !omori.HasAnnouncedPlotArmor)
+						if (member.Actor.HasStatModifier("PlotArmor")
+							&& member.Actor.StatModifiers["PlotArmor"] is PlotArmorStatModifier pa
+							&& !pa.HasAnnounced)
 						{
-							DialogueManager.Instance.QueueMessage("OMORI did not succumb.");
+							DialogueManager.Instance.QueueMessage($"{member.Actor.Name.ToUpper()} did not succumb.");
 							await DialogueManager.Instance.WaitForDialogue();
-							omori.HasAnnouncedPlotArmor = true;
+							pa.HasAnnounced = true;
 						}
 					}
 					
@@ -654,26 +658,10 @@ public partial class BattleManager : Node
 		{
 			foreach (PartyMemberComponent member in CurrentParty.Where(x => x.Actor.CurrentState != "toast"))
 			{
-				// TODO: properly handle start of turn effects in stat modifiers and charms
-				if (member.Actor is Omori omori && omori.CurrentState == "plotarmor")
-				{
-					omori.RemovePlotArmor();
-					omori.RemoveStatModifier("SecondChance");
-				}
-				else if (member.Actor.HasStatModifier("ReleaseEnergyBasil")) {
-					int heal = (int)Math.Round(member.Actor.CurrentStats.MaxHP * 0.1f, MidpointRounding.AwayFromZero);
-					int juice = (int)Math.Round(member.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
-					member.Actor.Heal(heal);
-					member.Actor.HealJuice(juice);
-					SpawnDamageNumber(heal, member.Actor.CenterPoint, DamageType.Heal);
-					SpawnDamageNumber(juice, member.Actor.CenterPoint, DamageType.JuiceGain);
-				}
-				else if (member.Actor.Charm.Name == "Chef's Hat")
-				{
-					int juice = (int)Math.Round(member.Actor.CurrentStats.MaxJuice * 0.05f, MidpointRounding.AwayFromZero);
-					member.Actor.HealJuice(juice);
-					SpawnDamageNumber(juice, member.Actor.CenterPoint, DamageType.JuiceGain);
-				}
+				foreach (StatModifier modifier in member.Actor.StatModifiers.Values)
+					modifier.OnStartOfTurn(member.Actor);
+				
+				member.Actor.Charm?.StartOfTurn(member.Actor);
 			}
 			
 			for (int i = 0; i < Enemies.Count; i++)
@@ -715,7 +703,7 @@ public partial class BattleManager : Node
 		{
 			Stats stats = CurrentParty[CurrentPartyMember].Actor.CurrentStats;
 			BattleLogManager.Instance.ClearAndShowMessage($"What will {CurrentParty[CurrentPartyMember].Actor.Name.ToUpper()} do?" + 
-			                                              $"\n(ATK: {stats.ATK}, DEF: {stats.DEF}, SPD: {stats.SPD}, LCK: {stats.LCK})");
+														  $"\n(ATK: {stats.ATK}, DEF: {stats.DEF}, SPD: {stats.SPD}, LCK: {stats.LCK})");
 		}
 		else
 			BattleLogManager.Instance.ClearAndShowMessage("What will " + CurrentParty[CurrentPartyMember].Actor.Name.ToUpper() + " do?");
@@ -732,18 +720,16 @@ public partial class BattleManager : Node
 				// keep selection box on current ally for ally targeting
 				CurrentPartyMemberTarget = CurrentParty[CurrentPartyMember].Position;
 				BattleLogManager.Instance.ClearAndShowMessage("Use on whom?");
-				MenuManager.Instance.ShowMenu(MenuState.None);
 				return;
 			case SkillTarget.Enemy:
 				CurrentEnemyTarget++;
 				BattleLogManager.Instance.ClearAndShowMessage("Use on whom?");
-				MenuManager.Instance.ShowMenu(MenuState.None);
+				MenuManager.Instance.MoveDownOpenMenus(false);
 				return;
 			case SkillTarget.AllyOrEnemy:
 				CurrentPartyMemberTarget = CurrentParty[CurrentPartyMember].Position;
 				string key = OS.GetKeycodeString(SettingsMenuManager.Instance.GetKeybindForAction("SwitchSides")).ToUpper();	
 				BattleLogManager.Instance.ClearAndShowMessage($"Use on whom?\nPress {key} to switch sides.");
-				MenuManager.Instance.ShowMenu(MenuState.None);
 				return;
 		}
 		SelectTarget();
@@ -1204,26 +1190,20 @@ public partial class BattleManager : Node
 			selfState = (self.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
 		}
 
-		// TODO: replace once plot armor is improved
-		if (selfState is "plotarmor")
-		{
-			selfState = (self as Omori).OldEmotion;
-		}
-
 		if (target.HasLockedEmotion())
 		{
 			targetState = (target.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
 		}
 
 		ApplyOverrides(DamagePhase.PreEmotion, ref damage, self, target, false);
-		
+
 		int effectiveness = 0;
 		if (!ignoreEmotion)
 			damage = CalculateEmotionModifiers(selfState, targetState, damage, out effectiveness);
 		bool critical =
 			(self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit ||
 			 target.HasStatModifier("Tickle")) && !neverCrit;
-		
+
 		// even though we know if the attack is a crit or not at this stage, pass false
 		// this may change in the future depending on feedback and use case
 		ApplyOverrides(DamagePhase.PreCrit, ref damage, self, target, false);
@@ -1366,20 +1346,14 @@ public partial class BattleManager : Node
 		{
 			selfState = (self.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
 		}
-		
-		// TODO: replace once plot armor is improved
-		if (selfState is "plotarmor")
-		{
-			selfState = (self as Omori).OldEmotion;
-		}
 
 		if (target.HasLockedEmotion())
 		{
 			targetState = (target.StateStatModifier as EmotionLockStatModifier).OverrideEmotion();
 		}
-		
+
 		ApplyOverrides(DamagePhase.PreEmotion, ref damage, self, target, false);
-		
+
 		damage = CalculateEmotionModifiers(selfState, targetState, damage, out _);
 		bool critical =
 			(self.CurrentStats.LCK * .01f >= GameManager.Instance.Random.Randf() || guaranteeCrit ||

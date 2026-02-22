@@ -23,7 +23,7 @@ public class Charm
     /// <remarks>
     /// This can be useful for stat changes that rely on game variables, like the Energy bar.
     /// </remarks>
-    public Func<StatBonus[]> OnApply { get; }
+    public Func<StatBonus[]> OnApply { get; private set; }
 
     /// <summary>
     /// What the charm does to its holder at the start of the battle.
@@ -34,64 +34,68 @@ public class Charm
     public Action<Actor> StartOfBattle { get; private set; }
 
     /// <summary>
-    /// A basic Charm that modifies a single stat.
+    /// What the charm does to its holder at the start of each turn.
+    /// </summary>
+    /// <remarks>
+    /// Will not be run if the actor is toast.
+    /// </remarks>
+    public Action<Actor> StartOfTurn { get; private set; }
+
+    /// <summary>
+    /// A Charm that modifies a single stat.
     /// </summary>
     public Charm(string name, StatBonus stat)
     {
         Name = name;
         Stats = [stat];
-        OnApply = null;
-        // empty action
-        StartOfBattle = (_) => { };
     }
     
     /// <summary>
-    /// A basic Charm that modifies a multiple stats.
+    /// A Charm that modifies a multiple stats.
     /// </summary>
     public Charm(string name, StatBonus[] stats)
     {
         Name = name;
         Stats = stats;
-        OnApply = null;
-        // empty action
-        StartOfBattle = (_) => { };
     }
 
     /// <summary>
-    /// A Charm with custom behavior when the stats are applied.
+    /// A Charm that modifies no stats.
     /// </summary>
-    /// <remarks>
-    /// Useful for stats based on game variables, like the Energy bar.
-    /// </remarks>
-    public Charm(string name, Func<StatBonus[]> apply)
+    public Charm(string name)
     {
         Name = name;
         Stats = [];
-        OnApply = apply;
-        // empty action
-        StartOfBattle = (_) => { };
     }
 
     /// <summary>
-    /// A Charm that does something at the start of the battle, usually giving an emotion to the specified <c>Actor</c>.
+    /// Sets the <see cref="OnApply"/> effect for this charm.
     /// </summary>
-    public Charm(string name, StatBonus[] stats, Action<Actor> startOfBattle)
+    /// <param name="onApply">A function that returns a list of <see cref="StatBonus"/>es to apply.</param>
+    public Charm WithApplyEffect(Func<StatBonus[]> onApply)
     {
-        Name = name;
-        Stats = stats;
-        OnApply = null;
-        StartOfBattle = startOfBattle;
+        OnApply = onApply;
+        return this;
     }
 
     /// <summary>
-    /// A Charm that both does something at the start of the battle and when stats are applied.
+    /// Sets the <see cref="StartOfBattle"/> effect for this charm.
     /// </summary>
-    public Charm(string name, Func<StatBonus[]> apply, Action<Actor> startOfBattle)
+    /// <param name="onStartOfBattle">A function with a reference to the charm's user that runs at the start of battle.</param>
+    public Charm WithStartOfBattleEffect(Action<Actor> onStartOfBattle)
     {
-        Name = name;
-        Stats = [];
-        OnApply = apply;
-        StartOfBattle = startOfBattle;
+        StartOfBattle = onStartOfBattle;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the <see cref="StartOfTurn"/> effect for this charm.
+    /// </summary>
+    /// <param name="onStartOfTurn">A function with a reference to the charm's user that runs at the start of each turn.</param>
+    public Charm WithStartOfTurnEffect(Action<Actor> onStartOfTurn)
+    {
+        StartOfTurn = onStartOfTurn;
+        return this;
     }
 
     /// <summary>

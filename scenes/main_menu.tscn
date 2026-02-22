@@ -16,11 +16,14 @@
 [ext_resource type="StyleBox" uid="uid://jwq4fr8u18k1" path="res://assets/button_hover.tres" id="12_1ajci"]
 [ext_resource type="PackedScene" uid="uid://kajtkfbt0k6k" path="res://scenes/keybind.tscn" id="14_5pajh"]
 [ext_resource type="StyleBox" uid="uid://ividp3svjft4" path="res://assets/tab_selected.tres" id="15_7b55j"]
+[ext_resource type="Script" uid="uid://b6h3l1listplj" path="res://scripts/AnimationViewer.cs" id="17_j7ex8"]
 
 [node name="MainMenu" type="CanvasLayer" unique_id=1040890594]
 
-[node name="MainMenuManager" type="Node" parent="." unique_id=593666081 node_paths=PackedStringArray("BGMPreview", "AddActorControls", "AddEnemyControl", "ModListParent", "ShowModsButton", "ActorTabs", "EnemyTabs", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "SettingsButton", "QuitButton", "MainControls", "Settings", "DataFolderButton", "ModFolderButton", "ModsLoaded", "GithubButton", "TitlePresetDropdown", "BattlebackPreview", "BattlebackDropdown", "BGMDropdown", "BGMPitch", "BGMPlayButton", "LoopSetCurrentButton", "LoopPoint", "BGMPlayerTimer", "BGMPlayer", "FollowupTierSlider", "FollowupTierValue", "BasilFollowupsCheckbox", "BasilReleaseEnergyCheckbox", "DisableDialogue", "DisableDamageNumbers", "AddItemButton", "ItemContainer", "SearchInput", "SearchButton", "Results", "SavePresetButton", "PresetInput", "LoadPresetButton", "DeletePresetButton", "PresetDropdown", "ResetButton", "ReturnButton")]
+[node name="MainMenuManager" type="Node" parent="." unique_id=593666081 node_paths=PackedStringArray("Logo", "OmoriFace", "BGMPreview", "AddActorControls", "AddEnemyControl", "ModListParent", "ShowModsButton", "ActorTabs", "EnemyTabs", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "SettingsButton", "QuitButton", "MainControls", "Settings", "DataFolderButton", "ModFolderButton", "ModsLoaded", "GithubButton", "TitlePresetDropdown", "BattlebackPreview", "BattlebackDropdown", "BGMDropdown", "BGMPitch", "BGMPlayButton", "LoopSetCurrentButton", "LoopPoint", "BGMPlayerTimer", "BGMPlayer", "FollowupTierSlider", "FollowupTierValue", "BasilFollowupsCheckbox", "BasilReleaseEnergyCheckbox", "DisableDialogue", "DisableDamageNumbers", "AddItemButton", "ItemContainer", "SearchInput", "SearchButton", "Results", "SavePresetButton", "PresetInput", "LoadPresetButton", "DeletePresetButton", "PresetDropdown", "ResetButton", "ReturnButton")]
 script = ExtResource("1_wu84c")
+Logo = NodePath("../Main/Logo")
+OmoriFace = NodePath("../Main/Omori")
 BGMPreview = NodePath("../BGMPreview")
 AddActorControls = [NodePath("../Editor/Actors/AddActor1"), NodePath("../Editor/Actors/AddActor2"), NodePath("../Editor/Actors/AddActor3"), NodePath("../Editor/Actors/AddActor4")]
 AddEnemyControl = NodePath("../Editor/Actors/AddEnemy")
@@ -62,9 +65,9 @@ DisableDialogue = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Disabl
 DisableDamageNumbers = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/DisableDamageNumbers")
 AddItemButton = NodePath("../Editor/SettingsTabs/Items/VBoxContainer/AddItemButton")
 ItemContainer = NodePath("../Editor/SettingsTabs/Items/VBoxContainer/ScrollContainer/ItemsContainer")
-SearchInput = NodePath("../Editor/SettingsTabs/Skill Search/VBoxContainer/HBoxContainer/SearchInput")
-SearchButton = NodePath("../Editor/SettingsTabs/Skill Search/VBoxContainer/HBoxContainer/Search")
-Results = NodePath("../Editor/SettingsTabs/Skill Search/VBoxContainer/Results")
+SearchInput = NodePath("../Editor/SettingsTabs/Tools/Skill Search/VBoxContainer/HBoxContainer/SearchInput")
+SearchButton = NodePath("../Editor/SettingsTabs/Tools/Skill Search/VBoxContainer/HBoxContainer/Search")
+Results = NodePath("../Editor/SettingsTabs/Tools/Skill Search/VBoxContainer/Results")
 SavePresetButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Save/Save")
 PresetInput = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Save/PresetName")
 LoadPresetButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Load/Load")
@@ -162,7 +165,7 @@ text = "View Mods"
 visible = false
 z_index = 1
 custom_minimum_size = Vector2(175, 400)
-offset_right = 278.0
+offset_right = 275.0
 offset_bottom = 400.0
 theme_override_styles/panel = ExtResource("10_1ajci")
 horizontal_scroll_mode = 0
@@ -171,7 +174,9 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 
 [node name="ModFolder" type="Button" parent="Main/ModsLoadedList/VBoxContainer" unique_id=2004730265]
+custom_minimum_size = Vector2(275, 0)
 layout_mode = 2
+size_flags_vertical = 4
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = ExtResource("10_1ajci")
@@ -265,7 +270,7 @@ theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Quit
 "
 
-[node name="Settings" type="Panel" parent="Main" unique_id=1298067288 node_paths=PackedStringArray("MasterSlider", "BGMSlider", "SFXSlider", "TestSFXButton", "FullscreenCheckbox", "BattlelogSpeedSlider", "ActionDelaySlider", "DisableDamageLimitCheckbox", "ShowMoreInfoCheckbox", "ShowStateIconsCheckbox", "UseConsoleSpdCheckbox", "UseConsoleDefCheckbox", "InfiniteBuffsDebuffsCheckbox", "VertigoUsesAtkCheckbox", "ToysUseEmotionDamageCheckbox", "SpaceExHusbandReleaseEnergyCheckbox", "KeybindGrid", "ResetKeybindsButton", "BackButton", "MainControls")]
+[node name="Settings" type="Panel" parent="Main" unique_id=1298067288 node_paths=PackedStringArray("Logo", "OmoriFace", "MasterSlider", "BGMSlider", "SFXSlider", "TestSFXButton", "FullscreenCheckbox", "BattlelogSpeedSlider", "ActionDelaySlider", "DisableDamageLimitCheckbox", "DisableStatLimitCheckbox", "ShowMoreInfoCheckbox", "ShowStateIconsCheckbox", "UseConsoleSpdCheckbox", "UseConsoleDefCheckbox", "InfiniteBuffsDebuffsCheckbox", "VertigoUsesAtkCheckbox", "ToysUseEmotionDamageCheckbox", "SpaceExHusbandReleaseEnergyCheckbox", "KeybindGrid", "ResetKeybindsButton", "BackButton", "MainControls")]
 visible = false
 anchors_preset = 7
 anchor_left = 0.5
@@ -273,13 +278,15 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -200.0
-offset_top = -281.0
+offset_top = -461.0
 offset_right = 200.0
-offset_bottom = -17.0
+offset_bottom = -22.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = ExtResource("10_1ajci")
 script = ExtResource("9_5dd4i")
+Logo = NodePath("../Logo")
+OmoriFace = NodePath("../Omori")
 MasterSlider = NodePath("ScrollContainer/VBoxContainer/MasterSlider/HSlider")
 BGMSlider = NodePath("ScrollContainer/VBoxContainer/BGMSlider/HSlider")
 SFXSlider = NodePath("ScrollContainer/VBoxContainer/SFXSlider/HSlider")
@@ -288,6 +295,7 @@ FullscreenCheckbox = NodePath("ScrollContainer/VBoxContainer/Fullscreen")
 BattlelogSpeedSlider = NodePath("ScrollContainer/VBoxContainer/BattlelogSpeedSlider/BattlelogSpeedSlider")
 ActionDelaySlider = NodePath("ScrollContainer/VBoxContainer/ActionDelaySlider/DelaySlider")
 DisableDamageLimitCheckbox = NodePath("ScrollContainer/VBoxContainer/DisableDamageLimit")
+DisableStatLimitCheckbox = NodePath("ScrollContainer/VBoxContainer/DisableStatLimit")
 ShowMoreInfoCheckbox = NodePath("ScrollContainer/VBoxContainer/ShowMoreInfo")
 ShowStateIconsCheckbox = NodePath("ScrollContainer/VBoxContainer/ShowStateIcons")
 UseConsoleSpdCheckbox = NodePath("ScrollContainer/VBoxContainer/UseConsoleSpd")
@@ -298,8 +306,22 @@ ToysUseEmotionDamageCheckbox = NodePath("ScrollContainer/VBoxContainer/ToysUseEm
 SpaceExHusbandReleaseEnergyCheckbox = NodePath("ScrollContainer/VBoxContainer/SpaceExHusbandReleaseEnergy")
 KeybindGrid = NodePath("ScrollContainer/VBoxContainer/KeybindsContainer")
 ResetKeybindsButton = NodePath("ScrollContainer/VBoxContainer/ResetBindsButton")
-BackButton = NodePath("ScrollContainer/VBoxContainer/BackButton")
+BackButton = NodePath("BackButton")
 MainControls = NodePath("../MainControls")
+
+[node name="Settings" type="Label" parent="Main/Settings" unique_id=1197686200]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -54.0
+offset_right = 54.0
+offset_bottom = 40.0
+grow_horizontal = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 40
+text = "Settings"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Main/Settings" unique_id=580906904]
 layout_mode = 1
@@ -307,12 +329,11 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 3.0
-offset_top = 3.0
+offset_top = 40.0
 offset_right = -3.0
-offset_bottom = -3.0
+offset_bottom = -45.0
 grow_horizontal = 2
 grow_vertical = 2
-scroll_vertical = 100
 horizontal_scroll_mode = 0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Main/Settings/ScrollContainer" unique_id=49627157]
@@ -320,13 +341,6 @@ layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
 theme_override_constants/separation = 4
-
-[node name="Settings" type="Label" parent="Main/Settings/ScrollContainer/VBoxContainer" unique_id=1197686200]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 40
-text = "Settings"
 
 [node name="VideoAudio" type="Label" parent="Main/Settings/ScrollContainer/VBoxContainer" unique_id=315148989]
 layout_mode = 2
@@ -417,6 +431,10 @@ theme_override_styles/normal = ExtResource("10_1ajci")
 theme_override_styles/pressed = ExtResource("11_7b55j")
 theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Test SFX"
+
+[node name="HSeparator" type="HSeparator" parent="Main/Settings/ScrollContainer/VBoxContainer" unique_id=1684096717]
+layout_mode = 2
+theme_override_constants/separation = 12
 
 [node name="BattleSettings" type="Label" parent="Main/Settings/ScrollContainer/VBoxContainer" unique_id=1379274626]
 layout_mode = 2
@@ -517,6 +535,15 @@ theme_override_font_sizes/font_size = 20
 theme_override_colors/checkbox_unchecked_color = Color(0.3779188, 0.37791887, 0.37791884, 1)
 text = "Disable Damage Limit"
 
+[node name="DisableStatLimit" type="CheckBox" parent="Main/Settings/ScrollContainer/VBoxContainer" unique_id=1171902192]
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "Disables the 999 stat limit"
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_colors/checkbox_unchecked_color = Color(0.3779188, 0.37791887, 0.37791884, 1)
+text = "Disable Stat Limit"
+
 [node name="ShowMoreInfo" type="CheckBox" parent="Main/Settings/ScrollContainer/VBoxContainer" unique_id=1355482956]
 layout_mode = 2
 size_flags_horizontal = 4
@@ -588,6 +615,10 @@ theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 20
 theme_override_colors/checkbox_unchecked_color = Color(0.3779188, 0.37791887, 0.37791884, 1)
 text = "Space Ex-Husband Vulnerable to Release Energy"
+
+[node name="HSeparator2" type="HSeparator" parent="Main/Settings/ScrollContainer/VBoxContainer" unique_id=1237328606]
+layout_mode = 2
+theme_override_constants/separation = 12
 
 [node name="Keybinds" type="Label" parent="Main/Settings/ScrollContainer/VBoxContainer" unique_id=1897951667]
 layout_mode = 2
@@ -661,8 +692,19 @@ theme_override_styles/pressed = ExtResource("11_7b55j")
 theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Reset Keybinds"
 
-[node name="BackButton" type="Button" parent="Main/Settings/ScrollContainer/VBoxContainer" unique_id=1909750552]
-layout_mode = 2
+[node name="BackButton" type="Button" parent="Main/Settings" unique_id=1909750552]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -24.0
+offset_top = -40.0
+offset_right = 24.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 0
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_fonts/font = ExtResource("2_ekxnf")
@@ -1155,62 +1197,6 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 columns = 2
 
-[node name="Skill Search" type="MarginContainer" parent="Editor/SettingsTabs" unique_id=2132744991]
-visible = false
-layout_mode = 2
-theme_override_constants/margin_left = 5
-theme_override_constants/margin_top = 2
-theme_override_constants/margin_right = 5
-theme_override_constants/margin_bottom = 2
-metadata/_tab_index = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Skill Search" unique_id=1705787656]
-layout_mode = 2
-
-[node name="Label2" type="Label" parent="Editor/SettingsTabs/Skill Search/VBoxContainer" unique_id=799754268]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 30
-text = "Skill Search"
-horizontal_alignment = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="Editor/SettingsTabs/Skill Search/VBoxContainer" unique_id=1667695884]
-layout_mode = 2
-
-[node name="SearchInput" type="LineEdit" parent="Editor/SettingsTabs/Skill Search/VBoxContainer/HBoxContainer" unique_id=305035831]
-custom_minimum_size = Vector2(250, 0)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = ExtResource("10_1ajci")
-theme_override_styles/focus = ExtResource("12_1ajci")
-placeholder_text = "Enter skill name..."
-
-[node name="Search" type="Button" parent="Editor/SettingsTabs/Skill Search/VBoxContainer/HBoxContainer" unique_id=161157580]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = ExtResource("10_1ajci")
-theme_override_styles/pressed = ExtResource("11_7b55j")
-theme_override_styles/hover = ExtResource("12_1ajci")
-text = "Search"
-
-[node name="Label" type="Label" parent="Editor/SettingsTabs/Skill Search/VBoxContainer" unique_id=1703944103]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 16
-text = "Note: Basic attack skills are formatted as FirstInitalAttack.
-Example: OAttack = Omori's Attack | ARWAttack = Aubrey (Real World)'s Attack"
-
-[node name="Results" type="TextEdit" parent="Editor/SettingsTabs/Skill Search/VBoxContainer" unique_id=133457653]
-custom_minimum_size = Vector2(0, 200)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 25
-theme_override_styles/read_only = ExtResource("10_1ajci")
-editable = false
-wrap_mode = 1
-
 [node name="Actors" type="MarginContainer" parent="Editor/SettingsTabs" unique_id=569085116]
 visible = false
 layout_mode = 2
@@ -1218,7 +1204,7 @@ theme_override_constants/margin_left = 5
 theme_override_constants/margin_top = 2
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 2
-metadata/_tab_index = 3
+metadata/_tab_index = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Actors" unique_id=1763819185]
 layout_mode = 2
@@ -1246,13 +1232,15 @@ theme_override_constants/margin_left = 5
 theme_override_constants/margin_top = 2
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 2
-metadata/_tab_index = 4
+metadata/_tab_index = 3
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Enemies" unique_id=1860372552]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="Editor/SettingsTabs/Enemies/VBoxContainer" unique_id=259021237]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
 text = "Enemies"
 horizontal_alignment = 1
 
@@ -1263,6 +1251,125 @@ theme_override_styles/panel = ExtResource("10_1ajci")
 theme_override_styles/tab_unselected = ExtResource("10_1ajci")
 theme_override_styles/tab_hovered = ExtResource("12_1ajci")
 theme_override_styles/tab_selected = ExtResource("15_7b55j")
+
+[node name="Tools" type="TabContainer" parent="Editor/SettingsTabs" unique_id=1958637636]
+visible = false
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 24
+theme_override_styles/panel = ExtResource("10_1ajci")
+theme_override_styles/tab_unselected = ExtResource("10_1ajci")
+theme_override_styles/tab_hovered = ExtResource("12_1ajci")
+theme_override_styles/tab_selected = ExtResource("15_7b55j")
+current_tab = 0
+metadata/_tab_index = 4
+
+[node name="Skill Search" type="MarginContainer" parent="Editor/SettingsTabs/Tools" unique_id=2132744991]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 2
+metadata/_tab_index = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Tools/Skill Search" unique_id=1705787656]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="Editor/SettingsTabs/Tools/Skill Search/VBoxContainer" unique_id=799754268]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
+text = "Skill Search"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Editor/SettingsTabs/Tools/Skill Search/VBoxContainer" unique_id=1667695884]
+layout_mode = 2
+
+[node name="SearchInput" type="LineEdit" parent="Editor/SettingsTabs/Tools/Skill Search/VBoxContainer/HBoxContainer" unique_id=305035831]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/focus = ExtResource("12_1ajci")
+placeholder_text = "Enter skill name..."
+
+[node name="Search" type="Button" parent="Editor/SettingsTabs/Tools/Skill Search/VBoxContainer/HBoxContainer" unique_id=161157580]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
+text = "Search"
+
+[node name="Label" type="Label" parent="Editor/SettingsTabs/Tools/Skill Search/VBoxContainer" unique_id=1703944103]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 16
+text = "Note: Basic attack skills are formatted as FirstInitalAttack.
+Example: OAttack = Omori's Attack | ARWAttack = Aubrey (Real World)'s Attack"
+
+[node name="Results" type="TextEdit" parent="Editor/SettingsTabs/Tools/Skill Search/VBoxContainer" unique_id=133457653]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/read_only = ExtResource("10_1ajci")
+editable = false
+wrap_mode = 1
+
+[node name="Animation Viewer" type="MarginContainer" parent="Editor/SettingsTabs/Tools" unique_id=1276891189 node_paths=PackedStringArray("AnimationIdSelector", "PlayButton", "PreviewRoot")]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 2
+script = ExtResource("17_j7ex8")
+AnimationIdSelector = NodePath("VBoxContainer/VBoxContainer/HBoxContainer/SpinBox")
+PlayButton = NodePath("VBoxContainer/VBoxContainer/HBoxContainer/Play")
+PreviewRoot = NodePath("PreviewRoot")
+metadata/_tab_index = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Tools/Animation Viewer" unique_id=1248640258]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Editor/SettingsTabs/Tools/Animation Viewer/VBoxContainer" unique_id=1832209441]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
+text = "Animation Viewer"
+horizontal_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Tools/Animation Viewer/VBoxContainer" unique_id=733397580]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Editor/SettingsTabs/Tools/Animation Viewer/VBoxContainer/VBoxContainer" unique_id=414401597]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Editor/SettingsTabs/Tools/Animation Viewer/VBoxContainer/VBoxContainer/HBoxContainer" unique_id=1007606036]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 24
+text = "Animation ID "
+horizontal_alignment = 1
+
+[node name="SpinBox" type="SpinBox" parent="Editor/SettingsTabs/Tools/Animation Viewer/VBoxContainer/VBoxContainer/HBoxContainer" unique_id=853639058]
+layout_mode = 2
+max_value = 999.0
+rounded = true
+
+[node name="Play" type="Button" parent="Editor/SettingsTabs/Tools/Animation Viewer/VBoxContainer/VBoxContainer/HBoxContainer" unique_id=1926638348]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
+text = "Play"
+
+[node name="PreviewRoot" type="Node" parent="Editor/SettingsTabs/Tools/Animation Viewer" unique_id=1346299156]
 
 [node name="Return" type="Button" parent="Editor" unique_id=1210890615]
 z_index = 5
