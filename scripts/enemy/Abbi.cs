@@ -31,6 +31,9 @@ internal sealed class Abbi : Enemy
 
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["AbbiAttack"]);
+        
         if (Roll() < 71)
         {
             for (int i = 0; i < 4; i++)
@@ -46,7 +49,7 @@ internal sealed class Abbi : Enemy
 
         if (Roll() < 36)
             return new BattleCommand(this, SelectAllEnemies(), Skills["AbbiAttackOrder"]);
-        return new  BattleCommand(this, SelectTarget(), Skills["AbbiAttack"]);
+        return new BattleCommand(this, SelectTarget(), Skills["AbbiAttack"]);
     }
 
     private bool HasSpoken = false;

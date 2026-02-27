@@ -19,8 +19,8 @@ internal partial class MenuManager : Node
 
 	public static MenuManager Instance { get; private set; }
 
-	private const float FightRunOffsetRW = 458f;
-	private const float FightRunOffset = 376f;
+	private const float FightRunOffsetRW = 457f;
+	private const float FightRunOffset = 375f;
 	private const float BattleOffsetRW = 212f;
 	private const float BattleOffset = 130f;
 
@@ -47,13 +47,13 @@ internal partial class MenuManager : Node
 	{
 		if (realWorld)
 		{
-			PartyMenu.RegionRect = new Rect2(653f, FightRunOffsetRW, 362f, 82f);
-			BattleMenu.RegionRect = new Rect2(653f, BattleOffsetRW, 362f, 82f);
+			PartyMenu.RegionRect = new Rect2(653f, FightRunOffsetRW, 362f, 81f);
+			BattleMenu.RegionRect = new Rect2(653f, BattleOffsetRW, 362f, 81f);
 		}
 		else
 		{
-			PartyMenu.RegionRect = new Rect2(653f, FightRunOffset, 362f, 82f);
-			BattleMenu.RegionRect = new Rect2(653f, BattleOffset, 362f, 82f);
+			PartyMenu.RegionRect = new Rect2(653f, FightRunOffset, 362f, 81f);
+			BattleMenu.RegionRect = new Rect2(653f, BattleOffset, 362f, 81f);
 		}
 	}
 

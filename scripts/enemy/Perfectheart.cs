@@ -15,17 +15,29 @@ internal sealed class Perfectheart : Enemy
 
     public override bool IsStateValid(string state)
     {
-        return state == "neutral" || state == "sad" || state == "happy"
-              || state == "angry" || state == "hurt" || state == "toast";
+        return state is "neutral" or "sad" or "happy" or "angry" or "hurt" or "toast";
     }
 
     private bool SecondPhase = false;
     private bool HasSpoken = false;
+    private bool HasBeenObserved = false;
     private Sprite2D OverlaySprite = null;
 
     public override BattleCommand ProcessAI()
     {
-        if (SecondPhase)
+        if (HasMultiTargetObserve())
+        {
+            HasBeenObserved = true;
+            return new BattleCommand(this, SelectAllTargets(), Skills["PHWrath"]);
+        }
+
+        if (HasObserveTarget(out PartyMember observe))
+        {
+            HasBeenObserved = true;
+            return new BattleCommand(this, observe, Skills["PHStealHeart"]);
+        }
+
+        if (HasBeenObserved || SecondPhase)
             return new BattleCommand(this, SelectAllTargets(), Skills["PHWrath"]);
         if (Roll() < 36)
             return new BattleCommand(this, SelectTarget(), Skills["PHStealHeart"]);
@@ -40,7 +52,8 @@ internal sealed class Perfectheart : Enemy
 
     public override async Task ProcessBattleConditions()
     {
-        if (CurrentHP < 3500 && !SecondPhase)
+        // recreate omori bug where phase 2 is skipped if perfectheart is observed
+        if (!HasBeenObserved && CurrentHP < 3500 && !SecondPhase)
         {
             DialogueManager.Instance.QueueMessage(this, @"Oh...\! You are quite strong.");
             DialogueManager.Instance.QueueMessage(this, "It seems I must try a bit harder.");

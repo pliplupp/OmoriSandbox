@@ -8,55 +8,59 @@
 [ext_resource type="PackedScene" uid="uid://bafxyc8q2lavr" path="res://scenes/mod_list_entry.tscn" id="5_jk1qb"]
 [ext_resource type="PackedScene" uid="uid://d32syyvyr6iwr" path="res://scenes/party_member.tscn" id="5_rtw2f"]
 [ext_resource type="Texture2D" uid="uid://crd7vedwxdd60" path="res://assets/Space_parallax.png" id="6_5dd4i"]
+[ext_resource type="PackedScene" uid="uid://b5f37g6cos1c2" path="res://scenes/boss_rush_stage_component.tscn" id="6_hstxw"]
 [ext_resource type="SpriteFrames" uid="uid://d1x6v885rbwn5" path="res://animations/omori_title.tres" id="8_lgwnu"]
 [ext_resource type="Texture2D" uid="uid://d36ge2cnq6lkj" path="res://assets/battlebacks/battleback_vf_default.png" id="8_tbmy8"]
 [ext_resource type="Script" uid="uid://w0pq3jqqlyp" path="res://scripts/SettingsMenuManager.cs" id="9_5dd4i"]
 [ext_resource type="StyleBox" uid="uid://dwx8wc4k6lqm" path="res://assets/button_normal.tres" id="10_1ajci"]
 [ext_resource type="StyleBox" uid="uid://bo6p8kgoa573n" path="res://assets/button_pressed.tres" id="11_7b55j"]
 [ext_resource type="StyleBox" uid="uid://jwq4fr8u18k1" path="res://assets/button_hover.tres" id="12_1ajci"]
+[ext_resource type="Script" uid="uid://bgd7605r0fi2r" path="res://scripts/EditorManager.cs" id="12_7b55j"]
 [ext_resource type="PackedScene" uid="uid://kajtkfbt0k6k" path="res://scenes/keybind.tscn" id="14_5pajh"]
 [ext_resource type="StyleBox" uid="uid://ividp3svjft4" path="res://assets/tab_selected.tres" id="15_7b55j"]
 [ext_resource type="Script" uid="uid://b6h3l1listplj" path="res://scripts/AnimationViewer.cs" id="17_j7ex8"]
+[ext_resource type="PackedScene" uid="uid://cjovmomtfkxhh" path="res://scenes/battleback_bgm_editor_component.tscn" id="19_8egab"]
 
 [node name="MainMenu" type="CanvasLayer" unique_id=1040890594]
 
-[node name="MainMenuManager" type="Node" parent="." unique_id=593666081 node_paths=PackedStringArray("Logo", "OmoriFace", "BGMPreview", "AddActorControls", "AddEnemyControl", "ModListParent", "ShowModsButton", "ActorTabs", "EnemyTabs", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "SettingsButton", "QuitButton", "MainControls", "Settings", "DataFolderButton", "ModFolderButton", "ModsLoaded", "GithubButton", "TitlePresetDropdown", "BattlebackPreview", "BattlebackDropdown", "BGMDropdown", "BGMPitch", "BGMPlayButton", "LoopSetCurrentButton", "LoopPoint", "BGMPlayerTimer", "BGMPlayer", "FollowupTierSlider", "FollowupTierValue", "BasilFollowupsCheckbox", "BasilReleaseEnergyCheckbox", "DisableDialogue", "DisableDamageNumbers", "AddItemButton", "ItemContainer", "SearchInput", "SearchButton", "Results", "SavePresetButton", "PresetInput", "LoadPresetButton", "DeletePresetButton", "PresetDropdown", "ResetButton", "ReturnButton")]
+[node name="MainMenuManager" type="Node" parent="." unique_id=593666081 node_paths=PackedStringArray("Logo", "OmoriFace", "ModListParent", "ShowModsButton", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "SettingsButton", "QuitButton", "MainControls", "Settings", "EditorSettingsContainer", "NewPresetContainer", "LoadExistingButton", "NormalPresetButton", "BossRushPresetButton", "ModFolderButton", "ModsLoaded", "GithubButton", "TitlePresetDropdown")]
 script = ExtResource("1_wu84c")
 Logo = NodePath("../Main/Logo")
 OmoriFace = NodePath("../Main/Omori")
-BGMPreview = NodePath("../BGMPreview")
-AddActorControls = [NodePath("../Editor/Actors/AddActor1"), NodePath("../Editor/Actors/AddActor2"), NodePath("../Editor/Actors/AddActor3"), NodePath("../Editor/Actors/AddActor4")]
-AddEnemyControl = NodePath("../Editor/Actors/AddEnemy")
-PartyMemberEditor = ExtResource("4_8ln24")
-EnemyEditor = ExtResource("3_oa1go")
-BattleCard = ExtResource("5_rtw2f")
 ModListEntry = ExtResource("5_jk1qb")
 ModListParent = NodePath("../Main/ModsLoadedList")
 ShowModsButton = NodePath("../Main/ShowModsButton")
-ActorTabs = NodePath("../Editor/SettingsTabs/Actors/VBoxContainer/ActorTabs")
-EnemyTabs = NodePath("../Editor/SettingsTabs/Enemies/VBoxContainer/EnemyTabs")
 MainMenu = NodePath("../Main")
 Editor = NodePath("../Editor")
 PlayButton = NodePath("../Main/MainControls/Play")
-ConfigureButton = NodePath("../Main/MainControls/HBoxContainer3/Editor")
-SettingsButton = NodePath("../Main/MainControls/HBoxContainer3/Settings")
+ConfigureButton = NodePath("../Main/MainControls/EditorSettings/Editor")
+SettingsButton = NodePath("../Main/MainControls/EditorSettings/Settings")
 QuitButton = NodePath("../Main/MainControls/Quit")
 MainControls = NodePath("../Main/MainControls")
 Settings = NodePath("../Main/Settings")
-DataFolderButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Other/DataFolder")
+EditorSettingsContainer = NodePath("../Main/MainControls/EditorSettings")
+NewPresetContainer = NodePath("../Main/MainControls/NewPreset")
+LoadExistingButton = NodePath("../Main/MainControls/LoadExisting")
+NormalPresetButton = NodePath("../Main/MainControls/NewPreset/Normal")
+BossRushPresetButton = NodePath("../Main/MainControls/NewPreset/BossRush")
 ModFolderButton = NodePath("../Main/ModsLoadedList/VBoxContainer/ModFolder")
 ModsLoaded = NodePath("../Main/ModsLoaded")
 GithubButton = NodePath("../Main/Github")
 TitlePresetDropdown = NodePath("../Main/MainControls/HBoxContainer/PresetDropdown")
+
+[node name="EditorManager" type="Node" parent="." unique_id=1425104684 node_paths=PackedStringArray("BGMPreview", "BattlebackPreview", "AddActorControls", "AddEnemyControl", "ActorTabs", "EnemyTabs", "BattlebackBGMEditor", "FollowupTierSlider", "FollowupTierValue", "BasilFollowupsCheckbox", "BasilReleaseEnergyCheckbox", "DisableDialogue", "DisableDamageNumbers", "AddItemButton", "ItemContainer", "SearchInput", "SearchButton", "Results", "SavePresetButton", "PresetInput", "LoadPresetButton", "DeletePresetButton", "PresetDropdown", "ResetButton", "ReturnButton", "PresetFolderButton", "AddStageButton", "DuplicateStageButton", "RemoveStageButton", "StageTabs", "MainTabs")]
+script = ExtResource("12_7b55j")
+BGMPreview = NodePath("../BGMPreview")
 BattlebackPreview = NodePath("../Editor/BattlebackPreview")
-BattlebackDropdown = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Battleback/OptionButton")
-BGMDropdown = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGM/OptionButton")
-BGMPitch = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch/PitchValue")
-BGMPlayButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGMScrub/Play")
-LoopSetCurrentButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch/SetCurrent")
-LoopPoint = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch/LoopPointValue")
-BGMPlayerTimer = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGMScrub/Time")
-BGMPlayer = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BGMScrub/Scrub")
+AddActorControls = [NodePath("../Editor/Actors/AddActor1"), NodePath("../Editor/Actors/AddActor2"), NodePath("../Editor/Actors/AddActor3"), NodePath("../Editor/Actors/AddActor4")]
+AddEnemyControl = NodePath("../Editor/Actors/AddEnemy")
+PartyMemberEditor = ExtResource("4_8ln24")
+EnemyEditor = ExtResource("3_oa1go")
+StageEditor = ExtResource("6_hstxw")
+BattleCard = ExtResource("5_rtw2f")
+ActorTabs = NodePath("../Editor/SettingsTabs/Actors/VBoxContainer/ActorTabs")
+EnemyTabs = NodePath("../Editor/SettingsTabs/Enemies/VBoxContainer/EnemyTabs")
+BattlebackBGMEditor = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BattlebackBGMEditor")
 FollowupTierSlider = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier/HSlider")
 FollowupTierValue = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/FollowupTier/Label2")
 BasilFollowupsCheckbox = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/BasilFollowups")
@@ -75,6 +79,12 @@ DeletePresetButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Loa
 PresetDropdown = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Load/PresetDropdown")
 ResetButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Other/Reset")
 ReturnButton = NodePath("../Editor/Return")
+PresetFolderButton = NodePath("../Editor/SettingsTabs/Settings/VBoxContainer/Other/DataFolder")
+AddStageButton = NodePath("../Editor/SettingsTabs/Boss Rush/VBoxContainer/HBoxContainer/AddStage")
+DuplicateStageButton = NodePath("../Editor/SettingsTabs/Boss Rush/VBoxContainer/HBoxContainer/DuplicateStage")
+RemoveStageButton = NodePath("../Editor/SettingsTabs/Boss Rush/VBoxContainer/HBoxContainer/RemoveStage")
+StageTabs = NodePath("../Editor/SettingsTabs/Boss Rush/VBoxContainer/StageTabs")
+MainTabs = NodePath("../Editor/SettingsTabs")
 
 [node name="BGMPreview" type="AudioStreamPlayer" parent="." unique_id=981559878]
 bus = &"BGM"
@@ -131,7 +141,7 @@ offset_bottom = -3.0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 14
-text = "OmoriSandbox v1.0.0"
+text = "OmoriSandbox v1.0.0 (dev build)"
 
 [node name="ModsLoaded" type="Label" parent="Main" unique_id=589990206]
 anchors_preset = 2
@@ -203,6 +213,7 @@ alignment = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Main/MainControls" unique_id=831963137]
 layout_mode = 2
+size_flags_horizontal = 4
 
 [node name="Label" type="Label" parent="Main/MainControls/HBoxContainer" unique_id=609320882]
 layout_mode = 2
@@ -233,11 +244,11 @@ theme_override_styles/pressed = ExtResource("11_7b55j")
 theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Play"
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="Main/MainControls" unique_id=1354267370]
+[node name="EditorSettings" type="HBoxContainer" parent="Main/MainControls" unique_id=1354267370]
 layout_mode = 2
 alignment = 1
 
-[node name="Editor" type="Button" parent="Main/MainControls/HBoxContainer3" unique_id=629465022]
+[node name="Editor" type="Button" parent="Main/MainControls/EditorSettings" unique_id=629465022]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("2_ekxnf")
@@ -247,7 +258,7 @@ theme_override_styles/pressed = ExtResource("11_7b55j")
 theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Editor"
 
-[node name="Settings" type="Button" parent="Main/MainControls/HBoxContainer3" unique_id=731582237]
+[node name="Settings" type="Button" parent="Main/MainControls/EditorSettings" unique_id=731582237]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("2_ekxnf")
@@ -256,6 +267,49 @@ theme_override_styles/normal = ExtResource("10_1ajci")
 theme_override_styles/pressed = ExtResource("11_7b55j")
 theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Settings"
+
+[node name="LoadExisting" type="Button" parent="Main/MainControls" unique_id=1694792047]
+visible = false
+layout_mode = 2
+theme_override_constants/h_separation = 4
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
+text = "Load Existing"
+
+[node name="NewPreset" type="HBoxContainer" parent="Main/MainControls" unique_id=1916626342]
+visible = false
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="Main/MainControls/NewPreset" unique_id=1354457537]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = ExtResource("10_1ajci")
+text = "New Preset:"
+
+[node name="Normal" type="Button" parent="Main/MainControls/NewPreset" unique_id=1701030061]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
+text = "Normal"
+
+[node name="BossRush" type="Button" parent="Main/MainControls/NewPreset" unique_id=1255283441]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
+text = "Boss Rush"
 
 [node name="Quit" type="Button" parent="Main/MainControls" unique_id=1416546379]
 custom_minimum_size = Vector2(120, 0)
@@ -930,112 +984,8 @@ theme_override_font_sizes/font_size = 30
 text = "Battle Settings"
 horizontal_alignment = 1
 
-[node name="Battleback" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer" unique_id=477047052]
+[node name="BattlebackBGMEditor" parent="Editor/SettingsTabs/Settings/VBoxContainer" unique_id=1531111807 instance=ExtResource("19_8egab")]
 layout_mode = 2
-
-[node name="Label" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/Battleback" unique_id=1203479159]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 20
-text = "Battleback"
-
-[node name="OptionButton" type="OptionButton" parent="Editor/SettingsTabs/Settings/VBoxContainer/Battleback" unique_id=1263053002]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = ExtResource("10_1ajci")
-theme_override_styles/pressed = ExtResource("11_7b55j")
-theme_override_styles/hover = ExtResource("12_1ajci")
-allow_reselect = true
-
-[node name="BGM" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer" unique_id=1339372978]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGM" unique_id=1568112880]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 20
-text = "BGM"
-
-[node name="OptionButton" type="OptionButton" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGM" unique_id=1313373341]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = ExtResource("10_1ajci")
-theme_override_styles/pressed = ExtResource("11_7b55j")
-theme_override_styles/hover = ExtResource("12_1ajci")
-allow_reselect = true
-
-[node name="BGMScrub" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer" unique_id=1223596680]
-layout_mode = 2
-size_flags_horizontal = 4
-alignment = 1
-
-[node name="Time" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMScrub" unique_id=1623453946]
-custom_minimum_size = Vector2(75, 0)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 20
-text = "00:00.00"
-horizontal_alignment = 1
-
-[node name="Scrub" type="HSlider" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMScrub" unique_id=269745944]
-custom_minimum_size = Vector2(250, 0)
-layout_mode = 2
-size_flags_vertical = 4
-max_value = 0.0
-step = 0.01
-scrollable = false
-
-[node name="Play" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMScrub" unique_id=1641508150]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = ExtResource("10_1ajci")
-theme_override_styles/pressed = ExtResource("11_7b55j")
-theme_override_styles/hover = ExtResource("12_1ajci")
-text = "Play"
-
-[node name="BGMPitch" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer" unique_id=798884620]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_constants/separation = 8
-
-[node name="Pitch" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch" unique_id=885846790]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 20
-text = "Pitch"
-
-[node name="PitchValue" type="SpinBox" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch" unique_id=1508317063]
-layout_mode = 2
-size_flags_horizontal = 4
-min_value = 0.1
-max_value = 2.0
-step = 0.1
-value = 1.0
-
-[node name="LoopPoint" type="Label" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch" unique_id=251744211]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 20
-text = "Loop Point"
-
-[node name="SetCurrent" type="Button" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch" unique_id=188081267]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_ekxnf")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = ExtResource("10_1ajci")
-theme_override_styles/pressed = ExtResource("11_7b55j")
-theme_override_styles/hover = ExtResource("12_1ajci")
-text = "Set Current"
-
-[node name="LoopPointValue" type="SpinBox" parent="Editor/SettingsTabs/Settings/VBoxContainer/BGMPitch" unique_id=802462859]
-layout_mode = 2
-size_flags_horizontal = 4
-max_value = 0.0
-step = 0.01
 
 [node name="FollowupTier" type="HBoxContainer" parent="Editor/SettingsTabs/Settings/VBoxContainer" unique_id=740844864]
 layout_mode = 2
@@ -1252,6 +1202,63 @@ theme_override_styles/tab_unselected = ExtResource("10_1ajci")
 theme_override_styles/tab_hovered = ExtResource("12_1ajci")
 theme_override_styles/tab_selected = ExtResource("15_7b55j")
 
+[node name="Boss Rush" type="MarginContainer" parent="Editor/SettingsTabs" unique_id=1540371765]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Boss Rush" unique_id=1651597822]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Editor/SettingsTabs/Boss Rush/VBoxContainer" unique_id=28868069]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 30
+text = "Boss Rush"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Editor/SettingsTabs/Boss Rush/VBoxContainer" unique_id=15719291]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="AddStage" type="Button" parent="Editor/SettingsTabs/Boss Rush/VBoxContainer/HBoxContainer" unique_id=229900818]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
+text = "+ Add Stage"
+
+[node name="DuplicateStage" type="Button" parent="Editor/SettingsTabs/Boss Rush/VBoxContainer/HBoxContainer" unique_id=904921141]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
+text = "+ Duplicate Selected"
+
+[node name="RemoveStage" type="Button" parent="Editor/SettingsTabs/Boss Rush/VBoxContainer/HBoxContainer" unique_id=343664712]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("10_1ajci")
+theme_override_styles/pressed = ExtResource("11_7b55j")
+theme_override_styles/hover = ExtResource("12_1ajci")
+text = "- Remove Selected"
+
+[node name="StageTabs" type="TabContainer" parent="Editor/SettingsTabs/Boss Rush/VBoxContainer" unique_id=1993859081]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_styles/panel = ExtResource("10_1ajci")
+theme_override_styles/tab_unselected = ExtResource("10_1ajci")
+theme_override_styles/tab_hovered = ExtResource("12_1ajci")
+theme_override_styles/tab_selected = ExtResource("15_7b55j")
+
 [node name="Tools" type="TabContainer" parent="Editor/SettingsTabs" unique_id=1958637636]
 visible = false
 layout_mode = 2
@@ -1262,7 +1269,7 @@ theme_override_styles/tab_unselected = ExtResource("10_1ajci")
 theme_override_styles/tab_hovered = ExtResource("12_1ajci")
 theme_override_styles/tab_selected = ExtResource("15_7b55j")
 current_tab = 0
-metadata/_tab_index = 4
+metadata/_tab_index = 5
 
 [node name="Skill Search" type="MarginContainer" parent="Editor/SettingsTabs/Tools" unique_id=2132744991]
 layout_mode = 2

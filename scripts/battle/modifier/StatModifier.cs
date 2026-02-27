@@ -66,7 +66,8 @@ public class StatModifier
     /// <summary>
     /// Called when a stat modifier is first given to an actor.
     /// </summary>
-    public virtual void OnAdd() { }
+    /// <param name="actor">The <see cref="Actor"/> this modifier is being applied to.</param>
+    public virtual void OnAdd(Actor actor) { }
 
     /// <summary>
     /// Called at the start of every turn.
@@ -104,6 +105,12 @@ public class StatModifier
     /// <param name="isCritical">Whether the damage is currently a critical. This will always be <c>false</c> for pre-crit phases such as <c>PreEmotion</c></param>
     public virtual void OverrideDamage(DamagePhase phase, ref float damage, Actor attacker, Actor defender, bool isAttacking, bool isCritical) { }
     
+    /// <summary>
+    /// Allows modifying the cost of skills.
+    /// </summary>
+    /// <param name="juice">The current juice cost.</param>
+    /// <param name="actor">The actor this modifier is attached to.</param>
+    public virtual void OverrideJuiceCost(ref int juice, Actor actor) {}
 
     /// <summary>
     /// Called during emotion checks in damage calculation.

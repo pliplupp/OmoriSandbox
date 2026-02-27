@@ -61,6 +61,10 @@ internal sealed class SpaceExHusband : Enemy
             case "happy":
             case "ecstatic":
             case "manic":
+                if (HasMultiTargetObserve())
+                    goto joyful;
+                if (HasObserveTarget(out PartyMember observe))
+                    return new BattleCommand(this, observe, Skills["SEHLaser"]);
                 if (Roll() < 51)
                     goto joyful;
                 if (Roll() < 51)
@@ -69,18 +73,28 @@ internal sealed class SpaceExHusband : Enemy
             case "sad":
             case "depressed":
             case "miserable":
+                if (HasMultiTargetObserve())
+                    goto angsty;
+                if (HasObserveTarget(out observe))
+                    return new BattleCommand(this, observe, Skills["SEHLaser"]);
                 if (Roll() < 51)
                     goto angsty;
                 goto laser;
             case "angry":
             case "enraged":
             case "furious":
+                if (HasMultiTargetObserve())
+                    goto angry;
+                if (HasObserveTarget(out observe))
+                    return new BattleCommand(this, observe, Skills["SEHLaser"]);
                 if (Roll() < 46)
                     goto angry;
                 if (Roll() < 46)
                     goto laser;
                 goto bullet;
             default:
+                if (HasObserveTarget(out observe))
+                    return new BattleCommand(this, observe, Skills["SEHLaser"]);
                 if (Roll() < 51)
                     goto attack;
                 goto laser;

@@ -20,6 +20,9 @@ internal sealed class KiteKidAlt : Enemy
 
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["KKAttack"]);
+        
         if (CurrentState == "happy" || Roll() < 76)
             return new BattleCommand(this, SelectTarget(), Skills["KKAttack"]);
         

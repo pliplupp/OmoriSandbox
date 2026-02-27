@@ -22,6 +22,13 @@ internal sealed class HumphreySwarm : Enemy
     public override BattleCommand ProcessAI()
     {
         Turn++;
+        
+        if (HasMultiTargetObserve())
+            return new BattleCommand(this, SelectTargets(3), Skills["HUSAttack3"]);
+        
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["HUSAttack"]);
+        
         switch (CurrentState)
         {
             case "angry":

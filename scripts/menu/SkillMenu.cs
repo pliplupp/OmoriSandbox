@@ -11,15 +11,15 @@ internal partial class SkillMenu : Menu
 	[Export] public Label[] SkillLabels;
 	[Export] public Label CostText;
 	private readonly List<Skill> Skills = [];
-	private List<Vector2I> Positions = [new Vector2I(-145, 5), new Vector2I(25, 5), new Vector2I(-145, 25), new Vector2I(25, 25)];
+	private List<Vector2I> Positions = [new(-145, 5), new(25, 5), new(-145, 25), new(25, 25)];
 
 	private Vector2I GridSize = new(2, 2);
-	private string ActorName = "";
+	private Actor Actor;
 
 	public void Populate(Actor actor)
 	{
 		Skills.Clear();
-		ActorName = actor.Name.ToUpper();
+		Actor = actor;
         CostText.Text = "0";
         foreach (Label l in SkillLabels)
 			l.Text = "";
@@ -29,7 +29,7 @@ internal partial class SkillMenu : Menu
 			if (idx > 3)
 				break;
 			SkillLabels[idx].Text = s.Name;
-			if (actor.CurrentJuice < s.Cost || !s.MeetsRequirements(actor))
+			if (actor.CurrentJuice < s.Cost(actor) || !s.MeetsRequirements(actor))
 				SkillLabels[idx].AddThemeColorOverride("font_color", Colors.DimGray);
 			else
 				SkillLabels[idx].RemoveThemeColorOverride("font_color");
@@ -50,8 +50,8 @@ internal partial class SkillMenu : Menu
 	{
         if (Empty) return;
         Skill s = Skills[CursorIndex];
-		CostText.Text = s.Cost.ToString();
-		BattleLogManager.Instance.ClearAndShowMessage($"{s.Name}\n{s.Description.Replace("[actor]", ActorName.ToUpper()).Replace("[first]", BattleManager.Instance.GetPartyMember(0).Name.ToUpper())}");
+		CostText.Text = s.Cost(Actor).ToString();
+		BattleLogManager.Instance.ClearAndShowMessage($"{s.Name}\n{s.Description.Replace("[actor]", Actor.Name.ToUpper()).Replace("[first]", BattleManager.Instance.GetPartyMember(0).Name.ToUpper())}");
 	}
 
 	protected override void MoveCursor(Vector2I direction)
@@ -73,8 +73,8 @@ internal partial class SkillMenu : Menu
 	{
         if (Empty) return;
         Skill selected = Skills[CursorIndex];
-		BattleManager.Instance.OnSelectSkill(selected);
-		CursorSprite.StopBounce();
+		if (BattleManager.Instance.OnSelectSkill(selected))
+			CursorSprite.StopBounce();
 	}
 
 	public override void OnOpen(SelectionMemory memory)

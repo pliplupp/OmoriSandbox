@@ -35,7 +35,7 @@ internal partial class EnemyEditorComponent : Control
 
 	private readonly string[] States = ["neutral", "happy", "sad", "angry", "ecstatic", "depressed", "furious", "manic", "miserable", "furious", "manic", "afraid", "stressed"];
 
-	public override void _Ready()
+	public override void _EnterTree()
 	{
 		foreach (string member in Database.GetAllEnemyNames())
 			EnemyDropdown.AddItem(member);
@@ -49,7 +49,7 @@ internal partial class EnemyEditorComponent : Control
 		XPosBox.ValueChanged += (value) => Animator.GlobalPosition = new Vector2((float)value, Animator.GlobalPosition.Y);
 		YPosBox.ValueChanged += (value) => Animator.GlobalPosition = new Vector2(Animator.GlobalPosition.X, (float)value);
 
-		LayerBox.ValueChanged += (value) => Animator.ZIndex = -5 - (int)LayerBox.Value;
+		LayerBox.ValueChanged += (value) => Animator.ZIndex = -5 - (int)value;
 	}
 
 	public void Init(AnimatedSprite2D animator)
@@ -68,6 +68,13 @@ internal partial class EnemyEditorComponent : Control
 		Populate("LostSproutMole");
 	}
 
+	public void Init(AnimatedSprite2D animator, BattlePresetEnemy enemy)
+	{
+		if (!enemy.Position.StartsWith("Vector2"))
+			enemy.Position = "Vector2" + enemy.Position;
+		Init(animator, enemy.Name, GD.StrToVar(enemy.Position).AsVector2(), enemy.Emotion, (int)enemy.Layer, enemy.FallsOffScreen);
+	}
+
 	public void Init(AnimatedSprite2D animator, string name, Vector2 position, string emotion, int layer, bool fallsOffScreen)
 	{
 		Animator = animator;
@@ -79,7 +86,7 @@ internal partial class EnemyEditorComponent : Control
 			Animator.QueueFree();
 			QueueFree();
 		};
-
+		
 		Populate(name);
 		EnemyDropdown.Selected = EnemyDropdown.GetItemIndex(name);
 		EmotionDropdown.Selected = EmotionDropdown.GetItemIndex(emotion);
@@ -93,7 +100,6 @@ internal partial class EnemyEditorComponent : Control
 
 	public void Populate(string who)
 	{
-		Name = who;
 		Enemy enemy = Database.CreateEnemy(who);
 
 		SpriteFrames animation = enemy.Animation;
@@ -101,6 +107,13 @@ internal partial class EnemyEditorComponent : Control
 		{
 			GD.PrintErr("Failed to load animations for Enemy: " + Name);
 			return;
+		}
+		
+		Node parent = GetParent();
+		if (parent is TabContainer container)
+		{
+			int index = container.GetTabIdxFromControl(this);
+			container.SetTabTitle(index, who);
 		}
 
 		Animator.SpriteFrames = animation;

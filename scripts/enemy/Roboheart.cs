@@ -12,12 +12,14 @@ internal sealed class Roboheart : Enemy
     protected override string[] EquippedSkills => ["RHAttack", "RHDoNothing", "RHLaser", "RHSnack", "RHExplode"];
     public override bool IsStateValid(string state)
     {
-        return state == "neutral" || state == "happy" || state == "sad"
-               || state == "angry" || state == "hurt" || state == "toast";
+        return state is "neutral" or "happy" or "sad" or "angry" or "hurt" or "toast";
     }
 
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["RHAttack"]);
+        
         if (CurrentHP < 250)
             return new BattleCommand(this, SelectAllTargets(), Skills["RHExplode"]);
 

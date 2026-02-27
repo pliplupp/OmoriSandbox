@@ -21,6 +21,13 @@ internal sealed class HeroBoss : Enemy
 	public override BattleCommand ProcessAI()
 	{
 		TurnCount++;
+		
+		if (HasMultiTargetObserve())
+			return new BattleCommand(this, SelectAllTargets(), Skills["HBossDazzle"]);
+		
+		if (HasObserveTarget(out PartyMember observe))
+			return new BattleCommand(this, observe, Skills["SpicyFood"]);
+		
 		if (TurnCount == 1)
 			return new BattleCommand(this, SelectAllTargets(), Skills["HBossDazzle"]);
 		if (TurnCount == 3)

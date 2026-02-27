@@ -19,6 +19,9 @@ internal sealed class Pluto : Enemy
 
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["PLHeadbutt"]);
+        
         switch (CurrentState)
         {
             case "angry":

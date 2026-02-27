@@ -27,12 +27,14 @@ internal sealed class UnbreadTwinsAlt : Enemy
         if (EmotionLocked)
             return false;
 
-        return state == "neutral" || state == "sad" || state == "happy"
-            || state == "angry" || state == "hurt";
+        return state is "neutral" or "sad" or "happy" or "angry" or "hurt";
     }
 
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["UBTAttack"]);
+        
         // when Unbread Twins are emotion locked to sad, their AI uses depressed to prevent trying to cleanse sad
         string state = CurrentState == "sad" && EmotionLocked ? "depressed" : CurrentState;
         switch (state) {

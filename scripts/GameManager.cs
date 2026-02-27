@@ -6,7 +6,6 @@ using OmoriSandbox.Battle;
 using OmoriSandbox.Editor;
 using OmoriSandbox.Modding;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace OmoriSandbox;
@@ -18,7 +17,7 @@ namespace OmoriSandbox;
  - Edit BGM loop point - done
  - Queue restart via keybind during battle - done
  - Text effects - done
- - Boss Alt Stats - in progress
+ - Boss Alt Stats - in testing
  - Minibosses (Snaley, Shady Mole, etc.) - done
  - Skip dialogue with 'X' - done
  - Modifiable keybinds - done
@@ -33,6 +32,8 @@ namespace OmoriSandbox;
  - Allow damage to be overriden at various points of the calculation - done
  - basil release energy double use bonus - done
  - Other TODOs
+ - custom boss rush - in testing
+ - auto-generate default mod - done
  Bugfixes:
  - Tiered stat modifiers do not increment - done
  - Enemies can stack on top of each other preventing selection - in testing
@@ -93,6 +94,7 @@ internal partial class GameManager : Node
 		AudioManager.Instance.Init();
 		ModManager.Instance.LoadMods();
 		MainMenuManager.Instance.Init();
+		EditorManager.Instance.Init();
 	}
 
 	public override void _ExitTree()
@@ -100,42 +102,35 @@ internal partial class GameManager : Node
 		DiscordManager.Shutdown();
 	}
 
-	internal void LoadBattlePreset(Godot.Collections.Dictionary<string, Variant> data)
+	internal void SetBattleback(string name)
+	{
+		if (ResourceLoader.Exists("res://assets/battlebacks/" + name + ".png"))
+			BattlebackParent.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + name + ".png");
+		else if (ModManager.Instance.Battlebacks.TryGetValue(name, out Texture2D texture))
+			BattlebackParent.Texture = texture;
+		else
+		{
+			BattlebackParent.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/battleback_vf_default.png");
+			GD.PushWarning($"Failed to load battleback {name}, falling back to default.");
+		}
+	}
+
+	internal void LoadBattlePreset(BattlePreset preset)
 	{
 		List<PartyMemberComponent> party = [];
 		List<EnemyComponent> enemy = [];
-		Godot.Collections.Dictionary<string, int> items = data["items"].AsGodotDictionary<string, int>();
-		Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>> actors = data["actors"].AsGodotArray<Godot.Collections.Dictionary<string, Variant>>();
-		Godot.Collections.Array<Godot.Collections.Dictionary<string, Variant>> enemies = data["enemies"].AsGodotArray<Godot.Collections.Dictionary<string, Variant>>();
-		int FollowupTier = data["followupTier"].AsInt32();
-		bool UseBasilFollowups = data["basilFollowups"].AsBool();
-		bool UseBasilReleaseEnergy = data["basilReleaseEnergy"].AsBool();
-		bool DisableDialogue = false;
-		if (data.TryGetValue("disableDialogue", out Variant value))
-			DisableDialogue = value.AsBool();
-		bool DisableDamageNumbers = false;
-		if (data.TryGetValue("disableDamageNumbers", out value))
-			DisableDamageNumbers = value.AsBool();
 
-		string battleback = data["battleback"].AsString();
-		if (ResourceLoader.Exists("res://assets/battlebacks/" + battleback + ".png"))
-			BattlebackParent.Texture = ResourceLoader.Load<Texture2D>("res://assets/battlebacks/" + battleback + ".png");
-		else if (ModManager.Instance.Battlebacks.TryGetValue(battleback, out Texture2D texture))
-			BattlebackParent.Texture = texture;
-		else
-			GD.PrintErr("Failed to load battleback: " + battleback);
+		string battleback = preset.Type is GameModeType.Normal ? preset.Battleback : preset.Stages[0].Battleback;
+		string bgm = preset.Type is GameModeType.Normal ? preset.BGM : preset.Stages[0].BGM;
+		double pitch = preset.Type is GameModeType.Normal ? preset.BGMPitch : preset.Stages[0].BGMPitch;
+		double loopPoint = preset.Type is GameModeType.Normal ? preset.BGMLoopPoint : preset.Stages[0].BGMLoopPoint;
+		
+		SetBattleback(battleback);
+		
+		AudioManager.Instance.PlayBGM(bgm, 1f, (float)pitch);
+		AudioManager.Instance.SetBGMLoopOffset(loopPoint);
 
-		string bgm = StringExtensions.GetBaseName(data["bgm"].AsString());
-		double bgmPitch = 1.0d;
-		if (data.TryGetValue("bgmPitch", out value))
-			bgmPitch = value.AsDouble();
-		double bgmLoopPoint = 0d;
-		if (data.TryGetValue("bgmLoopPoint", out value))
-			bgmLoopPoint = value.AsDouble();
-		AudioManager.Instance.PlayBGM(bgm, 1f, (float)bgmPitch);
-		AudioManager.Instance.SetBGMLoopOffset(bgmLoopPoint);
-
-		foreach (var entry in actors)
+		foreach (BattlePresetActor entry in preset.Actors)
 		{
 			if (party.Count >= 4)
 			{
@@ -144,61 +139,48 @@ internal partial class GameManager : Node
 			}
 
 			PackedScene followup = null;
-			int position = entry["position"].AsInt32();
-			bool followupsDisabled = entry["followupsDisabled"].AsBool();
-			if (!followupsDisabled)
+			if (!entry.FollowupsDisabled)
 			{
-				if (UseBasilFollowups && position == 2)
+				if (preset.BasilFollowups && entry.Position == 2)
 					followup = Followups[4];
 				else
-					followup = Followups[position];
+					followup = Followups[entry.Position];
 			}
 
-			PartyMemberComponent actor = SpawnPartyMember(
-				entry["name"].ToString(),
-				followup,
-				position,
-				entry["weapon"].ToString(),
-				entry["charm"].ToString(),
-				entry["skills"].AsStringArray(),
-				entry["level"].AsInt32(),
-				entry["emotion"].ToString()
-				);
+			PartyMemberComponent actor = SpawnPartyMember(followup, entry);
 
 			if (actor == null)
+			{
+				GD.PrintErr("Failed to spawn party member: " + entry.Name);
 				continue;
+			}
 
 			party.Add(actor);
 		}
 
-		foreach (var entry in enemies)
+		foreach (BattlePresetEnemy entry in preset.Enemies)
 		{
-			// dumb hack to read the Vector2 since AsVector2() doesn't seem to work here
-			string positionStr = entry["position"].ToString();
-			string[] positionArr = positionStr.Substring(1, positionStr.Length - 2).Split(',');
-			Vector2 position = new(float.Parse(positionArr[0], CultureInfo.InvariantCulture), float.Parse(positionArr[1], CultureInfo.InvariantCulture));
-			if (!entry.TryGetValue("layer", out Variant layer))
-				layer = 0;
+			if (!entry.Position.StartsWith("Vector2"))
+				entry.Position = "Vector2" + entry.Position;
+			Vector2 position = GD.StrToVar(entry.Position).AsVector2();
 			while (enemy.Any(x => x.Actor.CenterPoint == position))
 			{
 				// prevent stacking
 				position += new Vector2(0.01f, 0f);
 			}
-			EnemyComponent en = SpawnEnemy(
-					entry["name"].ToString(),
-					position,
-					entry["emotion"].ToString(),
-					entry["fallsOffScreen"].AsBool(),
-					layer.AsInt32()
-				);
+			EnemyComponent en = SpawnEnemy(entry, position);
 			if (en == null)
+			{
+				GD.PrintErr("Failed to spawn enemy: " + entry.Name);
 				continue;
+			}
+
 			enemy.Add(en);
 		}
 
-		DialogueManager.Instance.DialogueDisabled = DisableDialogue;
-		DiscordManager.SetBattling(enemies.Count);
-		BattleManager.Instance.Init(party, enemy, items, FollowupTier, UseBasilFollowups, UseBasilReleaseEnergy, DisableDamageNumbers);
+		DialogueManager.Instance.DialogueDisabled = preset.DisableDialogue;
+		DiscordManager.SetBattling(enemy.Count);
+		BattleManager.Instance.Init(party, enemy, preset.Stages, preset);
 	}
 
 	internal void DespawnAll()
@@ -215,28 +197,28 @@ internal partial class GameManager : Node
 		}
 	}
 
-	internal EnemyComponent SpawnEnemy(string who, Vector2 position, string startingEmotion = "neutral", bool fallsOffScreen = true, int layer = 0)
+	internal EnemyComponent SpawnEnemy(BattlePresetEnemy enemy, Vector2 position)
 	{
-		Enemy instance = Database.CreateEnemy(who);
+		Enemy instance = Database.CreateEnemy(enemy.Name);
 		Node2D node = EnemyNode.Instantiate<Node2D>();
 		BattlebackParent.AddChild(node);
-		GD.Print("Spawning enemy at: " + position);
+		GD.Print("Spawning enemy at: " + enemy.Position);
 		node.GlobalPosition = position;
 		EnemyComponent component = new();
 		node.AddChild(component);
-		node.ZIndex -= layer;
-		component.SetEnemy(instance, startingEmotion, fallsOffScreen, layer);
+		node.ZIndex -= (int)enemy.Layer;
+		component.SetEnemy(instance, enemy.Emotion, enemy.FallsOffScreen, (int)enemy.Layer);
 		return component;
 	}
 
-	internal PartyMemberComponent SpawnPartyMember(string who, PackedScene followup, int position, string weapon, string charm, string[] skills, int level = 1, string startingEmotion = "neutral")
+	private PartyMemberComponent SpawnPartyMember(PackedScene followup, BattlePresetActor actor)
 	{
-		PartyMember instance = Database.CreatePartyMember(who);
+		PartyMember instance = Database.CreatePartyMember(actor.Name);
 		if (instance == null)
 			return null;
 		Control card = BattlecardUI.Instantiate<Control>();
 		Party.AddChild(card);
-		card.Position = position switch
+		card.Position = actor.Position switch
 		{
 			0 => new Vector2(20, 306),
 			1 => new Vector2(20, 5),
@@ -246,7 +228,7 @@ internal partial class GameManager : Node
 		};
 		PartyMemberComponent component = new();
 		card.AddChild(component);
-		component.SetPartyMember(instance, followup, position, startingEmotion, level, weapon, charm, skills);
+		component.SetPartyMember(instance, followup, actor.Position, actor.Emotion, actor.Level, actor.Weapon, actor.Charm, actor.Skills);
 		return component;
 	}
 }

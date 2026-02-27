@@ -20,6 +20,9 @@ public class SnaleyTwo : Enemy
     public override BattleCommand ProcessAI()
     {
         Turn++;
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["SNBeatdown"]);
+        
         if (Turn is 1)
             return new BattleCommand(this, SelectTarget(), Skills["SNBeatdown"]);
         if (Turn is 2)

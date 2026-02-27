@@ -25,6 +25,9 @@ internal sealed class Boss : Enemy
         if (CurrentHP < 23)
             return new BattleCommand(this, this, Skills["BSSDoNothing"]);
 
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["BSSAttack"]);
+        
         if (Roll() < 31)
             return new BattleCommand(this, SelectTarget(), Skills["BSSAttack"]);
 

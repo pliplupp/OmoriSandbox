@@ -2,6 +2,7 @@ using OmoriSandbox.Actors;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using OmoriSandbox.Battle.Modifier;
 
 namespace OmoriSandbox.Battle;
 
@@ -11,13 +12,12 @@ namespace OmoriSandbox.Battle;
 public class Skill : BattleAction
 {
 	/// <summary>
-	/// The cost of the skill in Juice.
+	/// The base cost of the skill in Juice, ignoring any cost modifiers.
 	/// </summary>
-	public int Cost { get; private set; }
-	/// <summary>
-	/// Whether this skill is performed first.
-	/// </summary>
-	public bool GoesFirst { get; private set; }
+	/// <remarks>
+	/// Use <see cref="Cost(Actor)"/> for an accurate juice calculation.
+	/// </remarks>
+	public int BaseCost { get; private set; }
 	/// <summary>
 	/// Whether this skill is hidden in the skill menu.
 	/// </summary>
@@ -33,6 +33,22 @@ public class Skill : BattleAction
 	/// <param name="actor">The actor to check.</param>
 	/// <returns>True if the actor can use this skill at the given moment.</returns>
 	public bool MeetsRequirements(Actor actor) => Requirement(actor);
+
+	/// <summary>
+	/// The cost of the skill in Juice, taking any skill cost reductions into account.
+	/// </summary>
+	/// <param name="actor">The actor to use.</param>
+	/// <returns>The cost of the skill in Juice after any cost reductions are applied.</returns>
+	public int Cost(Actor actor)
+	{
+		int cost = BaseCost;
+		foreach (StatModifier modifier in actor.StatModifiers.Values)
+		{
+			modifier.OverrideJuiceCost(ref cost, actor);
+		}
+
+		return cost;
+	}
 	
 	private Func<Actor, bool> Requirement = actor => actor.CurrentState is not "afraid" and not "stressed";
 
@@ -45,13 +61,12 @@ public class Skill : BattleAction
 	/// <param name="effect">The code that runs when this skill is used.</param>
 	/// <param name="cost">How much juice this skill costs to use.</param>
 	/// <param name="hidden">Whether this skill should show up in the actor's skill list.</param>
-	/// <param name="goesFirst">Whether this skill should always go first.</param>
-	public Skill(string name, string description, SkillTarget target, Func<Actor, Actor, Task> effect, int cost, bool hidden = false, bool goesFirst = false)
-		: base(name, description, target, effect)
+	/// <param name="priority">The priority of the skill during turn order calculation.</param>
+	public Skill(string name, string description, SkillTarget target, Func<Actor, Actor, Task> effect, int cost, bool hidden = false, SkillPriority priority = SkillPriority.Normal)
+		: base(name, description, target, priority, effect)
 	{
-		Cost = cost;
+		BaseCost = cost;
 		Hidden = hidden;
-		GoesFirst = goesFirst;
 	}
 	
 	/// <summary>
@@ -63,13 +78,12 @@ public class Skill : BattleAction
 	/// <param name="effect">The code that runs when this skill is used.</param>
 	/// <param name="cost">How much juice this skill costs to use.</param>
 	/// <param name="hidden">Whether this skill should show up in the actor's skill list.</param>
-	/// <param name="goesFirst">Whether this skill should always go first.</param>
-	public Skill(string name, string description, SkillTarget target, Func<Actor, IReadOnlyList<Actor>, Task> effect, int cost, bool hidden = false, bool goesFirst = false)
-		: base(name, description, target, effect)
+	/// <param name="priority">The priority of the skill during turn order calculation.</param>
+	public Skill(string name, string description, SkillTarget target, Func<Actor, IReadOnlyList<Actor>, Task> effect, int cost, bool hidden = false, SkillPriority priority = SkillPriority.Normal)
+		: base(name, description, target, priority, effect)
 	{
-		Cost = cost;
+		BaseCost = cost;
 		Hidden = hidden;
-		GoesFirst = goesFirst;
 	}
 
 	/// <summary>

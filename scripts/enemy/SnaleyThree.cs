@@ -13,17 +13,20 @@ public class SnaleyThree : Enemy
     {
         return state != "afraid" && state != "stressed";
     }
-    protected override string[] EquippedSkills => ["SNAttack", "SNDoNothing", "SNAttackFollowup", "SNFollowup", "SNReleaseEnergy", "SNMegaphone"];
+    protected override string[] EquippedSkills => ["RabbitAttack", "SNDoNothing", "SNAttackFollowup", "SNFollowup", "SNReleaseEnergy", "SNMegaphone"];
 
     private int Turn = 0;
     
     public override BattleCommand ProcessAI()
     {
         Turn++;
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["RabbitAttack"]);
+        
         if (Turn is 1)
             return new BattleCommand(this, SelectAllTargets(), Skills["SNMegaphone"]);
         if (Roll() < 36)
-            return new BattleCommand(this, SelectTarget(), Skills["SNAttack"]);
+            return new BattleCommand(this, SelectTarget(), Skills["RabbitAttack"]);
         if (Roll() < 36)
         {
             BattleManager.Instance.ForceCommand(this, SelectTarget(), Skills["SNFollowup"]);

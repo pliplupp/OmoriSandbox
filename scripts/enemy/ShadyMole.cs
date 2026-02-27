@@ -16,6 +16,12 @@ public class ShadyMole : Enemy
 
     public override BattleCommand ProcessAI()
     {
+        if (HasMultiTargetObserve())
+            return new BattleCommand(this, SelectAllTargets(), Skills["SMDynamite"]);
+        
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["SMAttack"]);
+        
         switch (CurrentState)
         {
             case "happy":

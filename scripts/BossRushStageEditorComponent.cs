@@ -1,0 +1,75 @@
+using System.Collections.Generic;
+using Godot;
+using OmoriSandbox.Editor;
+
+namespace OmoriSandbox.scripts;
+
+internal partial class BossRushStageEditorComponent : Control
+{
+    [Export] public BattlebackBGMEditorComponent BattlebackBGMEditor { get; private set; }
+    [Export] private Button AddEnemyButton;
+    [Export] public TabContainer Enemies { get; private set; }
+    [Export] private PackedScene EnemyEditor;
+    [Export] public Node EnemyParent { get; private set; }
+    
+    public int StageNumber { get; private set; }
+
+    public override void _Ready()
+    {
+        AddEnemyButton.Pressed += () =>
+        {
+            AnimatedSprite2D enemySprite = new();
+            EnemyParent.AddChild(enemySprite);
+            EnemyEditorComponent editor = EnemyEditor.Instantiate<EnemyEditorComponent>();
+            Enemies.AddChild(editor);
+            editor.Init(enemySprite);
+        };
+    }
+
+    public void Init(int stageNumber, Control enemyParent)
+    {
+        StageNumber = stageNumber;
+        EnemyParent = enemyParent;
+    }
+
+    public void CopyFrom(BossRushStageEditorComponent source)
+    {
+        BattlebackBGMEditor.SelectedBattleback = source.BattlebackBGMEditor.SelectedBattleback;
+        BattlebackBGMEditor.SelectedBGM = source.BattlebackBGMEditor.SelectedBGM;
+        BattlebackBGMEditor.BGMPitchValue = source.BattlebackBGMEditor.BGMPitchValue;
+        BattlebackBGMEditor.BGMLoopPointValue = source.BattlebackBGMEditor.BGMLoopPointValue;
+        foreach (Node node in source.Enemies.GetChildren())
+        {
+            if (node is EnemyEditorComponent enemy)
+            {
+                AnimatedSprite2D enemySprite = new();
+                EnemyParent.AddChild(enemySprite);
+                enemySprite.Visible = false;
+                EnemyEditorComponent editor = EnemyEditor.Instantiate<EnemyEditorComponent>();
+                Enemies.AddChild(editor);
+                editor.Init(enemySprite, enemy.EnemyDropdown.GetItemText(enemy.EnemyDropdown.Selected), 
+                    new Vector2((float)enemy.XPosBox.Value, (float)enemy.YPosBox.Value), enemy.EmotionDropdown.GetItemText(enemy.EmotionDropdown.Selected), 
+                    (int)enemy.LayerBox.Value, enemy.FallsOffScreenCheckbox.ButtonPressed);
+            }
+        }
+    }
+
+    public void HideEnemies()
+    {
+        foreach (Node child in EnemyParent.GetChildren())
+        {
+            if (child is AnimatedSprite2D sprite)
+                sprite.Visible = false;
+        }
+    }
+
+    public void ShowEnemies()
+    {
+        foreach (Node child in EnemyParent.GetChildren())
+        {
+            if (child is AnimatedSprite2D sprite)
+                sprite.Visible = true;
+        }
+    }
+    
+}

@@ -13,12 +13,14 @@ internal sealed class TheEarthAlt : Enemy
 
     public override bool IsStateValid(string state)
     {
-        return state == "neutral" || state == "sad" || state == "happy"
-              || state == "angry" || state == "hurt" || state == "toast";
+        return state is "neutral" or "sad" or "happy" or "angry" or "hurt" or "toast";
     }
 
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out _))
+            return new BattleCommand(this, SelectAllTargets(), Skills["TEAProtect"]);
+        
         switch (CurrentState)
         {
             case "sad":

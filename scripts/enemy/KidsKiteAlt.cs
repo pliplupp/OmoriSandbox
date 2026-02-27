@@ -17,6 +17,9 @@ internal sealed class KidsKiteAlt : Enemy
 
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["KSKAttack"]);
+        
         switch (CurrentState)
         {
             case "angry":

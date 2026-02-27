@@ -137,7 +137,7 @@ internal struct SFX(string name, float pitch = 100f, float volume = 100f)
 /// </summary>
 /// <param name="power">The power of the shake. Normal values are 0-255.</param>
 /// <param name="speed">The speed of the shake. Normal values are 0-255.</param>
-/// <param name="duration">The duration (in seconds) of the shake.</param>
+/// <param name="duration">The duration (in frames) of the shake.</param>
 public struct Shake(float power, float speed, int duration)
 {
 	/// <summary>
@@ -149,7 +149,7 @@ public struct Shake(float power, float speed, int duration)
 	/// </summary>
 	public readonly float Speed = speed;
 	/// <summary>
-	/// The duration of the shake, in seconds.
+	/// The duration of the shake, in frames.
 	/// </summary>
 	public readonly int Duration = duration;
 }

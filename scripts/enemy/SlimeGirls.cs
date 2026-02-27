@@ -16,14 +16,19 @@ internal sealed class SlimeGirls : Enemy
 
 	public override bool IsStateValid(string state)
 	{
-		return state == "neutral" || state == "sad" || state == "happy"
-			|| state == "angry" || state == "hurt" || state == "toast";
+		return state is "neutral" or "sad" or "happy" or "angry" or "hurt" or "toast";
 	}
 
 	private int Stage = 0;
 
 	public override BattleCommand ProcessAI()
 	{
+		if (HasMultiTargetObserve())
+			return new BattleCommand(this, SelectAllTargets(), Skills["Dynamite"]);
+        
+		if (HasObserveTarget(out PartyMember observe))
+			return new BattleCommand(this, observe, Skills["ComboAttack"]);
+		
         switch (CurrentState)
 		{
 			case "happy":

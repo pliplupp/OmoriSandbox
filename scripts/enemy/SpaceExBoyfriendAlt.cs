@@ -18,14 +18,16 @@ internal sealed class SpaceExBoyfriendAlt : Enemy
         if (EmotionLocked)
             return false;
 
-        return state == "neutral" || state == "sad" || state == "happy"
-            || state == "angry" || state == "hurt";
+        return state is "neutral" or "sad" or "happy" or "angry" or "hurt";
     }
 
     private bool EmotionLocked = false;
     private int Stage = 0;
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["SEBAttack"]);
+        
         switch (CurrentState)
         {
             case "se_furious":

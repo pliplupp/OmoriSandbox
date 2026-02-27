@@ -43,7 +43,7 @@ internal partial class PartyMemberEditorComponent : Control
 
 	public int ActorPosition { get; private set; }
 
-	private readonly string[] States = ["neutral", "happy", "sad", "angry", "ecstatic", "depressed", "furious", "manic", "miserable", "furious", "manic", "afraid", "stressed", "hurt", "toast", "victory"];
+	private readonly string[] States = ["neutral", "happy", "sad", "angry", "ecstatic", "depressed", "enraged", "manic", "miserable", "furious", "manic", "afraid", "stressed", "hurt", "toast", "victory"];
 
 	public override void _Ready()
 	{
@@ -81,6 +81,12 @@ internal partial class PartyMemberEditorComponent : Control
 		// charms are optional so we can leave it unselected
 		Populate("Omori");
 	}
+
+	public void Init(Control battleCard, BattlePresetActor actor)
+	{
+		Init(battleCard, actor.Name, actor.Weapon, actor.Charm, actor.Level, actor.FollowupsDisabled, actor.Emotion, actor.Skills, actor.Position);
+	}
+	
 	public void Init(Control battleCard, string name, string weapon, string charm, int level, bool followupsDisabled, string emotion, string[] skills, int position)
 	{
 		BattleCard = battleCard;
@@ -94,8 +100,7 @@ internal partial class PartyMemberEditorComponent : Control
 			BattleCard.QueueFree();
 			QueueFree();
 		};
-
-		Name = name;
+		
 		ActorDropdown.Selected = ActorDropdown.GetItemIndex(name);
 		Populate(name);
 		WeaponDropdown.Selected = WeaponDropdown.GetItemIndex(weapon);
@@ -117,7 +122,13 @@ internal partial class PartyMemberEditorComponent : Control
 
 	public void Populate(string who)
 	{
-		Name = who;
+		Node parent = GetParent();
+		if (parent is TabContainer container)
+		{
+			int index = container.GetTabIdxFromControl(this);
+			container.SetTabTitle(index, who);
+		}
+		
 		PartyMember member = Database.CreatePartyMember(who);
 
 		string attackSkill;

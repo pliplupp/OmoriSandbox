@@ -74,6 +74,10 @@ internal sealed class PlutoExpandedEarth : Enemy
         IReadOnlyList<PartyMember> party = SelectAllTargets();
         if (party.Any(x => x.HasStatModifier("PlutoBuff")))
             return new BattleCommand(this, party, Skills["PEMeteor"]);
+        
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["PEHeadbutt"]);
+        
         List<PartyMember> sad = party.Where(x => x.CurrentState is "sad" or "depressed" or "miserable").ToList();
         if (sad.Count > 0)
             return new BattleCommand(this, sad[GameManager.Instance.Random.RandiRange(0, sad.Count - 1)], Skills["PEHeadbutt"]);

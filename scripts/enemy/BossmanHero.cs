@@ -79,6 +79,9 @@ internal sealed class BossmanHero : Enemy
 
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["BMHThrowMoney"]);
+        
         if (Roll() < 41)
             return new BattleCommand(this, SelectTarget(), Skills["BMHAttack"]);
         if (Roll() < 36)

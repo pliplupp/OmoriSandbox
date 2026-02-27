@@ -17,11 +17,17 @@ internal sealed class SirMaximusII : Enemy
 
     public override bool IsStateValid(string state)
     {
-        return state == "neutral" || state == "sad" || state == "happy" || state == "angry" || state == "toast";
+        return state is "neutral" or "sad" or "happy" or "angry" or "toast";
     }
 
     public override BattleCommand ProcessAI()
     {
+        if (HasMultiTargetObserve())
+            return new BattleCommand(this, SelectAllTargets(), Skills["SMIISpin"]);
+        
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["SMIAttack"]);
+        
         switch (CurrentState)
         {
             case "happy":

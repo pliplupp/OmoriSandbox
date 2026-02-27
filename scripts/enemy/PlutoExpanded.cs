@@ -14,11 +14,14 @@ internal sealed class PlutoExpanded : Enemy
 
     public override bool IsStateValid(string state)
     {
-        return state == "neutral" || state == "hurt" || state == "toast" || state == "sad" || state == "angry" || state == "happy";
+        return state is "neutral" or "hurt" or "toast" or "sad" or "angry" or "happy";
     }
 
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["PEAttack"]);
+        
         if (CurrentHP < 300)
             return new BattleCommand(this, SelectAllTargets(), Skills["PEEarthsFinale"]);
 

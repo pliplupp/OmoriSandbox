@@ -13,10 +13,16 @@ internal sealed class LostSproutMole : Enemy
 
 	public override bool IsStateValid(string state)
 	{
-		return state == "neutral" || state == "sad" || state == "happy" || state == "angry" || state == "hurt" || state == "toast";
+		return state is "neutral" or "sad" or "happy" or "angry" or "hurt" or "toast";
 	}
     public override BattleCommand ProcessAI()
-	{
+    {
+	    if (HasMultiTargetObserve())
+		    return new BattleCommand(this, SelectTargets(1), Skills["LSMRunAround"]);
+	    
+	    if (HasObserveTarget(out PartyMember observe))
+		    return new BattleCommand(this, observe, Skills["LSMAttack"]);
+		
 		switch (CurrentState)
 		{
 			case "happy":
@@ -50,6 +56,6 @@ internal sealed class LostSproutMole : Enemy
 	nothing:
 		return new BattleCommand(this, this, Skills["LSMDoNothing"]);
 	run:
-		return new BattleCommand(this, SelectTarget(), Skills["LSMRunAround"]);
+		return new BattleCommand(this, SelectTargets(1), Skills["LSMRunAround"]);
 	}
 }

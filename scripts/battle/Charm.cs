@@ -23,7 +23,7 @@ public class Charm
     /// <remarks>
     /// This can be useful for stat changes that rely on game variables, like the Energy bar.
     /// </remarks>
-    public Func<StatBonus[]> OnApply { get; private set; }
+    public Func<StatBonus[]> OnApply { get; private set; } = () => [];
 
     /// <summary>
     /// What the charm does to its holder at the start of the battle.
@@ -31,7 +31,7 @@ public class Charm
     /// <remarks>
     /// Mainly used for emotion effects.
     /// </remarks>
-    public Action<Actor> StartOfBattle { get; private set; }
+    public Action<Actor> StartOfBattle { get; private set; } = _ => { };
 
     /// <summary>
     /// What the charm does to its holder at the start of each turn.
@@ -39,7 +39,7 @@ public class Charm
     /// <remarks>
     /// Will not be run if the actor is toast.
     /// </remarks>
-    public Action<Actor> StartOfTurn { get; private set; }
+    public Action<Actor> StartOfTurn { get; private set; } = _ => { };
 
     /// <summary>
     /// A Charm that modifies a single stat.

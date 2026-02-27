@@ -271,8 +271,11 @@ public class Database
 		Enemies.Add("FearOfHeights", () => new FearOfHeights());
 		Enemies.Add("SpaceExHusband", () => new SpaceExHusband());
 		Enemies.Add("SirMaximusI", () => new SirMaximusI());
+		Enemies.Add("SirMaximusI (Alt)", () => new SirMaximusIAlt());
 		Enemies.Add("SirMaximusII", () => new SirMaximusII());
+		Enemies.Add("SirMaximusII (Alt)", () => new SirMaximusIIAlt());
 		Enemies.Add("SirMaximusIII", () => new SirMaximusIII());
+		Enemies.Add("SirMaximusIII (Alt)", () => new SirMaximusIIIAlt());
 		Enemies.Add("FearOfDrowning", () => new FearOfDrowning());
 		Enemies.Add("PlutoExpanded", () => new PlutoExpanded());
 		Enemies.Add("PlutoExpanded (Alt)", () => new PlutoExpandedAlt());
@@ -303,6 +306,14 @@ public class Database
 		Enemies.Add("HumphreySwarm", () => new HumphreySwarm());
 		Enemies.Add("HumphreyGrande", () => new HumphreyGrande());
 		Enemies.Add("HumphreyFace", () => new HumphreyFace());
+		Enemies.Add("Angel", () => new Angel());
+		Enemies.Add("Angel (Alt)", () => new AngelAlt());
+		Enemies.Add("Charlene", () => new Charlene());
+		Enemies.Add("TheMaverick", () => new TheMaverick());
+		Enemies.Add("Kim", () => new Kim());
+		Enemies.Add("Vance", () => new Vance());
+		Enemies.Add("TheHooligans", () => new TheHooligans());
+		Enemies.Add("Jackson", () => new Jackson());
 		#endregion
 
 		#region SKILLS
@@ -317,7 +328,7 @@ public class Database
 				await AnimationManager.Instance.WaitForAnimation(115, self);
 				self.AddStatModifier("Guard");
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 			// guard can always be used regardless of emotion
 		).WithCustomRequirement((_) => true);
 
@@ -363,7 +374,7 @@ public class Database
 				else
 					BattleManager.Instance.Damage(self, target, () => (self.CurrentStats.ATK + self.CurrentStats.LCK) * 1.5f - target.CurrentStats.DEF, false);
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 		Skills["Stab"] = new Skill(
 			name: "STAB",
@@ -398,6 +409,53 @@ public class Database
 				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 3f - target.CurrentStats.DEF);
 				await Task.Delay(334);
 			}
+		);
+		
+		Skills["Observe"] = new Skill(
+			name: "OBSERVE",
+			description: "Predicts who a foe will target next turn.\nCost: 0",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self,target,"[actor] focuses their vision and observes\n[target]!");
+				AnimationManager.Instance.PlayAnimation(4, target);
+				await Task.Delay(1000);
+				List<PartyMemberComponent> members = BattleManager.Instance.GetAlivePartyMembers();
+				PartyMemberComponent taunting = members.FirstOrDefault(x => x.Actor.HasStatModifier("Taunt"));
+				if (taunting != null)
+				{
+					await AnimationManager.Instance.WaitForAnimation(4, taunting.Actor);
+					if (target is Enemy e)
+						e.ObserveTarget = taunting.Actor;
+					BattleLogManager.Instance.QueueMessage(target, taunting.Actor,"[actor] has their eyes on\n[target]!");
+					return;
+				}
+
+				bool multi = GameManager.Instance.Random.RandiRange(1, 2) == 1;
+				if (multi)
+				{
+					// vanilla omori technically stops after the 4th attempt
+					// maybe add a toggle for this?
+					Enemy enemy = BattleManager.Instance.GetAllEnemies().FirstOrDefault(x => x.HasMultiTargetSkill);
+					if (enemy != null)
+					{
+						enemy.ObserveMultiTarget = true;
+						BattleLogManager.Instance.QueueMessage(enemy, "[actor] has their eyes on\neveryone!");
+						foreach (PartyMemberComponent m in members)
+							AnimationManager.Instance.PlayAnimation(4, m.Actor);
+						await Task.Delay(1000);
+						return;
+					}
+				}
+				
+				PartyMember member = members[GameManager.Instance.Random.RandiRange(0, members.Count - 1)].Actor;
+				BattleLogManager.Instance.QueueMessage(target, member,"[actor] has their eyes on\n[target]!");
+				await AnimationManager.Instance.WaitForAnimation(4, member);
+				if (target is Enemy en)
+					en.ObserveTarget = member;
+			},
+			priority: SkillPriority.Last
 		);
 
 		Skills["HackAway"] = new Skill(
@@ -878,7 +936,7 @@ public class Database
 				target.SetState("neutral", true);
 				AudioManager.Instance.FadeBGMTo(1f);
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 			// calm down can be used while afraid
 		).WithCustomRequirement((actor) => actor.CurrentState is not "stressed");
 		
@@ -896,7 +954,7 @@ public class Database
 				target.AddStatModifier("Flex");
 				AudioManager.Instance.FadeBGMTo(1f);
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 		
 		Skills["Persist"] = new Skill(
@@ -914,7 +972,7 @@ public class Database
 				target.AddStatModifier("SecondChance");
 				AudioManager.Instance.FadeBGMTo(1f);
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 		
 		
@@ -929,11 +987,35 @@ public class Database
 				BattleLogManager.Instance.QueueMessage(self, "[actor] strikes three times.");
 				for (int i = 0; i < 3; i++)
 				{
-					BattleManager.Instance.Damage(self, target, () =>
-					{
-						return target.CurrentStats.MaxHP * 0.15f + self.CurrentStats.ATK - target.CurrentStats.DEF;
-					}, false);
+					BattleManager.Instance.Damage(self, target, () => target.CurrentStats.MaxHP * 0.15f + self.CurrentStats.ATK - target.CurrentStats.DEF, false);
 				}
+			}
+		);
+		
+		Skills["Encore"] = new Skill(
+			name: "ENCORE",
+			description: "Your JUICE will not fall for 3 turns.\nCost: 0",
+			target: SkillTarget.Self,
+			cost: 0,
+			effect: async (_, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(target, "[actor] gathered themself...");
+				target.AddStatModifier("Encore");
+				await AnimationManager.Instance.WaitForEncore();
+			}
+		).WithCustomRequirement(actor => !actor.HasStatModifier("Encore"));
+
+		// TODO: Finish
+		Skills["Cherish"] = new Skill(
+			name: "CHERISH",
+			description: "Heal your wounds and come back stronger.\nCost: 0",
+			target: SkillTarget.Self,
+			cost: 0,
+			effect: async (_, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(target, "[actor] steadies their breathing.");
+				target.AddStatModifier("Encore");
+				await AnimationManager.Instance.WaitForEncore();
 			}
 		);
 
@@ -1014,7 +1096,7 @@ public class Database
 				BattleLogManager.Instance.QueueMessage(self, "[actor] takes a picture.");
 				BattleLogManager.Instance.QueueMessage("The foe's HIT RATE fell!");
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 
 		Skills["HerbalRemedy"] = new Skill(
@@ -1086,7 +1168,7 @@ public class Database
 			description: "Acts first, reducing all foes' ATTACK. Heals\nall friends for 40% of their HEART. Cost: 50",
 			target: SkillTarget.AllEnemies,
 			cost: 50,
-			goesFirst: true,
+			priority: SkillPriority.First,
 			effect: async (self, targets) =>
 			{
 				AudioManager.Instance.PlaySFX("GEN_shine", 0.5f, 0.9f);
@@ -1266,7 +1348,7 @@ public class Database
 				{
 					BattleLogManager.Instance.QueueMessage(self, target, "[actor] does not have enough HP!");
 					// refund juice
-					self.CurrentJuice += Skills["Headbutt"].Cost;
+					self.CurrentJuice += Skills["Headbutt"].Cost(self);
 					return;
 				}
 				AnimationManager.Instance.PlayScreenAnimation(30, target is Enemy);
@@ -1297,7 +1379,7 @@ public class Database
 				target.AddStatModifier("AubreyCounter");
 				await Task.CompletedTask;
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 
 		Skills["PowerHit"] = new Skill(
@@ -1760,7 +1842,7 @@ public class Database
 					enemy.AddStatModifier("HitRateDown");
 				await Task.CompletedTask;
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 
 		Skills["Curveball"] = new Skill(
@@ -2188,7 +2270,7 @@ public class Database
 				target.AddStatModifier("Charm");
 				await Task.Delay(2000);
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 		Skills["Enchant"] = new Skill(
 			name: "ENCHANT",
@@ -2203,7 +2285,7 @@ public class Database
 				MakeHappy(target);
 				await Task.Delay(2000);
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 		Skills["Captivate"] = new Skill(
 			name: "CAPTIVATE",
@@ -2217,7 +2299,7 @@ public class Database
 				self.AddStatModifier("Taunt");
 				await Task.Delay(1000);
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 		Skills["Mesmerize"] = new Skill(
 			name: "MESMERIZE",
@@ -2233,7 +2315,7 @@ public class Database
 				self.AddStatModifier("Guard");
 				await Task.Delay(1000);
 			},
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 		Skills["SpicyFood"] = new Skill(
 			name: "SPICY FOOD",
@@ -2269,7 +2351,7 @@ public class Database
 		   description: "Acts first, reducing a foe's ATTACK.\nCost: 25",
 		   target: SkillTarget.Enemy,
 		   cost: 25,
-		   goesFirst: true,
+		   priority: SkillPriority.First,
 		   effect: async (self, target) =>
 		   {
 			   BattleLogManager.Instance.QueueMessage(self, target, "[actor] smiles.");
@@ -2284,7 +2366,7 @@ public class Database
 		   description: "Acts first. Reduces all foes' ATTACK and\nmakes them HAPPY. Cost: 35",
 		   target: SkillTarget.AllEnemies,
 		   cost: 35,
-		   goesFirst: true,
+		   priority: SkillPriority.First,
 		   effect: async (self, targets) =>
 		   {
 			   AnimationManager.Instance.PlayAnimation(90, self);
@@ -2304,7 +2386,7 @@ public class Database
 		   description: "Acts first, healing a friend for 40% of\ntheir HEART. Cost: 15",
 		   target: SkillTarget.Ally,
 		   cost: 15,
-		   goesFirst: true,
+		   priority: SkillPriority.First,
 		   effect: async (self, target) =>
 		   {
 			   BattleLogManager.Instance.QueueMessage(self, target, "[actor] prepares a quick meal for [target].");
@@ -2721,16 +2803,16 @@ public class Database
 		Skills["LSMRunAround"] = new Skill(
 			name: "Run Around",
 			description: "Run Around",
-			target: SkillTarget.Enemy,
+			target: SkillTarget.XRandomEnemies,
 			cost: 0,
-			effect: async (self, target) =>
+			effect: async (self, targets) =>
 			{
-				AnimationManager.Instance.PlayScreenAnimation(200, target is Enemy);
-				BattleLogManager.Instance.QueueMessage(self, target, "[actor] runs around!");
+				AnimationManager.Instance.PlayScreenAnimation(200, targets[0] is Enemy);
+				BattleLogManager.Instance.QueueMessage(self, targets[0], "[actor] runs around!");
 				await Task.Delay(100);
-				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF, false);
+				BattleManager.Instance.Damage(self, targets[0], () => self.CurrentStats.ATK * 1.5f - targets[0].CurrentStats.DEF, false);
 				await Task.Delay(917);
-				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 1.5f - target.CurrentStats.DEF, false);
+				BattleManager.Instance.Damage(self, targets[0], () => self.CurrentStats.ATK * 1.5f - targets[0].CurrentStats.DEF, false);
 			},
 			hidden: true
 		);
@@ -3518,7 +3600,7 @@ public class Database
 			   target.AddStatModifier("Guard");
 		   },
 		   hidden: true,
-		   goesFirst: true
+		   priority: SkillPriority.First
 		);
 
 		// Creepypasta //
@@ -4530,6 +4612,60 @@ public class Database
 			hidden: true
 		);
 		
+		Skills["SMIUltimateAttackx1"] = new Skill(
+			name: "SMIUltimateAttackx1",
+			description: "SMIUltimateAttackx1",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, targets) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, "[actor] uses his\nultimate attack!");
+				await Task.Delay(1000);
+				AnimationManager.Instance.PlayScreenAnimation(186, false);
+				foreach (Actor member in targets)
+				{
+					BattleManager.Instance.Damage(self, member, () => 50, false, 0f, neverCrit: true);
+				}
+			},
+			hidden: true
+		);
+		
+		Skills["SMIUltimateAttackx2"] = new Skill(
+			name: "SMIUltimateAttackx2",
+			description: "SMIUltimateAttackx2",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, targets) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, "[actor] uses his\nultimate attack!");
+				await Task.Delay(1000);
+				AnimationManager.Instance.PlayScreenAnimation(186, false);
+				foreach (Actor member in targets)
+				{
+					BattleManager.Instance.Damage(self, member, () => 75, false, 0f, neverCrit: true);
+				}
+			},
+			hidden: true
+		);
+		
+		Skills["SMIUltimateAttackx3"] = new Skill(
+			name: "SMIUltimateAttackx3",
+			description: "SMIUltimateAttackx3",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, targets) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, "[actor] uses his\nultimate attack!");
+				await Task.Delay(1000);
+				AnimationManager.Instance.PlayScreenAnimation(186, false);
+				foreach (Actor member in targets)
+				{
+					BattleManager.Instance.Damage(self, member, () => 100, false, 0f, neverCrit: true);
+				}
+			},
+			hidden: true
+		);
+		
 		// Sir Maximus II //
 		
 		Skills["SMIIDoNothing"] = new Skill(
@@ -5249,9 +5385,9 @@ public class Database
 		);
 		
 		// Tentacle //
-		Skills["TEAttack"] = new Skill(
-			name: "TEAttack",
-			description: "TEAttack",
+		Skills["TENAttack"] = new Skill(
+			name: "TENAttack",
+			description: "TENAttack",
 			target: SkillTarget.Enemy,
 			cost: 0,
 			effect: async (self, target) =>
@@ -5263,9 +5399,9 @@ public class Database
 			hidden: true
 		);
 		
-		Skills["TEWeaken"] = new Skill(
-			name: "TEWeaken",
-			description: "TEWeaken",
+		Skills["TENWeaken"] = new Skill(
+			name: "TENWeaken",
+			description: "TENWeaken",
 			target: SkillTarget.Enemy,
 			cost: 0,
 			effect: async (self, target) =>
@@ -5278,9 +5414,9 @@ public class Database
 			hidden: true
 		);
 		
-		Skills["TEGrab"] = new Skill(
-			name: "TEGrab",
-			description: "TEGrab",
+		Skills["TENGrab"] = new Skill(
+			name: "TENGrab",
+			description: "TENGrab",
 			target: SkillTarget.Enemy,
 			cost: 0,
 			effect: async (self, target) =>
@@ -5294,9 +5430,9 @@ public class Database
 		);
 		
 		
-		Skills["TEGoop"] = new Skill(
-			name: "TEGoop",
-			description: "TEGoop",
+		Skills["TENGoop"] = new Skill(
+			name: "TENGoop",
+			description: "TENGoop",
 			target: SkillTarget.Enemy,
 			cost: 0,
 			effect: async (self, target) =>
@@ -5611,7 +5747,7 @@ public class Database
 				target.AddTierStatModifier("AttackDown");
 			},
 			hidden: true,
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 		
 		Skills["HBossDazzle"] = new Skill(
@@ -5635,7 +5771,7 @@ public class Database
 				}
 			},
 			hidden: true,
-			goesFirst: true
+			priority: SkillPriority.First
 		);
 		
 		Skills["HBossCook"] = new Skill(
@@ -6140,16 +6276,16 @@ public class Database
 			hidden: true
 		);
 
-		Skills["SNAttack"] = new Skill(
-			name: "SNAttack",
-			description: "SNAttack",
+		Skills["RabbitAttack"] = new Skill(
+			name: "RabbitAttack",
+			description: "RabbitAttack",
 			target: SkillTarget.Enemy,
 			cost: 0,
 			effect: async (self, target) =>
 			{
-				await AnimationManager.Instance.WaitForAnimation(122, target);
-				BattleLogManager.Instance.QueueMessage(self, target, "[actor] attacks [target]!");
-				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 2 - target.CurrentStats.DEF, false, 0.1f);
+				await AnimationManager.Instance.WaitForAnimation(123, target);
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] nibbles at [target]!");
+				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 2 - target.CurrentStats.DEF, false, 0.2f);
 			},
 			hidden: true
 		);
@@ -6418,6 +6554,379 @@ public class Database
 			hidden: true
 		);
 		
+		// Angel //
+		Skills["ANAttack"] = new Skill(
+			name: "ANAttack",
+			description: "ANAttack",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] swiftly strikes [target]!");
+				await AnimationManager.Instance.WaitForAnimation(136, target);
+				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 2f - target.CurrentStats.DEF, false, neverCrit: true);
+			},
+			hidden: true
+		);
+		
+		Skills["ANDoNothing"] = new Skill(
+			name: "ANDoNothing",
+			description: "ANDoNothing",
+			target: SkillTarget.Self,
+			cost: 0,
+			effect: async (_, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(target, "[actor] does a flip and strikes a pose!");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		
+		Skills["ANQuickAttack"] = new Skill(
+			name: "ANQuickAttack",
+			description: "ANQuickAttack",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] teleports behind [target]!");
+				await AnimationManager.Instance.WaitForAnimation(123, target);
+				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 2f - target.CurrentStats.DEF, false, neverCrit: true);
+			},
+			hidden: true,
+			priority: SkillPriority.First
+		);
+		
+		Skills["ANTease"] = new Skill(
+			name: "ANTease",
+			description: "ANTease",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] says mean things about [target]!");
+				target.SetState("sad");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		// Charlene //
+		Skills["CHAttack"] = new Skill(
+			name: "CHAttack",
+			description: "CHAttack",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "CHARLIE punches [target]!");
+				await AnimationManager.Instance.WaitForAnimation(136, target);
+				BattleManager.Instance.Damage(self, target, () => 1, false, 0f, neverCrit: true);
+			},
+			hidden: true
+		);
+		
+		Skills["CHDoNothing"] = new Skill(
+			name: "CHDoNothing",
+			description: "CHDoNothing",
+			target: SkillTarget.Self,
+			cost: 0,
+			effect: async (_, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(target, "CHARLIE is standing there.");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		
+		// The Maverick //
+		Skills["TMAttack"] = new Skill(
+			name: "TMAttack",
+			description: "TMAttack",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] hits [target]!");
+				await AnimationManager.Instance.WaitForAnimation(137, target);
+				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 2f - target.CurrentStats.DEF, false, neverCrit: true);
+			},
+			hidden: true
+		);
+		
+		Skills["TMDoNothing"] = new Skill(
+			name: "TMDoNothing",
+			description: "TMDoNothing",
+			target: SkillTarget.Self,
+			cost: 0,
+			effect: async (_, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(target, "[actor] starts bragging to his adoring fans!");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		
+		Skills["TMSmile"] = new Skill(
+			name: "TMSmile",
+			description: "TMSmile",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, "[actor] smiles seductively!");
+				await AnimationManager.Instance.WaitForAnimation(148, self);
+				await AnimationManager.Instance.WaitForAnimation(215, target);
+				target.AddStatModifier("AttackDown");
+			},
+			hidden: true
+		);
+		
+		Skills["TMTaunt"] = new Skill(
+			name: "TMTaunt",
+			description: "TMTaunt",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] starts making fun of [target]!");
+				target.SetState("angry");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		
+		// Kim //
+		Skills["KMAttack"] = new Skill(
+			name: "KMAttack",
+			description: "KMAttack",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] punches [target]!");
+				await AnimationManager.Instance.WaitForAnimation(138, target);
+				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 2f - target.CurrentStats.DEF, false, neverCrit: true);
+			},
+			hidden: true
+		);
+		
+		Skills["KMDoNothing"] = new Skill(
+			name: "KMDoNothing",
+			description: "KMDoNothing",
+			target: SkillTarget.Self,
+			cost: 0,
+			effect: async (_, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(target, "[actor]'s phone rang... it was a wrong number.");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		
+		Skills["KMSmash"] = new Skill(
+			name: "KMSmash",
+			description: "KMSmash",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] grabs [target]'s shirt and punches them in the face!");
+				await AnimationManager.Instance.WaitForAnimation(123, target);
+				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 2f, false, neverCrit: true);
+			},
+			hidden: true
+		);
+		
+		Skills["KMTaunt"] = new Skill(
+			name: "KMTaunt",
+			description: "KMTaunt",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] starts making fun of [target]!");
+				target.SetState("sad");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		
+		// Vance //
+		Skills["VAAttack"] = new Skill(
+			name: "VAAttack",
+			description: "VAAttack",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] punches [target]!");
+				await AnimationManager.Instance.WaitForAnimation(139, target);
+				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 2f - target.CurrentStats.DEF, false, neverCrit: true);
+			},
+			hidden: true
+		);
+		
+		Skills["VADoNothing"] = new Skill(
+			name: "VADoNothing",
+			description: "VADoNothing",
+			target: SkillTarget.Self,
+			cost: 0,
+			effect: async (_, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(target, "[actor] scratches his belly.");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		
+		Skills["VACandy"] = new Skill(
+			name: "VACandy",
+			description: "VACandy",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, targets) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, "[actor] throws old candy!");
+				foreach (Actor target in targets)
+				{
+					AnimationManager.Instance.PlayAnimation(123, target);
+					BattleManager.Instance.Damage(self, target, () => 7, false, neverCrit: true);	
+				}
+
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		
+		Skills["VATease"] = new Skill(
+			name: "VATease",
+			description: "VATease",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "[actor] starts making fun of [target]!");
+				target.SetState("sad");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		
+		// The Hooligans //
+		Skills["HOAngelAttack"] = new Skill(
+			name: "HOAngelAttack",
+			description: "HOAngelAttack",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "ANGEL swiftly strikes [target]!");
+				await AnimationManager.Instance.WaitForAnimation(136, target);
+				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 2f - target.CurrentStats.DEF, false, neverCrit: true);
+			},
+			hidden: true
+		);
+		
+		Skills["HOMaverickCharm"] = new Skill(
+			name: "HOMaverickCharm",
+			description: "HOMaverickCharm",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "THE MAVERICK winks at [target]!");
+				await AnimationManager.Instance.WaitForAnimation(148, self);
+				await AnimationManager.Instance.WaitForAnimation(215, target);
+				target.AddStatModifier("AttackDown");
+			},
+			hidden: true
+		);
+		
+		Skills["HOKimHeadbutt"] = new Skill(
+			name: "HOKimHeadbutt",
+			description: "HOKimHeadbutt",
+			target: SkillTarget.Enemy,
+			cost: 0,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, target, "KIM slams her head into [target]!");
+				await AnimationManager.Instance.WaitForAnimation(138, target);
+				BattleManager.Instance.Damage(self, target, () => self.CurrentStats.ATK * 3f - target.CurrentStats.DEF, false, neverCrit: true);
+			},
+			hidden: true
+		);
+		
+		Skills["HOVanceCandy"] = new Skill(
+			name: "HOVanceCandy",
+			description: "HOVanceCandy",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, targets) =>
+			{
+				BattleLogManager.Instance.QueueMessage("THE HOOLIGANS threw old candy!");
+				foreach (Actor target in targets)
+				{
+					AnimationManager.Instance.PlayAnimation(123, target);
+					BattleManager.Instance.Damage(self, target, () => 20, false, neverCrit: true);	
+				}
+
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		
+		Skills["HOGroupAttack"] = new Skill(
+			name: "HOGroupAttack",
+			description: "HOGroupAttack",
+			target: SkillTarget.XRandomEnemies,
+			cost: 0,
+			effect: async (self, targets) =>
+			{
+				BattleLogManager.Instance.QueueMessage("THE HOOLIGANS attack together!");
+				await AnimationManager.Instance.WaitForScreenAnimation(202, targets[0] is Enemy);
+				foreach (Actor target in targets)
+				{
+					BattleManager.Instance.Damage(self, target, () => 30, false, neverCrit: true);
+					await Task.Delay(500);
+				}
+			},
+			hidden: true
+		);
+		
+		// Jackson //
+		Skills["JKWalkSlowly"] = new Skill(
+			name: "JKWalkSlowly",
+			description: "JKWalkSlowly",
+			target: SkillTarget.Self,
+			cost: 0,
+			effect: async (_, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(target, "[actor] walks toward you slowly.");
+				await Task.CompletedTask;
+			},
+			hidden: true
+		);
+		
+		Skills["JKAutoKill"] = new Skill(
+			name: "JKAutoKill",
+			description: "JKAutoKill",
+			target: SkillTarget.AllEnemies,
+			cost: 0,
+			effect: async (self, targets) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, "[actor] catches you!");
+				AudioManager.Instance.PlaySFX("SE_bs_ghost_moving", volume: 0.9f);
+				AnimationManager.Instance.InitShake(new Shake(255, 100, 5));
+				await Task.Delay(100);
+				AnimationManager.Instance.InitShake(new Shake(255, 100, 5));
+				await Task.Delay(400);
+				AnimationManager.Instance.InitShake(new Shake(255, 100, 5));
+				await Task.Delay(500);
+				foreach (Actor target in targets)
+					BattleManager.Instance.Damage(self, target, () => 999, neverMiss: false, 0f, neverCrit: true);
+			},
+			hidden: true
+		);
 		#endregion
 
 		#region MODIFIERS
@@ -6500,6 +7009,9 @@ public class Database
 		Modifiers.Add("Stockpile", () => new TierStatModifier().WithMaxTier(10));
 		Modifiers.Add("PlutoCharging", () => new StatModifier(3, new StatBonus(StatType.DEF, 3f)));
 		Modifiers.Add("PlutoBuff", () => new StatModifier(new StatBonus(StatType.ATK, 1.5f), new StatBonus(StatType.DEF, 1.5f), new StatBonus(StatType.LCK, 1.5f), new StatBonus(StatType.SPD, 10f)));
+		Modifiers.Add("Encore", () => new EncoreStatModifier(3));
+		Modifiers.Add("SalesTag", () => new SalesTagStatModifier());
+		Modifiers.Add("Immune", () => new ImmuneStatModifier());
 		#endregion
 
 		#region SNACKS
@@ -6996,6 +7508,20 @@ public class Database
 			spritesheetPath: "res://assets/system/itemConsumables.png",
 			spriteIndex: 70
 		);
+		Items["Pepper Spray"] = new Item(
+			name: "PEPPER SPRAY",
+			description: "For self-defense only.",
+			target: SkillTarget.Enemy,
+			effect: async (self, target) =>
+			{
+				BattleLogManager.Instance.QueueMessage(self, "[actor] uses PEPPER SPRAY!");
+				await AnimationManager.Instance.WaitForScreenAnimation(271, target is Enemy);
+				BattleManager.Instance.Damage(self, target, () => 500, false, 0f, neverCrit: true);
+			},
+			isToy: true,
+			spritesheetPath: "res://assets/system/itemConsumables.png",
+			spriteIndex: 83
+		);
 		#endregion
 
 		#region WEAPONS
@@ -7180,6 +7706,8 @@ public class Database
 			actor.HealJuice(juice);
 			BattleManager.Instance.SpawnDamageNumber(juice, actor.CenterPoint, DamageType.JuiceGain);
 		});
+		Charms["Sales Tag"] =
+			new Charm("Sales Tag").WithStartOfBattleEffect(actor => actor.AddStatModifier("SalesTag"));
 
 		#endregion
 	}

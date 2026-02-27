@@ -18,14 +18,16 @@ internal sealed class SpaceExBoyfriend : Enemy
         if (EmotionLocked)
             return false;
 
-        return state == "neutral" || state == "sad" || state == "happy"
-            || state == "angry" || state == "hurt";
+        return state is "neutral" or "sad" or "happy" or "angry" or "hurt";
     }
 
     private bool EmotionLocked = false;
     private int Stage = 0;
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["SEBAttack"]);
+        
         switch (CurrentState)
         {
             case "se_furious":
@@ -57,7 +59,7 @@ internal sealed class SpaceExBoyfriend : Enemy
             case "happy":
                 if (Roll() < 36)
                     goto attack;
-                if (Roll()   < 21)
+                if (Roll() < 21)
                     goto nothing;
                 if (Roll() < 21)
                     goto angsty;

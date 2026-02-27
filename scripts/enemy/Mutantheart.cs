@@ -29,15 +29,19 @@ internal sealed class Mutantheart : Enemy
 
     public override BattleCommand ProcessAI()
     {
+        HasObserveTarget(out PartyMember observe);
+        
         switch (CurrentState)
         {
             case "happy":
-                return new BattleCommand(this, SelectTarget(), Skills["MHWink"]);
+                return new BattleCommand(this, observe ?? SelectTarget(), Skills["MHWink"]);
             case "sad":
-                return new BattleCommand(this, SelectTarget(), Skills["MHCry"]);
+                return new BattleCommand(this, observe ?? SelectTarget(), Skills["MHCry"]);
             case "angry":
-                return new BattleCommand(this, SelectTarget(), Skills["MHInsult"]);
+                return new BattleCommand(this, observe ?? SelectTarget(), Skills["MHInsult"]);
             default:
+                if (observe != null)
+                    return new BattleCommand(this, observe, Skills["MHInsult"]);
                 if (Roll() < 51)
                     return new BattleCommand(this, SelectTarget(), Skills["MHWink"]);
                 if (Roll() < 51)

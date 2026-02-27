@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace OmoriSandbox;
 
@@ -26,7 +27,10 @@ public partial class BattleManager : Node
 
 	private List<PartyMemberComponent> CurrentParty = [];
 	private List<EnemyComponent> Enemies = [];
+	private List<BattlePresetBossRushStage> Stages = [];
+	private int CurrentStage = -1;
 
+	private GameModeType GameType = GameModeType.Normal;
 	private BattlePhase Phase = BattlePhase.PreBattle;
 	private int CurrentPartyMember = -1;
 	private int CurrentEnemyTarget = -1;
@@ -35,7 +39,7 @@ public partial class BattleManager : Node
 	private int CommandIndex = -1;
 	private Timer Delay;
 	private List<Node2D> DyingEnemies = [];
-	private Godot.Collections.Dictionary<string, int> Items = [];
+	private Dictionary<string, int> Items = [];
 	private BattleAction SelectedAction;
 	private HashSet<Vector2> DamageNumbers = [];
 	/// <summary>
@@ -114,16 +118,25 @@ public partial class BattleManager : Node
 		Instance = this;
 	}
 
-	internal void Init(List<PartyMemberComponent> party, List<EnemyComponent> enemies, Godot.Collections.Dictionary<string, int> items, int followupTier, bool useBasilFollowups, bool useBasilReleaseEnergy, bool damageNumbersDisabled)
+	internal void Init(List<PartyMemberComponent> party, List<EnemyComponent> enemies, List<BattlePresetBossRushStage> stages, BattlePreset preset)
 	{
+		GameType = preset.Type;
 		CurrentParty = party.OrderBy(x => x.Position).ToList();
-		Enemies = enemies;
-		Items = items;
+		Stages = stages;
+		if (GameType is GameModeType.Normal) 
+			Enemies = enemies;
+		else
+		{
+			Enemies = [];
+			CurrentStage = 0;
+			SummonEnemiesForStage(stages[CurrentStage].Enemies);
+		}
+		Items = preset.Items.ToDictionary();
 		Energy = 3;
-		FollowupTier = followupTier;
-		UseBasilFollowups = useBasilFollowups;
-		UseBasilReleaseEnergy = useBasilReleaseEnergy;
-		DamageNumbersDisabled = damageNumbersDisabled;
+		FollowupTier = preset.FollowupTier;
+		UseBasilFollowups = preset.BasilFollowups;
+		UseBasilReleaseEnergy = preset.BasilReleaseEnergy;
+		DamageNumbersDisabled = preset.DisableDamageNumbers;
 		MenuButtonContainer.Visible = false;
 
 		EnergyBar.Visible = CurrentParty.Any(x => x.HasFollowup);
@@ -160,6 +173,12 @@ public partial class BattleManager : Node
 		MenuManager.Instance.ShowMenu(MenuState.None, true);
 
 		IsBattling = true;
+	}
+
+	private void SummonEnemiesForStage(List<BattlePresetEnemy> enemies)
+	{
+		foreach (BattlePresetEnemy enemy in enemies)
+			SummonEnemy(enemy.Name, GD.StrToVar(enemy.Position).AsVector2(), enemy.Emotion, enemy.FallsOffScreen, (int)enemy.Layer);
 	}
 
 	private async void PreBattle()
@@ -428,14 +447,22 @@ public partial class BattleManager : Node
 		}
 
 		using FileAccess file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
-		Variant json = Json.ParseString(file.GetAsText());
-
-		if (json.VariantType == Variant.Type.Nil)
+		BattlePreset preset;
+		try
 		{
-			GD.PrintErr("Failed to parse preset " + presetName);
+			preset = JsonConvert.DeserializeObject<BattlePreset>(file.GetAsText());
+		}
+		catch (KeyNotFoundException ek)
+		{
+			GD.PrintErr($"Failed to parse preset {presetName} due to missing key:\n" + ek);
 			return;
 		}
-		GameManager.Instance.LoadBattlePreset(json.AsGodotDictionary<string, Variant>());
+		catch (Exception ex)
+		{
+			GD.PrintErr($"Failed to parse preset {presetName} due to an error:\n" + ex);
+			return;
+		}
+		GameManager.Instance.LoadBattlePreset(preset);
 	}
 
 	internal void OnSelectAttack()
@@ -454,27 +481,28 @@ public partial class BattleManager : Node
 		SetPhase(BattlePhase.SkillSelection);
 	}
 
-	internal void OnSelectSkill(Skill skill)
+	internal bool OnSelectSkill(Skill skill)
 	{
 		SelectedAction = skill;
 		if (!skill.MeetsRequirements(CurrentParty[CurrentPartyMember].Actor))
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
-			return;
+			return false;
 		}
-		if (CurrentParty[CurrentPartyMember].Actor.CurrentJuice - skill.Cost < 0)
+		if (CurrentParty[CurrentPartyMember].Actor.CurrentJuice - skill.Cost(CurrentParty[CurrentPartyMember].Actor) < 0)
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
-			return;
+			return false;
 		}
-		if ((SelectedAction.Target == SkillTarget.DeadAlly || SelectedAction.Target == SkillTarget.AllDeadAllies) && !CurrentParty.Any(x => x.Actor.CurrentState == "toast"))
+		if (SelectedAction.Target is SkillTarget.DeadAlly or SkillTarget.AllDeadAllies && CurrentParty.All(x => x.Actor.CurrentState != "toast"))
 		{
 			AudioManager.Instance.PlaySFX("sys_buzzer");
-			return;
+			return false;
 		}
 		AudioManager.Instance.PlaySFX("SYS_select");
 		MenuManager.Instance.SaveLastSelected(CurrentParty[CurrentPartyMember].Actor);
 		SetPhase(BattlePhase.TargetSelection);
+		return true;
 	}
 
 	internal void OnSelectItem(Item item)
@@ -628,10 +656,10 @@ public partial class BattleManager : Node
 		foreach (EnemyComponent enemy in Enemies)
 		{
 			// Add an empty action for each enemy so the sorting below still works
-			Commands.Add(new BattleCommand(enemy.Actor, [], null));
+			Commands.Add(new BattleCommand(enemy.Actor, enemy.Actor, new EmptyAction()));
 		}
 
-		Commands = Commands.OrderByDescending(x => x.Action is Skill s && s.GoesFirst)
+		Commands = Commands.OrderByDescending(x => x.Action.Priority)
 			.ThenByDescending(x => x.Actor.CurrentStats.SPD)
 			.ThenBy(x =>
 			{
@@ -837,11 +865,16 @@ public partial class BattleManager : Node
 
 		BattleCommand currentAction = Commands[CommandIndex];
 
-		if (currentAction.Actor is Enemy enemy && currentAction.Action == null)
+		if (currentAction.Actor is Enemy enemy && currentAction.Action is EmptyAction)
 		{
 			// overwrite the empty enemy skill with an actual command
 			currentAction = enemy.ProcessAI();
 			Commands[CommandIndex] = currentAction;
+			if (currentAction.Action is EmptyAction)
+			{
+				// if the action is still empty, something went wrong
+				GD.PushWarning("ProcessAI for enemy " + enemy.Name + " returned an EmptyAction. This is a problem!");
+			}
 		}
 
 		BattleLogManager.Instance.ClearBattleLog();
@@ -925,16 +958,17 @@ public partial class BattleManager : Node
 		
 		if (currentAction.Action is Skill skill)
 		{
-			if (skill.Cost > 0)
+			int skillCost = skill.Cost(currentAction.Actor);
+			if (skillCost > 0)
 			{
-				if (currentAction.Actor.CurrentJuice < skill.Cost)
+				if (currentAction.Actor.CurrentJuice < skillCost)
 				{
 					BattleLogManager.Instance.QueueMessage(currentAction.Actor.Name.ToUpper() + " does not have enough JUICE!");
 					SetPhase(BattlePhase.WaitForBattleLog);
 					return;
 				}
 
-				currentAction.Actor.CurrentJuice -= skill.Cost;
+				currentAction.Actor.CurrentJuice -= skillCost;
 			}
 			if (currentAction.Actor is PartyMember && currentAction.Action.Name.EndsWith("Attack") && !(currentAction.Actor.CurrentState == "afraid" || currentAction.Actor.CurrentState == "stressed"))
 			{
@@ -1119,6 +1153,34 @@ public partial class BattleManager : Node
 			});
 			AudioManager.Instance.PlayBGM("xx_victory");
 			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was victorious!");
+			if (GameType is GameModeType.BossRush)
+			{
+				CurrentStage++;
+				if (CurrentStage < Stages.Count)
+				{
+					await Task.Delay(3000);
+					await AnimationManager.Instance.WaitForTintScreen(Colors.Black, 1f);
+					SummonEnemiesForStage(Stages[CurrentStage].Enemies);
+					AudioManager.Instance.PlayBGM(Stages[CurrentStage].BGM, 1f, (float)Stages[CurrentStage].BGMPitch);
+					AudioManager.Instance.SetBGMLoopOffset(Stages[CurrentStage].BGMLoopPoint);
+					GameManager.Instance.SetBattleback(Stages[CurrentStage].Battleback);
+					BattleLogManager.Instance.ClearBattleLog();
+					MenuManager.Instance.ClearLastSelected();
+					CurrentParty.ForEach(x =>
+					{
+						x.Actor.HasUsedPlotArmor = false;
+						x.Actor.RemoveAllStatModifiers();
+						x.Actor.SetState("neutral", true);
+						if (x.Actor.CurrentHP == 0)
+							x.Actor.CurrentHP = 1;
+					});
+					await Task.Delay(2000);
+					await AnimationManager.Instance.WaitForTintScreen(Colors.Transparent, 1f);
+					CallDeferred(MethodName.PreBattle);
+					return;
+				}
+			} 
+			
 			MenuButtonContainer.Visible = true;
 			return;
 		}
@@ -1629,8 +1691,15 @@ public partial class BattleManager : Node
 			// this way the targeting system still works
 			position.X += 0.1f;
 		}
-		
-		EnemyComponent enemy = GameManager.Instance.SpawnEnemy(who, position, startingEmotion, fallsOffScreen, layer);
+
+		BattlePresetEnemy en = new()
+		{
+			Name = who,
+			Emotion = startingEmotion,
+			FallsOffScreen = fallsOffScreen,
+			Layer = layer
+		};
+		EnemyComponent enemy = GameManager.Instance.SpawnEnemy(en, position);
 		Enemies.Add(enemy);
 		return enemy;
 	}

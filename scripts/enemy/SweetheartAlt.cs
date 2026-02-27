@@ -30,6 +30,11 @@ internal sealed class SweetheartAlt : Enemy
 
 	public override BattleCommand ProcessAI()
 	{
+		if (HasMultiTargetObserve())
+			return new BattleCommand(this, SelectAllTargets(), Skills["SwingMace"]);
+		if (HasObserveTarget(out PartyMember observe))
+			return new BattleCommand(this, observe, Skills["SHAttack"]);
+		
 		switch (CurrentState)
 		{
 			case "manic":

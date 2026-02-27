@@ -9,26 +9,7 @@ using OmoriSandbox.Battle.Modifier;
 namespace OmoriSandbox.Actors;
 
 // TODO: Remaining enemies
-// Humphrey - done?
-// Faraway Town Enemies
 // Omori
-
-/* TODO: Alt enemies
-- Kite Kid - done?
-- Ye Old Sprout - done
-- Download Window - done
-- Space Ex-Bf - done
-- Earth - done
-- King Crawler - done
-- Sir Maximus I/II/III
-- Sweetheart - done
-- Unbread Twins - done
-- Mr Jawsum + Gator Guys - done
-- Pluto (Expanded) - done?
-- Slime Girls - done
-
-!!! Fix HP requirements on alt enemies !!!
-*/
 
 /// <summary>
 /// An <see cref="Actor"/> that is considered an enemy. Can be inherited to create a new enemy.
@@ -96,7 +77,7 @@ public abstract class Enemy : Actor
 	{
 		List<PartyMemberComponent> targets = BattleManager.Instance.GetAlivePartyMembers();
 		List<PartyMember> result = [];
-		for (int i = 0; i < Math.Min(amount, targets.Count); i++)
+		for (int i = 0; i < amount; i++)
 			result.Add(targets[GameManager.Instance.Random.RandiRange(0, targets.Count - 1)].Actor);
 		return result;
 	}
@@ -166,6 +147,16 @@ public abstract class Enemy : Actor
 	/// </summary>
 	public int Layer { get; protected set; } = 0;
 	/// <summary>
+	/// Whether this enemy has a multi-target skill equipped.
+	/// </summary>
+	public bool HasMultiTargetSkill {
+		get
+		{
+			return Skills.Values.Any(x => x.Target is SkillTarget.AllAllies or SkillTarget.AllDeadAllies
+				or SkillTarget.AllEnemies or SkillTarget.XRandomEnemies);
+		} 
+	}
+	/// <summary>
 	/// Called after each action finishes. Mainly used for boss events.
 	/// </summary>
 	public virtual async Task ProcessBattleConditions() { await Task.CompletedTask; }
@@ -177,4 +168,36 @@ public abstract class Enemy : Actor
 	/// Called at the very end of the turn, but before it officially ends.
 	/// </summary>
 	public virtual async Task ProcessEndOfTurn() { await Task.CompletedTask; }
+
+	internal PartyMember ObserveTarget;
+	internal bool ObserveMultiTarget;
+
+	/// <summary>
+	/// Whether this enemy is currently observing a target.
+	/// </summary>
+	/// <param name="target">The observed target, if any.</param>
+	/// <returns>True if <paramref name="target"/> is not null.</returns>
+	protected bool HasObserveTarget(out PartyMember target)
+	{
+		target = ObserveTarget;
+		if (ObserveTarget == null) 
+			return false;
+		ObserveTarget = null;
+		ObserveMultiTarget = false;
+		return true;
+
+	}
+
+	/// <summary>
+	/// Whether this enemy is currently observing everyone.
+	/// </summary>
+	/// <returns>True if the enemy is observing everyone.</returns>
+	protected bool HasMultiTargetObserve()
+	{
+		if (!ObserveMultiTarget)
+			return false;
+		ObserveTarget = null;
+		ObserveMultiTarget = false;
+		return true;
+	}
 }

@@ -99,7 +99,11 @@ public partial class PartyMemberComponent : Node
 
 	private void StateChanged(object sender, EventArgs e)
 	{
-		StateAnimator.SetState(PartyMember.CurrentState);
+		// avoid updating the background during plot armor
+		if (PartyMember.HasStatModifier("PlotArmor"))
+			StateAnimator.SetStateAtlas(PartyMember.CurrentState);
+		else
+			StateAnimator.SetState(PartyMember.CurrentState);
 	}
 
 	private void HPChanged(object sender, EventArgs e)
@@ -155,8 +159,8 @@ public partial class PartyMemberComponent : Node
 
 	internal bool SelectionBoxVisible
 	{
-		get { return SelectedBox.Visible; }
-		set { SelectedBox.Visible = value; }
+		get => SelectedBox.Visible;
+		set => SelectedBox.Visible = value;
 	}
 
     internal void FadeInFollowups()

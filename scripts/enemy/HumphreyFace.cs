@@ -20,6 +20,9 @@ internal sealed class HumphreyFace : Enemy
     
     public override BattleCommand ProcessAI()
     {
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["HUFChomp"]);
+        
         switch (CurrentState)
         {
             case "angry":

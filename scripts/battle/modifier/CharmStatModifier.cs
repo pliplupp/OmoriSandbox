@@ -12,8 +12,8 @@ public sealed class CharmStatModifier : StatModifier
     /// The <see cref="PartyMember"/> that the enemy will target.
     /// </summary>
     public PartyMember CharmedBy { get; private set; }
-    public override void OnAdd()
+    public override void OnAdd(Actor actor)
     {
-        CharmedBy = BattleManager.Instance.GetCurrentCommand().Actor as PartyMember;
+        CharmedBy = actor as PartyMember;
     }
 }

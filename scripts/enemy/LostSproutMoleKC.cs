@@ -17,6 +17,12 @@ internal sealed class LostSproutMoleKC : Enemy
 	}
     public override BattleCommand ProcessAI()
 	{
+		if (HasMultiTargetObserve())
+			return new BattleCommand(this, SelectTargets(1), Skills["LSMRunAround"]);
+	    
+		if (HasObserveTarget(out PartyMember observe))
+			return new BattleCommand(this, observe, Skills["LSMAttack"]);
+		
 		switch (CurrentState)
 		{
 			case "happy":
@@ -50,6 +56,6 @@ internal sealed class LostSproutMoleKC : Enemy
 	nothing:
 		return new BattleCommand(this, this, Skills["LSMDoNothing"]);
 	run:
-		return new BattleCommand(this, SelectTarget(), Skills["LSMRunAround"]);
+		return new BattleCommand(this, SelectTargets(1), Skills["LSMRunAround"]);
 	}
 }

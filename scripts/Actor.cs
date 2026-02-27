@@ -61,7 +61,7 @@ public abstract class Actor
 	/// <summary>
 	/// The <see cref="StatModifier"/>s the actor currently has.
 	/// </summary>
-	public Dictionary<string, StatModifier> StatModifiers = [];
+	public readonly Dictionary<string, StatModifier> StatModifiers = [];
 	/// <summary>
 	/// The <see cref="StatModifier"/> that the actor's emotion gives.
 	/// </summary>
@@ -142,8 +142,11 @@ public abstract class Actor
                 }
 				if (!silent && tier.SuccessMessage != null)
 					ShowStatMessage(success ? tier.SuccessMessage : tier.FailureMessage);
+				return;
 			}
-			// if the actor already has the modifier and it's not tiered, do nothing
+			m.SetMaxTurns(turns);
+			m.SetTurnsLeft(turns);
+			GD.Print("Refreshed modifier " + modifier + " on " + Name);
 		}
 		else
 		{
@@ -161,7 +164,7 @@ public abstract class Actor
 			}
 
 			StatModifiers.Add(modifier, mod);
-			mod.OnAdd();
+			mod.OnAdd(this);
 			GD.Print("Added modifier " + modifier + " to " + Name);
 			if (mod is TierStatModifier t && t.SuccessMessage != null && !silent)
 				ShowStatMessage(t.SuccessMessage);
@@ -202,7 +205,7 @@ public abstract class Actor
 		t.SetTier(tier);
 		t.SetTurnsLeft(turns);
 		StatModifiers.Add(modifier, t);
-		t.OnAdd();
+		t.OnAdd(this);
 		GD.Print("Added modifier " + modifier + " to " + Name);
 		if (!silent && t.SuccessMessage != null)
 			ShowStatMessage(t.SuccessMessage);

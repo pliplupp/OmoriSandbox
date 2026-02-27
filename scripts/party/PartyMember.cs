@@ -144,8 +144,12 @@ public abstract class PartyMember : Actor
 	/// </summary>
 	public abstract bool IsRealWorld { get; }
 	/// <summary>
-	/// Whether this party member has plot armor (survives one fatal hit per battle).
+	/// Whether this party member has plot armor enabled.
 	/// </summary>
+	/// <remarks>
+	/// This only checks if they have it enabled, not if it is currently active.<br/>
+	/// Use <see cref="Actor.HasStatModifier"/>("PlotArmor") for that purpose.
+	/// </remarks>
 	public virtual bool HasPlotArmor => false;
 	/// <summary>
 	/// Whether this party member has already used their plot armor this battle.

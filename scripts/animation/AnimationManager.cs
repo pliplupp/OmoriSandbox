@@ -26,6 +26,7 @@ public partial class AnimationManager : Node
 	[Export] private ColorRect Photograph;
 	[Export] private TextureRect Snaley;
 	[Export] private TextureRect HumphreySwarm;
+	[Export] private TextureRect Encore;
 	[Export] private AnimatedSprite2D HumphreySwallow;
 	[Export] private AnimatedSprite2D HumphreyFaceSwallow;
 	[Export] private PackedScene PerfectheartOverlaySprite;
@@ -465,6 +466,19 @@ public partial class AnimationManager : Node
 		HumphreyFaceSwallow.Play();
 		await ToSignal(HumphreyFaceSwallow, AnimatedSprite2D.SignalName.AnimationFinished);
 		HumphreyFaceSwallow.Visible = false;
+	}
+
+	internal async Task WaitForEncore()
+	{
+		AudioManager.Instance.PlaySFX("SE_bs_realization", 0.9f, 0.9f);
+		Encore.Modulate = Colors.Transparent;
+		Encore.Visible = true;
+		Tween tween = GetTree().CreateTween();
+		tween.TweenProperty(Encore, "modulate:a", 1f, 1.5f);
+		tween.TweenInterval(2f);
+		tween.TweenProperty(Encore, "modulate:a", 0f, 1f);
+		await ToSignal(tween, Tween.SignalName.Finished);
+		Encore.Visible = false;
 	}
 
 	internal void DespawnAll()

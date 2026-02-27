@@ -16,8 +16,7 @@ internal sealed class Recyclepath : Enemy
 
     public override bool IsStateValid(string state)
     {
-        return state == "neutral" || state == "sad" || state == "happy"
-               || state == "angry" || state == "hurt" || state == "toast";
+        return state is "neutral" or "sad" or "happy" or "angry" or "hurt" or "toast";
     }
 
     private EnemyComponent LeftRecycultist;

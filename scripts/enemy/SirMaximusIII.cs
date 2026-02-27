@@ -22,6 +22,12 @@ internal sealed class SirMaximusIII : Enemy
 
     public override BattleCommand ProcessAI()
     {
+        if (HasMultiTargetObserve())
+            return new BattleCommand(this, SelectAllTargets(), Skills["SMIISpin"]);
+        
+        if (HasObserveTarget(out PartyMember observe))
+            return new BattleCommand(this, observe, Skills["SMIAttack"]);
+        
         switch (CurrentState)
         {
             case "happy":

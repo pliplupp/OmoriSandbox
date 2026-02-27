@@ -61,7 +61,7 @@ internal partial class StateAnimator : Node
 		SetFaceStateAtlas(state);
 	}
 
-	private void SetStateAtlas(string state)
+	public void SetStateAtlas(string state)
 	{
 		if (StateAtlases.TryGetValue(state, out int index))
 		{
