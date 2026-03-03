@@ -93,8 +93,9 @@ public abstract class PartyMember : Actor
 		{
 			SetState("happy", true);
 		}
-		Charm?.StartOfBattle(this);
-		await Task.CompletedTask;
+
+		if (Charm != null)
+			await Charm.StartOfBattle(this);
     }
 
     /// <inheritdoc/>

@@ -57,6 +57,7 @@ internal partial class SkillMenu : Menu
 	protected override void MoveCursor(Vector2I direction)
 	{
         if (Empty) return;
+        int old = CursorIndex;
         int x = CursorIndex % 2;
 		int y = CursorIndex / 2;
 		x = (x + direction.X + GridSize.X) % GridSize.X;
@@ -64,9 +65,12 @@ internal partial class SkillMenu : Menu
 		int newIndex = y * GridSize.X + x;
 		newIndex = Mathf.Min(newIndex, Skills.Count - 1);
 		CursorIndex = newIndex;
-		UpdateCursor();
-		ShowSkillInfo();
-		AudioManager.Instance.PlaySFX("SYS_move");
+		if (CursorIndex != old)
+		{
+			UpdateCursor();
+			ShowSkillInfo();
+			AudioManager.Instance.PlaySFX("SYS_move");
+		}
 	}
 
 	protected override void OnSelect()

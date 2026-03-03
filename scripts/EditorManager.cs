@@ -345,6 +345,9 @@ internal partial class EditorManager : Node
 						BGM = editor.BattlebackBGMEditor.SelectedBGM,
 						BGMPitch = editor.BattlebackBGMEditor.BGMPitchValue,
 						BGMLoopPoint = editor.BattlebackBGMEditor.BGMLoopPointValue,
+						HealParty = editor.HealPartyCheckbox.ButtonPressed,
+						KeepEmotion =  editor.KeepEmotionCheckbox.ButtonPressed,
+						KeepStatusEffects = editor.KeepStatusEffectsCheckbox.ButtonPressed
 					};
 					foreach (Node subChild in editor.Enemies.GetChildren())
 					{
@@ -509,6 +512,9 @@ internal partial class EditorManager : Node
 				editor.BattlebackBGMEditor.SelectedBGM = entry.BGM;
 				editor.BattlebackBGMEditor.BGMPitchValue = entry.BGMPitch;
 				editor.BattlebackBGMEditor.BGMLoopPointValue = entry.BGMLoopPoint;
+				editor.HealPartyCheckbox.ButtonPressed = entry.HealParty;
+				editor.KeepEmotionCheckbox.ButtonPressed = entry.KeepEmotion;
+				editor.KeepStatusEffectsCheckbox.ButtonPressed = entry.KeepStatusEffects;
 				foreach (BattlePresetEnemy enemy in entry.Enemies)
 				{
 					AnimatedSprite2D enemySprite = new();

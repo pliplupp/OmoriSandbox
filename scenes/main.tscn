@@ -39,6 +39,7 @@
 [ext_resource type="PackedScene" uid="uid://b6d4hja4l4r44" path="res://scenes/cursor.tscn" id="24_qkpxi"]
 [ext_resource type="Script" uid="uid://brg8pn4xipyww" path="res://scripts/EnergyDots.cs" id="24_tel4y"]
 [ext_resource type="SpriteFrames" uid="uid://d0wkdk25n7b1w" path="res://animations/humphrey_face_swallow.tres" id="25_chjal"]
+[ext_resource type="Texture2D" uid="uid://bi2tnggbr827o" path="res://assets/pictures/player_skill_cherish.png" id="25_vchkt"]
 [ext_resource type="Texture2D" uid="uid://danupr12bhttw" path="res://assets/system/Battle_Window.png" id="26_kmb1v"]
 [ext_resource type="Material" uid="uid://duiu3jck554il" path="res://assets/mask_shader.tres" id="30_fv21b"]
 [ext_resource type="StyleBox" uid="uid://dwx8wc4k6lqm" path="res://assets/button_normal.tres" id="37_c6pm6"]
@@ -91,7 +92,7 @@ EnergyText = NodePath("../UI/Energy/EnergyAmount")
 [node name="BGM" type="AudioStreamPlayer" parent="BattleCanvas" unique_id=1290275943]
 bus = &"BGM"
 
-[node name="AnimationManager" type="Node" parent="BattleCanvas" unique_id=1346404106 node_paths=PackedStringArray("Battleback", "ReleaseEnergy", "ReleaseEnergyBasil", "RedHands", "FlowerCrown", "Photograph", "Snaley", "HumphreySwarm", "Encore", "HumphreySwallow", "HumphreyFaceSwallow", "PerfectheartOverlayParent", "FullScreenEffectNode", "ScreenTint")]
+[node name="AnimationManager" type="Node" parent="BattleCanvas" unique_id=1346404106 node_paths=PackedStringArray("Battleback", "ReleaseEnergy", "ReleaseEnergyBasil", "RedHands", "FlowerCrown", "Photograph", "Snaley", "HumphreySwarm", "Encore", "Cherish", "HumphreySwallow", "HumphreyFaceSwallow", "PerfectheartOverlayParent", "FullScreenEffectNode", "ScreenTint")]
 script = ExtResource("12_5q0nq")
 Battleback = NodePath("../UI/Battleback")
 ReleaseEnergy = NodePath("../UI/Battleback/FullScreenEffects/ReleaseEnergy")
@@ -102,6 +103,7 @@ Photograph = NodePath("../UI/Battleback/FullScreenEffects/Photograph")
 Snaley = NodePath("../UI/Battleback/FullScreenEffects/Snaley")
 HumphreySwarm = NodePath("../UI/Battleback/FullScreenEffects/HumphreySwarm")
 Encore = NodePath("../UI/Battleback/FullScreenEffects/Encore")
+Cherish = NodePath("../UI/Battleback/FullScreenEffects/Cherish")
 HumphreySwallow = NodePath("../UI/Battleback/FullScreenEffects/HumphreySwallow")
 HumphreyFaceSwallow = NodePath("../UI/Battleback/FullScreenEffects/HumphreyFaceSwallow")
 PerfectheartOverlaySprite = ExtResource("13_dgi5k")
@@ -173,13 +175,6 @@ theme_override_constants/outline_size = 3
 theme_override_fonts/font = ExtResource("10_choun")
 theme_override_font_sizes/font_size = 12
 text = "0"
-
-[node name="Version" type="Label" parent="BattleCanvas/UI/HBoxContainer" unique_id=904935457]
-layout_mode = 2
-theme_override_constants/outline_size = 3
-theme_override_fonts/font = ExtResource("10_choun")
-theme_override_font_sizes/font_size = 12
-text = "OmoriSandbox v1.0.0 (dev build)"
 
 [node name="Restart" type="Label" parent="BattleCanvas/UI/HBoxContainer" unique_id=1672111896]
 visible = false
@@ -263,6 +258,13 @@ offset_right = 640.0
 offset_bottom = 544.0
 texture = ExtResource("24_cjqg0")
 
+[node name="Cherish" type="TextureRect" parent="BattleCanvas/UI/Battleback/FullScreenEffects" unique_id=1238961025]
+visible = false
+z_index = -4
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("25_vchkt")
+
 [node name="HumphreySwallow" type="AnimatedSprite2D" parent="BattleCanvas/UI/Battleback/FullScreenEffects" unique_id=1791212192]
 visible = false
 z_index = -4
@@ -286,7 +288,7 @@ offset_right = 640.0
 offset_bottom = 480.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(1, 1, 1, 0)
+color = Color(0, 0, 0, 0)
 
 [node name="SubViewport" type="SubViewport" parent="BattleCanvas/UI/Battleback/FullScreenEffects" unique_id=2079552982]
 disable_3d = true

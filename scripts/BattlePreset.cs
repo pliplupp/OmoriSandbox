@@ -52,6 +52,9 @@ internal class BattlePresetBossRushStage
     public string BGM { get; set; } = "battle_vf";
     public double BGMPitch { get; set; } = 1d;
     public double BGMLoopPoint { get; set; } = 0d;
+    public bool HealParty { get; set; } = false;
+    public bool KeepEmotion { get; set; } = false;
+    public bool KeepStatusEffects { get; set; } = false;
     [JsonRequired] public List<BattlePresetEnemy> Enemies { get; set; } = [];
 }
 

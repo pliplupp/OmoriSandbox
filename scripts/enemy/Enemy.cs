@@ -49,6 +49,25 @@ public abstract class Enemy : Actor
 	}
 
 	/// <summary>
+	/// Sets the opacity of the enemy sprite. Can optionally change over a set duration.
+	/// </summary>
+	/// <param name="opacity">The opacity of the sprite, from 0 to 1.</param>
+	/// <param name="duration">The duration of the change, in seconds.</param>
+	public void SetOpacity(float opacity, float duration = 0f)
+	{
+		opacity = Math.Clamp(opacity, 0f, 1f);
+		if (duration == 0f)
+		{
+			Sprite.Modulate = new Color(Sprite.Modulate, opacity);
+		}
+		else
+		{
+			Tween tween = BattleManager.Instance.GetTree().CreateTween();
+			tween.TweenProperty(Sprite, "modulate:a", opacity, duration);
+		}
+	}
+
+	/// <summary>
 	/// Selects a target. Mainly used in <see cref="ProcessAI"/> for single-target skills. Can be overriden for custom targeting behavior.
 	/// </summary>
 	/// <remarks>This only includes alive party members by default.</remarks>

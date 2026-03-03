@@ -7,6 +7,9 @@ namespace OmoriSandbox.scripts;
 internal partial class BossRushStageEditorComponent : Control
 {
     [Export] public BattlebackBGMEditorComponent BattlebackBGMEditor { get; private set; }
+    [Export] public CheckBox HealPartyCheckbox { get; private set; }
+    [Export] public CheckBox KeepEmotionCheckbox { get; private set; }
+    [Export] public CheckBox KeepStatusEffectsCheckbox { get; private set; }
     [Export] private Button AddEnemyButton;
     [Export] public TabContainer Enemies { get; private set; }
     [Export] private PackedScene EnemyEditor;
@@ -38,6 +41,9 @@ internal partial class BossRushStageEditorComponent : Control
         BattlebackBGMEditor.SelectedBGM = source.BattlebackBGMEditor.SelectedBGM;
         BattlebackBGMEditor.BGMPitchValue = source.BattlebackBGMEditor.BGMPitchValue;
         BattlebackBGMEditor.BGMLoopPointValue = source.BattlebackBGMEditor.BGMLoopPointValue;
+        HealPartyCheckbox.ButtonPressed = source.HealPartyCheckbox.ButtonPressed;
+        KeepEmotionCheckbox.ButtonPressed = source.KeepEmotionCheckbox.ButtonPressed;
+        KeepStatusEffectsCheckbox.ButtonPressed = source.KeepStatusEffectsCheckbox.ButtonPressed;
         foreach (Node node in source.Enemies.GetChildren())
         {
             if (node is EnemyEditorComponent enemy)

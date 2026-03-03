@@ -1,4 +1,6 @@
+using System.Numerics;
 using Godot;
+using Vector2 = Godot.Vector2;
 
 namespace OmoriSandbox.Animation;
 
@@ -20,16 +22,17 @@ internal partial class PlayingAnimation : Node2D
     {
         foreach (Frame frame in Animation.GetFrame(CurrentFrame))
         {
+            DrawSetTransform(DrawPosition + new Vector2(frame.X, frame.Y), frame.Rotation, new Vector2(frame.Scale / 100f, frame.Scale / 100f));
             AtlasTexture texture = Animation.GetTextureAt(frame.Pattern);
             if (frame.Mirror)
             {
                 Image img = texture.GetImage();
                 img.FlipX();
-                DrawTexture(ImageTexture.CreateFromImage(img), DrawPosition + new Vector2(frame.X, frame.Y), new Color(1f, 1f, 1f, frame.Opacity / 255f));
+                DrawTexture(ImageTexture.CreateFromImage(img), Vector2.Zero, new Color(1f, 1f, 1f, frame.Opacity / 255f));
                 continue;
             }
-
-            DrawTexture(texture, DrawPosition + new Vector2(frame.X, frame.Y), new Color(1f, 1f, 1f, frame.Opacity / 255f));
+            
+            DrawTexture(texture, Vector2.Zero, new Color(1f, 1f, 1f, frame.Opacity / 255f));
         }
     }
 

@@ -327,14 +327,14 @@ public abstract class Actor
 		if (this is PartyMember member && member.HasPlotArmor && CurrentHP == 0 && !member.HasUsedPlotArmor)
 		{
 			CurrentHP = 1;
-			AddStatModifier("PlotArmor");
 			member.HasUsedPlotArmor = true;
+			// temporarily set our state to plotarmor to trigger the state animator
 			string temp = CurrentState;
-			// temporarily set our state to plotarmor to properly update the StateAnimator
 			CurrentState = "plotarmor";
+			Sprite.Animation = "plotarmor";
 			OnStateChanged?.Invoke(this, EventArgs.Empty);
-			Sprite.Animation = CurrentState;
 			CurrentState = temp;
+			AddStatModifier("PlotArmor");
 			return;
 		}
 
@@ -467,7 +467,7 @@ public abstract class Actor
 	/// <summary>
 	/// Called when the battle is over, but before the victory screen.
 	/// </summary>
-	/// <param name="victory">Whether or not the battle was won by the player.</param>
+	/// <param name="victory">Whether the battle was won by the player.</param>
 	public virtual async Task OnEndOfBattle(bool victory) { await Task.CompletedTask; }
 
 	private string Capitalize(string s)

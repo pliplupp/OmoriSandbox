@@ -17,6 +17,8 @@ internal partial class MainMenuManager : Node
 
 	public void Init()
 	{
+		VersionLabel.Text = GameManager.Version;
+		
 		AudioManager.Instance.PlayBGM("ow_cattail_fields");
 
 		if (!DirAccess.DirExistsAbsolute("user://presets"))
@@ -163,9 +165,9 @@ internal partial class MainMenuManager : Node
 		ModListParent.GetChild(0).AddChild(entry);
 	}
 
-	public void UpdateModsLoaded(int count)
+	public void UpdateModsLoaded(int count, int total)
 	{
-		ModsLoaded.Text = count + " mods loaded";
+		ModsLoaded.Text = $"{count} mods loaded ({total} installed)";
 	}
 
 	public void ClearPresetDropdown()
@@ -198,6 +200,7 @@ internal partial class MainMenuManager : Node
 	public static MainMenuManager Instance;
 	public string LastLoadedPreset = "";
 
+	[Export] private Label VersionLabel;
 	[Export] private TextureRect Logo;
 	[Export] private AnimatedSprite2D OmoriFace; 
 	[Export] private PackedScene ModListEntry;

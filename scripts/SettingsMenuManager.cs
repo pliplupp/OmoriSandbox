@@ -64,6 +64,7 @@ internal partial class SettingsMenuManager : Control
 		MasterSlider.Value = (float)config.GetValue("Settings", "MasterVolume", 0.75f);
 		SFXSlider.Value = (float)config.GetValue("Settings", "SFXVolume", 1f);
 		BGMSlider.Value = (float)config.GetValue("Settings", "BGMVolume", 0.5f);
+		ShowFPSCheckbox.ButtonPressed = (bool)config.GetValue("Settings", "ShowFPS", true);
 		DisableDamageLimitCheckbox.ButtonPressed = (bool)config.GetValue("Settings", "DisableDamageLimit", false);
 		DisableStatLimitCheckbox.ButtonPressed = (bool)config.GetValue("Settings", "DisableStatLimit", false);
 		ShowMoreInfoCheckbox.ButtonPressed = (bool)config.GetValue("Settings", "ShowMoreInfo", false);
@@ -116,6 +117,7 @@ internal partial class SettingsMenuManager : Control
 		config.SetValue("Settings", "SFXVolume", AudioServer.GetBusVolumeLinear(AudioServer.GetBusIndex("SFX")));
 		config.SetValue("Settings", "BattlelogSpeed", (int)BattlelogSpeedSlider.Value);
 		config.SetValue("Settings", "ActionDelay", (int)ActionDelaySlider.Value);
+		config.SetValue("Settings", "ShowFPS", ShowFPSCheckbox.ButtonPressed);
 		config.SetValue("Settings", "DisableDamageLimit", DisableDamageLimitCheckbox.ButtonPressed);
 		config.SetValue("Settings", "DisableStatLimit", DisableStatLimitCheckbox.ButtonPressed);
 		config.SetValue("Settings", "ShowMoreInfo", ShowMoreInfoCheckbox.ButtonPressed);
@@ -154,6 +156,7 @@ internal partial class SettingsMenuManager : Control
 		config.SetValue("Settings", "SFXVolume", 0.5f);
 		config.SetValue("Settings", "BattlelogSpeed", 3);
 		config.SetValue("Settings", "ActionDelay", 3);
+		config.SetValue("Settings", "ShowFPS", true);
 		config.SetValue("Settings", "DisableDamageLimit", false);
 		config.SetValue("Settings", "DisableStatLimit", false);
 		config.SetValue("Settings", "ShowMoreInfo", false);
@@ -184,6 +187,7 @@ internal partial class SettingsMenuManager : Control
 	}
 
 	public static SettingsMenuManager Instance;
+	public bool ShowFPS => ShowFPSCheckbox.ButtonPressed;
 	public bool DisableDamageLimit => DisableDamageLimitCheckbox.ButtonPressed;
 	public bool DisableStatLimit => DisableStatLimitCheckbox.ButtonPressed;
 	public bool ShowMoreInfo => ShowMoreInfoCheckbox.ButtonPressed;
@@ -206,6 +210,7 @@ internal partial class SettingsMenuManager : Control
 	[Export] private CheckBox FullscreenCheckbox;
 	[Export] private HSlider BattlelogSpeedSlider;
 	[Export] private HSlider ActionDelaySlider;
+	[Export] private CheckBox ShowFPSCheckbox;
 	[Export] private CheckBox DisableDamageLimitCheckbox;
 	[Export] private CheckBox DisableStatLimitCheckbox;
 	[Export] private CheckBox ShowMoreInfoCheckbox;

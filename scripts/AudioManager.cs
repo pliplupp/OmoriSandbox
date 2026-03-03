@@ -129,7 +129,7 @@ public partial class AudioManager : Node
 	/// Plays BGM with the given <paramref name="name"/> and desired parameters.
 	/// </summary>
 	/// <param name="name">The name of the BGM to play.</param>
-	/// <param name="volume">The volume to play the BGM at, from 0.0 to 2.0.</param>
+	/// <param name="volume">The volume to play the BGM at, from 0.001 to 2.0.</param>
 	/// <param name="pitch">The pitch to play the BGM at, from 0.1 to 2.0.</param>
 	public void PlayBGM(string name, float volume, float pitch)
 	{
@@ -140,7 +140,7 @@ public partial class AudioManager : Node
 		}
 		
 		// prevent people from blowing out their eardrums
-		volume = Math.Clamp(volume, 0f, 2f);
+		volume = Math.Clamp(volume, 0.001f, 2f);
 		pitch = Math.Clamp(pitch, 0.1f, 2f);
 		
 		BGM.Stream = stream;
@@ -212,13 +212,15 @@ public partial class AudioManager : Node
 	{
 		AudioStreamOggVorbis stream = AudioStreamOggVorbis.LoadFromFile(path);
 		stream.Loop = true;
-		return BGMDictionary.TryAdd(path.GetFile().GetBaseName(), stream);
+		string name = path.GetFile().GetBaseName();
+		return BGMDictionary.ContainsKey(name) || BGMDictionary.TryAdd(path.GetFile().GetBaseName(), stream);
 	}
 
 	internal bool LoadCustomSFX(string path)
 	{
 		AudioStreamOggVorbis stream = AudioStreamOggVorbis.LoadFromFile(path);
-		return SFXDictionary.TryAdd(path.GetFile().GetBaseName(), stream);
+		string name = path.GetFile().GetBaseName();
+		return SFXDictionary.ContainsKey(name) || SFXDictionary.TryAdd(path.GetFile().GetBaseName(), stream);
 	}
 
 	/// <summary>

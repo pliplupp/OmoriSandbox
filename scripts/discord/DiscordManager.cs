@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using OmoriSandbox;
 
 namespace Discord;
 
@@ -23,7 +24,7 @@ internal class DiscordManager
                 Assets =
                 {
                     LargeImage = "icon",
-                    LargeText = "OmoriSandbox v0.9.3"
+                    LargeText = GameManager.Version
                 },
                 Instance = false
             };

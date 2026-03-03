@@ -77,7 +77,8 @@ internal class RPGMAnimatedSprite
 			Texture.Region = new Rect2(column * SIZE, row * SIZE, SIZE, SIZE);
 			return Texture;
 		}
-		else if (AltTexture != null)
+
+		if (AltTexture != null)
 		{
 			// RPGMaker allocates 100 frame slots to each image even if the image doesn't have that many sprites
 			int adjusted = pattern - 100;

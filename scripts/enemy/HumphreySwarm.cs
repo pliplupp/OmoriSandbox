@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Godot;
 using OmoriSandbox.Animation;
 using OmoriSandbox.Battle;
+using OmoriSandbox.Extensions;
 
 namespace OmoriSandbox.Actors;
 
@@ -90,6 +91,6 @@ internal sealed class HumphreySwarm : Enemy
         CurrentHP = 0;
         SetState("toast", true);
         await Task.Delay(2500);
-        await AnimationManager.Instance.WaitForTintScreen(Colors.Transparent, 0.5f);
+        await AnimationManager.Instance.WaitForTintScreen(ColorsExtension.TransparentBlack, 0.5f);
     }
 }

@@ -1,8 +1,11 @@
 using Godot;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using OmoriSandbox.Actors;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OmoriSandbox.Animation;
@@ -27,6 +30,7 @@ public partial class AnimationManager : Node
 	[Export] private TextureRect Snaley;
 	[Export] private TextureRect HumphreySwarm;
 	[Export] private TextureRect Encore;
+	[Export] private TextureRect Cherish;
 	[Export] private AnimatedSprite2D HumphreySwallow;
 	[Export] private AnimatedSprite2D HumphreyFaceSwallow;
 	[Export] private PackedScene PerfectheartOverlaySprite;
@@ -93,6 +97,280 @@ public partial class AnimationManager : Node
 			}
 		}
 		GD.Print($"Loaded {Animations.Count} animations");
+	}
+
+	internal void LoadModded(string root)
+	{
+		string data = FileAccess.GetFileAsString("user://mods/" + root + "/animations/Animations.json");
+		List<RPGMakerAnimation> animationData = JsonConvert.DeserializeObject<List<RPGMakerAnimation>>(data);
+		RegEx layerRegex = new();
+		layerRegex.Compile("<[a-z]{5}:(\\d)>");
+		int total = 0;
+		int attempted = 0;
+		foreach (RPGMakerAnimation animation in animationData)
+		{
+			bool missingTexture = string.IsNullOrEmpty(animation.Animation1Name);
+			bool missingAltTexture = string.IsNullOrEmpty(animation.Animation2Name);
+			if (missingTexture && missingAltTexture)
+				continue;
+
+			attempted++;
+			if (Animations.ContainsKey(animation.Id))
+			{
+				GD.PushWarning($"{root}: Skipping modded animation {animation.Name} as ID {animation.Id} is already taken.");
+				continue;
+			}
+
+			int layer = 0;
+			RegExMatch match = layerRegex.Search(animation.Name);
+			if (match != null)
+				int.TryParse(match.GetString(1), out layer);
+
+			Texture2D texture = null;
+			Texture2D altTexture = null;
+
+			if (!missingTexture)
+			{
+				texture = LoadModTexture(root, animation.Animation1Name);
+				if (texture == null)
+				{
+					GD.PrintErr($"{root}: Unable to find texture {animation.Animation1Name}.png for modded animation {animation.Id}.");
+					continue;
+				}
+			}
+			if (!missingAltTexture)
+			{
+				altTexture = LoadModTexture(root, animation.Animation2Name);
+				if (altTexture == null)
+				{
+					GD.PrintErr($"{root}: Unable to find alt texture {animation.Animation2Name}.png for modded animation {animation.Id}.");
+					continue;
+				}
+			}
+
+			RPGMAnimatedSprite anim = new(animation.Id, layer, texture, altTexture);
+			foreach (float[][] frame in animation.Frames)
+			{
+				List<Frame> frames = [];
+				frames.AddRange(frame.Select(f => new Frame((int)f[0], f[1], f[2], f[3], f[4], f[5] == 1, f[6])));
+				anim.CreateFrame(frames);
+			}
+
+			foreach (Timings timing in animation.Timings)
+			{
+				if (timing.Se.Name == "ft_doShake")
+					anim.SetFrameShake(timing.Frame, timing.FlashColor[0], timing.FlashColor[1], timing.FlashDuration);
+				else
+				{
+					if (!LoadModSFX(root, timing.Se.Name))
+						GD.PrintErr($"{root}: Unable to find SFX {timing.Se.Name}.ogg for modded animation {animation.Id}.");
+					anim.SetFrameSFX(timing.Frame, new SFX(timing.Se.Name, timing.Se.Pitch, timing.Se.Volume));
+				}
+			}
+			Animations.Add(animation.Id, anim);
+			total++;
+		}
+		GD.Print($"{root}: Converted {total}/{attempted} RPGM animations");
+	}
+
+	internal void LoadDeltaPatch(string root)
+	{
+		string data = FileAccess.GetFileAsString($"user://mods/{root}/animations/Animations.jsond");
+		if (string.IsNullOrEmpty(data))
+		{
+			GD.PrintErr($"{root}: Failed to read animations.jsond.");
+			return;
+		}
+
+		JArray ops = JArray.Parse(data);
+		RegEx layerRegex = new();
+		layerRegex.Compile("<[a-z]{5}:(\\d)>");
+
+		// group operations by animation ID
+		Dictionary<int, List<JObject>> grouped = [];
+		foreach (JToken op in ops)
+		{
+			string[] segments = op["path"].ToString().TrimStart('/').Split('/');
+			if (int.TryParse(segments[0], out int id))
+			{
+				if (!grouped.TryGetValue(id, out List<JObject> list))
+				{
+					list = [];
+					grouped[id] = list;
+				}
+				list.Add((JObject)op);
+			}
+		}
+
+		int total = 0;
+		int attempted = 0;
+		foreach (var (id, operations) in grouped)
+		{
+			string name = null;
+			string textureName = null;
+			string altTextureName = null;
+			SortedDictionary<int, List<float[]>> frameData = [];
+			Dictionary<int, SortedDictionary<int, float[]>> frameCellData = [];
+			List<Timings> timingData = [];
+
+			foreach (JObject op in operations)
+			{
+				string[] segments = op["path"].ToString().TrimStart('/').Split('/');
+				if (segments.Length < 2) continue;
+				
+				switch (segments[1])
+				{
+					case "name":
+						name = op["value"].ToString();
+						break;
+					case "animation1Name":
+						textureName = op["value"].ToString();
+						break;
+					case "animation2Name":
+						altTextureName = op["value"].ToString();
+						break;
+					case "frames" when segments.Length == 3:
+					{
+						int frameIdx = int.Parse(segments[2]);
+						float[][] cells = op["value"].ToObject<float[][]>();
+						frameData[frameIdx] = [..cells];
+						break;
+					}
+					case "frames" when segments.Length == 4:
+					{
+						int frameIdx = int.Parse(segments[2]);
+						int cellIdx = int.Parse(segments[3]);
+						float[] cell = op["value"].ToObject<float[]>();
+						if (!frameCellData.TryGetValue(frameIdx, out SortedDictionary<int, float[]> cellDict))
+						{
+							cellDict = [];
+							frameCellData[frameIdx] = cellDict;
+						}
+						cellDict[cellIdx] = cell;
+						break;
+					}
+					case "timings" when segments.Length == 3:
+						timingData.Add(op["value"].ToObject<Timings>());
+						break;
+				}
+			}
+
+			// skip blank entries
+			if (frameData.Count == 0 && frameCellData.Count == 0 && timingData.Count == 0
+				&& textureName == null && altTextureName == null)
+				continue;
+
+			attempted++;
+			if (Animations.ContainsKey(id))
+			{
+				GD.PushWarning($"{root}: Skipping delta-patched animation as ID {id} is already taken.");
+				continue;
+			}
+			
+			int layer = 0;
+			if (name != null)
+			{
+				RegExMatch match = layerRegex.Search(name);
+				if (match != null)
+					int.TryParse(match.GetString(1), out layer);
+			}
+			
+			Texture2D texture = null;
+			Texture2D altTexture = null;
+
+			if (textureName != null)
+			{
+				texture = LoadModTexture(root, textureName);
+				if (texture == null)
+				{
+					GD.PrintErr($"{root}: Unable to find texture {textureName}.png for delta-patched animation {id}.");
+					continue;
+				}
+			}
+			if (altTextureName != null)
+			{
+				altTexture = LoadModTexture(root, altTextureName);
+				if (altTexture == null)
+				{
+					GD.PrintErr($"{root}: Unable to find alt texture {altTextureName}.png for delta-patched animation {id}.");
+					continue;
+				}
+			}
+
+			if (texture == null && altTexture == null)
+			{
+				GD.PushWarning($"{root}: Skipping delta-patched animation {id} as it has no textures.");
+				continue;
+			}
+
+			RPGMAnimatedSprite anim = new(id, layer, texture, altTexture);
+			
+			int maxFrame = 0;
+			if (frameData.Count > 0)
+				maxFrame = Math.Max(maxFrame, frameData.Keys.Max() + 1);
+			if (frameCellData.Count > 0)
+				maxFrame = Math.Max(maxFrame, frameCellData.Keys.Max() + 1);
+
+			for (int i = 0; i < maxFrame; i++)
+			{
+				List<Frame> frames;
+				if (frameData.TryGetValue(i, out List<float[]> cells))
+					frames = cells.Select(f => new Frame((int)f[0], f[1], f[2], f[3], f[4], f[5] == 1, f[6])).ToList();
+				else
+					frames = [];
+				
+				if (frameCellData.TryGetValue(i, out SortedDictionary<int, float[]> cellPatches))
+				{
+					foreach (var (cellIdx, cellData) in cellPatches)
+					{
+						Frame newFrame = new((int)cellData[0], cellData[1], cellData[2], cellData[3], cellData[4], cellData[5] == 1, cellData[6]);
+						while (frames.Count <= cellIdx)
+							frames.Add(new Frame());
+						frames[cellIdx] = newFrame;
+					}
+				}
+
+				anim.CreateFrame(frames);
+			}
+			
+			foreach (Timings timing in timingData)
+			{
+				if (timing.Se == null)
+					 continue;
+				if (timing.Se.Name == "ft_doShake")
+					anim.SetFrameShake(timing.Frame, timing.FlashColor[0], timing.FlashColor[1], timing.FlashDuration);
+				else
+				{
+					if (!LoadModSFX(root, timing.Se.Name))
+						GD.PrintErr($"{root}: Unable to find SFX {timing.Se.Name}.ogg for modded animation {id}.");
+					anim.SetFrameSFX(timing.Frame, new SFX(timing.Se.Name, timing.Se.Pitch, timing.Se.Volume));
+				}
+			}
+
+			Animations.Add(id, anim);
+			total++;
+		}
+
+		GD.Print($"{root}: Loaded {total}/{attempted} delta-patched animations");
+	}
+
+	private Texture2D LoadModTexture(string root, string name)
+	{
+		string path = $"user://mods/{root}/animations/{name}.png";
+		if (FileAccess.FileExists(path))
+			return ImageTexture.CreateFromImage(Image.LoadFromFile(path));
+		path = $"res://assets/animations/{name}.png";
+		if (ResourceLoader.Exists(path))
+			return ResourceLoader.Load<Texture2D>(path);
+		return null;
+	}
+
+	private bool LoadModSFX(string root, string name)
+	{
+		string path = $"user://mods/{root}/animations/{name}.ogg";
+		if (FileAccess.FileExists(path))
+			return AudioManager.Instance.LoadCustomSFX(path);
+		return ResourceLoader.Exists($"res://audio/sfx/{name}.ogg");
 	}
 
 	public override void _Process(double delta)
@@ -481,6 +759,18 @@ public partial class AnimationManager : Node
 		Encore.Visible = false;
 	}
 
+	internal async void PlayCherish()
+	{
+		Cherish.Modulate = Colors.Transparent;
+		Cherish.Visible = true;
+		Tween tween = GetTree().CreateTween();
+		tween.TweenProperty(Cherish, "modulate:a", 1f, 0.75f);
+		tween.TweenInterval(1f);
+		tween.TweenProperty(Cherish, "modulate:a", 0f, 0.75f);
+		await ToSignal(tween, Tween.SignalName.Finished);
+		Cherish.Visible = false;
+	}
+
 	internal void DespawnAll()
 	{
 		foreach (Node child in PerfectheartOverlayParent.GetChildren())
@@ -534,7 +824,7 @@ public partial class AnimationManager : Node
 			sfx.ForEach(AudioManager.Instance.PlaySFX);
 		}
 
-		PlayingAnimation playing = new(animation, new Vector2(224, 144), 10);
+		PlayingAnimation playing = new(animation, new Vector2(219, 144), 10);
 		PlayingAnimations.Add(playing);
 		return playing;
 	}

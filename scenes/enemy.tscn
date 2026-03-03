@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://u0o0invoxvnj"]
+[gd_scene format=3 uid="uid://u0o0invoxvnj"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xwavj"]
 animations = [{
@@ -8,10 +8,12 @@ animations = [{
 "speed": 5.0
 }]
 
-[node name="enemy" type="Node2D"]
+[node name="enemy" type="Node2D" unique_id=2082389277]
 z_index = -5
 z_as_relative = false
+use_parent_material = true
 
-[node name="Sprite" type="AnimatedSprite2D" parent="."]
+[node name="Sprite" type="AnimatedSprite2D" parent="." unique_id=2114584219]
+use_parent_material = true
 sprite_frames = SubResource("SpriteFrames_xwavj")
 animation = &"neutral"

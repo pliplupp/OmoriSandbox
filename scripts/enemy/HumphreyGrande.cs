@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Godot;
 using OmoriSandbox.Animation;
 using OmoriSandbox.Battle;
+using OmoriSandbox.Extensions;
 
 namespace OmoriSandbox.Actors;
 
@@ -36,7 +37,7 @@ internal sealed class HumphreyGrande : Enemy
             await DialogueManager.Instance.WaitForDialogue();
             await AnimationManager.Instance.WaitForTintScreen(Colors.Black, 0.5f);
             await Task.Delay(1000);
-            AnimationManager.Instance.TintScreen(Colors.Transparent, 0.1f);
+            AnimationManager.Instance.TintScreen(ColorsExtension.TransparentBlack, 0.1f);
             await AnimationManager.Instance.WaitForHumphreySwallow();
             AnimationManager.Instance.TintScreen(Colors.Black);
             BattleLogManager.Instance.ClearBattleLog();
@@ -50,7 +51,7 @@ internal sealed class HumphreyGrande : Enemy
             CurrentHP = 0;
             SetState("toast", true);
             await Task.Delay(2000);
-            await AnimationManager.Instance.WaitForTintScreen(Colors.Transparent, 1f);
+            await AnimationManager.Instance.WaitForTintScreen(ColorsExtension.TransparentBlack, 1f);
         }
     }
 }

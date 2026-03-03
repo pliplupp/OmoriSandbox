@@ -1,5 +1,6 @@
 using OmoriSandbox.Actors;
 using System;
+using System.Threading.Tasks;
 
 namespace OmoriSandbox.Battle;
 
@@ -31,7 +32,7 @@ public class Charm
     /// <remarks>
     /// Mainly used for emotion effects.
     /// </remarks>
-    public Action<Actor> StartOfBattle { get; private set; } = _ => { };
+    public Func<Actor, Task> StartOfBattle { get; private set; } = _ => Task.CompletedTask;
 
     /// <summary>
     /// What the charm does to its holder at the start of each turn.
@@ -39,7 +40,7 @@ public class Charm
     /// <remarks>
     /// Will not be run if the actor is toast.
     /// </remarks>
-    public Action<Actor> StartOfTurn { get; private set; } = _ => { };
+    public Func<Actor, Task> StartOfTurn { get; private set; } = _ => Task.CompletedTask;
 
     /// <summary>
     /// A Charm that modifies a single stat.
@@ -82,7 +83,7 @@ public class Charm
     /// Sets the <see cref="StartOfBattle"/> effect for this charm.
     /// </summary>
     /// <param name="onStartOfBattle">A function with a reference to the charm's user that runs at the start of battle.</param>
-    public Charm WithStartOfBattleEffect(Action<Actor> onStartOfBattle)
+    public Charm WithStartOfBattleEffect(Func<Actor, Task> onStartOfBattle)
     {
         StartOfBattle = onStartOfBattle;
         return this;
@@ -92,7 +93,7 @@ public class Charm
     /// Sets the <see cref="StartOfTurn"/> effect for this charm.
     /// </summary>
     /// <param name="onStartOfTurn">A function with a reference to the charm's user that runs at the start of each turn.</param>
-    public Charm WithStartOfTurnEffect(Action<Actor> onStartOfTurn)
+    public Charm WithStartOfTurnEffect(Func<Actor, Task> onStartOfTurn)
     {
         StartOfTurn = onStartOfTurn;
         return this;

@@ -23,8 +23,9 @@
 
 [node name="MainMenu" type="CanvasLayer" unique_id=1040890594]
 
-[node name="MainMenuManager" type="Node" parent="." unique_id=593666081 node_paths=PackedStringArray("Logo", "OmoriFace", "ModListParent", "ShowModsButton", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "SettingsButton", "QuitButton", "MainControls", "Settings", "EditorSettingsContainer", "NewPresetContainer", "LoadExistingButton", "NormalPresetButton", "BossRushPresetButton", "ModFolderButton", "ModsLoaded", "GithubButton", "TitlePresetDropdown")]
+[node name="MainMenuManager" type="Node" parent="." unique_id=593666081 node_paths=PackedStringArray("VersionLabel", "Logo", "OmoriFace", "ModListParent", "ShowModsButton", "MainMenu", "Editor", "PlayButton", "ConfigureButton", "SettingsButton", "QuitButton", "MainControls", "Settings", "EditorSettingsContainer", "NewPresetContainer", "LoadExistingButton", "NormalPresetButton", "BossRushPresetButton", "ModFolderButton", "ModsLoaded", "GithubButton", "TitlePresetDropdown")]
 script = ExtResource("1_wu84c")
+VersionLabel = NodePath("../Main/Version")
 Logo = NodePath("../Main/Logo")
 OmoriFace = NodePath("../Main/Omori")
 ModListEntry = ExtResource("5_jk1qb")
@@ -141,7 +142,7 @@ offset_bottom = -3.0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 14
-text = "OmoriSandbox v1.0.0 (dev build)"
+text = "OmoriSandbox"
 
 [node name="ModsLoaded" type="Label" parent="Main" unique_id=589990206]
 anchors_preset = 2
@@ -324,7 +325,7 @@ theme_override_styles/hover = ExtResource("12_1ajci")
 text = "Quit
 "
 
-[node name="Settings" type="Panel" parent="Main" unique_id=1298067288 node_paths=PackedStringArray("Logo", "OmoriFace", "MasterSlider", "BGMSlider", "SFXSlider", "TestSFXButton", "FullscreenCheckbox", "BattlelogSpeedSlider", "ActionDelaySlider", "DisableDamageLimitCheckbox", "DisableStatLimitCheckbox", "ShowMoreInfoCheckbox", "ShowStateIconsCheckbox", "UseConsoleSpdCheckbox", "UseConsoleDefCheckbox", "InfiniteBuffsDebuffsCheckbox", "VertigoUsesAtkCheckbox", "ToysUseEmotionDamageCheckbox", "SpaceExHusbandReleaseEnergyCheckbox", "KeybindGrid", "ResetKeybindsButton", "BackButton", "MainControls")]
+[node name="Settings" type="Panel" parent="Main" unique_id=1298067288 node_paths=PackedStringArray("Logo", "OmoriFace", "MasterSlider", "BGMSlider", "SFXSlider", "TestSFXButton", "FullscreenCheckbox", "BattlelogSpeedSlider", "ActionDelaySlider", "ShowFPSCheckbox", "DisableDamageLimitCheckbox", "DisableStatLimitCheckbox", "ShowMoreInfoCheckbox", "ShowStateIconsCheckbox", "UseConsoleSpdCheckbox", "UseConsoleDefCheckbox", "InfiniteBuffsDebuffsCheckbox", "VertigoUsesAtkCheckbox", "ToysUseEmotionDamageCheckbox", "SpaceExHusbandReleaseEnergyCheckbox", "KeybindGrid", "ResetKeybindsButton", "BackButton", "MainControls")]
 visible = false
 anchors_preset = 7
 anchor_left = 0.5
@@ -348,6 +349,7 @@ TestSFXButton = NodePath("ScrollContainer/VBoxContainer/TestSFX")
 FullscreenCheckbox = NodePath("ScrollContainer/VBoxContainer/Fullscreen")
 BattlelogSpeedSlider = NodePath("ScrollContainer/VBoxContainer/BattlelogSpeedSlider/BattlelogSpeedSlider")
 ActionDelaySlider = NodePath("ScrollContainer/VBoxContainer/ActionDelaySlider/DelaySlider")
+ShowFPSCheckbox = NodePath("ScrollContainer/VBoxContainer/ShowFPS")
 DisableDamageLimitCheckbox = NodePath("ScrollContainer/VBoxContainer/DisableDamageLimit")
 DisableStatLimitCheckbox = NodePath("ScrollContainer/VBoxContainer/DisableStatLimit")
 ShowMoreInfoCheckbox = NodePath("ScrollContainer/VBoxContainer/ShowMoreInfo")
@@ -579,6 +581,15 @@ size_flags_vertical = 0
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 20
 text = "Short"
+
+[node name="ShowFPS" type="CheckBox" parent="Main/Settings/ScrollContainer/VBoxContainer" unique_id=1098298253]
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "Shows an FPS counter next to the watermark"
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 20
+theme_override_colors/checkbox_unchecked_color = Color(0.3779188, 0.37791887, 0.37791884, 1)
+text = "Show FPS"
 
 [node name="DisableDamageLimit" type="CheckBox" parent="Main/Settings/ScrollContainer/VBoxContainer" unique_id=1436946514]
 layout_mode = 2
@@ -1347,6 +1358,13 @@ layout_mode = 2
 theme_override_fonts/font = ExtResource("2_ekxnf")
 theme_override_font_sizes/font_size = 30
 text = "Animation Viewer"
+horizontal_alignment = 1
+
+[node name="Note" type="Label" parent="Editor/SettingsTabs/Tools/Animation Viewer/VBoxContainer" unique_id=807930305]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ekxnf")
+theme_override_font_sizes/font_size = 18
+text = "Note: Animation previews are drawn on the top layer"
 horizontal_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Editor/SettingsTabs/Tools/Animation Viewer/VBoxContainer" unique_id=733397580]

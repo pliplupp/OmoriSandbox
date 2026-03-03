@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using OmoriSandbox.Animation;
 using FileAccess = Godot.FileAccess;
 
 namespace OmoriSandbox.Modding;
@@ -59,17 +60,19 @@ internal partial class ModManager : Node
 	{
 		GD.Print("Beginning mod loading...");
 		int processed = 0;
+		int total = 0;
 		Stopwatch sw = Stopwatch.StartNew();
 
 		foreach (string dirName in DirAccess.GetDirectoriesAt("user://mods"))
 		{
 			if (LoadMod(dirName))
 				processed++;
+			total++;
 		}
 
 		sw.Stop();
-		GD.Print($"Loaded {processed} mods in {sw.ElapsedMilliseconds}ms");
-		MainMenuManager.Instance.UpdateModsLoaded(processed);
+		GD.Print($"Loaded {processed}/{total} mods in {sw.ElapsedMilliseconds}ms");
+		MainMenuManager.Instance.UpdateModsLoaded(processed, total);
 	}
 
 	private bool LoadMod(string dirName)
@@ -105,25 +108,16 @@ internal partial class ModManager : Node
 
 		foreach (string modDir in DirAccess.GetDirectoriesAt("user://mods/" + dirName))
 		{
-			bool success = true;
-			switch (modDir.ToLower())
+			bool success = modDir.ToLower() switch
 			{
-				case "actors":
-					success = LoadActors(dirName);
-					break;
-				case "bgm":
-					success = LoadBGM(dirName);
-					break;
-				case "sfx":
-					success = LoadSFX(dirName);
-					break;
-				case "battlebacks":
-					success = LoadBattlebacks(dirName);
-					break;
-				case "enemies":
-					success = LoadEnemies(dirName);
-					break;
-			}
+				"actors" => LoadActors(dirName),
+				"bgm" => LoadBGM(dirName),
+				"sfx" => LoadSFX(dirName),
+				"battlebacks" => LoadBattlebacks(dirName),
+				"enemies" => LoadEnemies(dirName),
+				"animations" => LoadAnimations(dirName),
+				_ => true
+			};
 			if (!success)
 				return false;
 		}
@@ -180,13 +174,13 @@ internal partial class ModManager : Node
 			string json = files.FirstOrDefault(x => x.EndsWith(".json"));
 			if (json == null)
 			{
-				GD.PushWarning($"Missing json file at {path}/{actor}, skipping!");
+				GD.PushWarning($"{root}: Missing json file at {path}/{actor}, skipping!");
 				return false;
 			}
 			FileAccess access = FileAccess.Open($"{path}/{actor}/{json}", FileAccess.ModeFlags.Read);
 			if (access == null)
 			{
-				GD.PushError($"Failed to open file {path}/{actor}/{json}");
+				GD.PushError($"{root}: Failed to open file {path}/{actor}/{json}");
 				return false;
 			}
 			try
@@ -196,7 +190,7 @@ internal partial class ModManager : Node
 			}
 			catch
 			{
-				GD.PushError($"Failed to read actor json for {actor} from mod {root}");
+				GD.PushError($"{root}: Failed to read actor json for {actor} from mod {root}");
 				return false;
 			}
 		}
@@ -242,13 +236,13 @@ internal partial class ModManager : Node
 			string json = files.FirstOrDefault(x => x.EndsWith(".json"));
 			if (json == null)
 			{
-				GD.PushWarning($"Missing json file at {path}/{enemy}, skipping!");
+				GD.PushWarning($"{root}: Missing json file at {path}/{enemy}, skipping!");
 				return false;
 			}
 			FileAccess access = FileAccess.Open($"{path}/{enemy}/{json}", FileAccess.ModeFlags.Read);
 			if (access == null)
 			{
-				GD.PushError($"Failed to open file {path}/{enemy}/{json}");
+				GD.PushError($"{root}: Failed to open file {path}/{enemy}/{json}");
 				return false;
 			}
 			try
@@ -258,7 +252,7 @@ internal partial class ModManager : Node
 			}
 			catch (Exception e)
 			{
-				GD.PushError($"Failed to read enemy json for {enemy} from mod {root}");
+				GD.PushError($"{root}: Failed to read enemy json for {enemy} from mod {root}");
 				GD.PushError(e);
 				return false;
 			}
@@ -307,7 +301,7 @@ internal partial class ModManager : Node
 			{
 				if (!AudioManager.Instance.LoadCustomBGM($"{path}/{file}"))
 				{
-					GD.PrintErr("Failed to load custom BGM " + file);
+					GD.PrintErr($"{root}: Failed to load custom BGM " + file);
 					return false;
 				}
 			}
@@ -325,7 +319,7 @@ internal partial class ModManager : Node
 			{
 				if (!AudioManager.Instance.LoadCustomBGM($"{path}/{file}"))
 				{
-					GD.PrintErr("Failed to load custom SFX " + file);
+					GD.PrintErr($"{root}: Failed to load custom SFX " + file);
 					return false;
 				}
 			}
@@ -341,11 +335,21 @@ internal partial class ModManager : Node
 			if (file.EndsWith(".png")) {
 				if (!Battlebacks.TryAdd(file.GetBaseName(), ImageTexture.CreateFromImage(Image.LoadFromFile($"{path}/{file}"))))
 				{
-					GD.PrintErr("Failed to load custom battleback " + file);
+					GD.PrintErr($"{root}: Failed to load custom battleback " + file);
 					return false;
 				}
 			}
 		}
+		return true;
+	}
+
+	private bool LoadAnimations(string root)
+	{
+		string path = "user://mods/" + root + "/animations";
+		if (FileAccess.FileExists(path + "/Animations.json"))
+			AnimationManager.Instance.LoadModded(root);
+		if (FileAccess.FileExists(path + "/Animations.jsond"))
+			AnimationManager.Instance.LoadDeltaPatch(root);
 		return true;
 	}
 }

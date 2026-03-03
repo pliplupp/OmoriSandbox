@@ -26,7 +26,7 @@ namespace OmoriSandbox;
  - Humphrey - in testing
  - Other Sunny skills - in progress
  - Update wiki
- - Add modded animation support
+ - Add modded animation support - done
  - Console exclusive stats + mechanics - in testing
  - Add quit button - done
  - Allow damage to be overriden at various points of the calculation - done
@@ -61,6 +61,8 @@ namespace OmoriSandbox;
 
 internal partial class GameManager : Node
 {
+	public const string Version = "OmoriSandbox v1.0.0 (dev build)";
+	
 	[Export] private PackedScene BattlecardUI;
 	[Export] private PackedScene EnemyNode;
 	[Export] private TextureRect BattlebackParent;
@@ -75,11 +77,7 @@ internal partial class GameManager : Node
 
 	public override void _PhysicsProcess(double delta)
 	{
-#if DEBUG
-		FPSLabel.Text = $"{Engine.GetFramesPerSecond()} : {OS.GetStaticMemoryUsage() / 1000000}";
-#else
-		FPSLabel.Text = $"{Engine.GetFramesPerSecond()}";
-#endif
+		FPSLabel.Text = $"{(SettingsMenuManager.Instance.ShowFPS ? Engine.GetFramesPerSecond() : "")} {Version}";
 
 		DiscordManager.Tick();
 	}
@@ -87,6 +85,8 @@ internal partial class GameManager : Node
 	public override void _Ready()
 	{
 		Instance = this;
+		
+		GD.Print("Version: " + Version);
 
 		DiscordManager = new();
 

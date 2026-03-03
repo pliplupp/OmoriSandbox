@@ -11,6 +11,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using OmoriSandbox.Extensions;
 
 namespace OmoriSandbox;
 
@@ -41,7 +42,6 @@ public partial class BattleManager : Node
 	private List<Node2D> DyingEnemies = [];
 	private Dictionary<string, int> Items = [];
 	private BattleAction SelectedAction;
-	private HashSet<Vector2> DamageNumbers = [];
 	/// <summary>
 	/// The amount of Energy the party currently has.
 	/// </summary>
@@ -1123,7 +1123,10 @@ public partial class BattleManager : Node
 	{
 		Tween tween = CreateTween();
 		tween.TweenInterval(0.75f);
-		foreach (Node2D enemy in DyingEnemies)
+		// we need to call a standalone tween property here to make the above delay work
+		// otherwise, all the falling tweens will run parallel to the interval, essentially defeating the purpose
+		tween.TweenProperty(DyingEnemies[0], "position", DyingEnemies[0].Position + new Vector2(0, 400f), 0.50f);
+		foreach (Node2D enemy in DyingEnemies.Skip(1))
 		{
 			tween.Parallel().TweenProperty(enemy, "position", enemy.Position + new Vector2(0, 400f), 0.50f);
 		}
@@ -1151,35 +1154,55 @@ public partial class BattleManager : Node
 				if (x.Actor.CurrentState != "toast")
 					x.Actor.SetState("victory", true);
 			});
-			AudioManager.Instance.PlayBGM("xx_victory");
-			BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was victorious!");
 			if (GameType is GameModeType.BossRush)
 			{
+				string previousBGM = Stages[CurrentStage].BGM;
+				float currentPosition = AudioManager.Instance.GetBGMPosition();
+				AudioManager.Instance.PlayBGM("xx_victory");
+				BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was victorious!");
 				CurrentStage++;
 				if (CurrentStage < Stages.Count)
 				{
 					await Task.Delay(3000);
-					await AnimationManager.Instance.WaitForTintScreen(Colors.Black, 1f);
+					await AnimationManager.Instance.WaitForTintScreen(Colors.Black, 0.5f);
 					SummonEnemiesForStage(Stages[CurrentStage].Enemies);
-					AudioManager.Instance.PlayBGM(Stages[CurrentStage].BGM, 1f, (float)Stages[CurrentStage].BGMPitch);
-					AudioManager.Instance.SetBGMLoopOffset(Stages[CurrentStage].BGMLoopPoint);
 					GameManager.Instance.SetBattleback(Stages[CurrentStage].Battleback);
 					BattleLogManager.Instance.ClearBattleLog();
 					MenuManager.Instance.ClearLastSelected();
+					await Task.Delay(1000);
 					CurrentParty.ForEach(x =>
 					{
 						x.Actor.HasUsedPlotArmor = false;
-						x.Actor.RemoveAllStatModifiers();
-						x.Actor.SetState("neutral", true);
-						if (x.Actor.CurrentHP == 0)
+						if (Stages[CurrentStage].HealParty)
+						{
+							x.Actor.CurrentHP = x.Actor.CurrentStats.MaxHP;
+							x.Actor.CurrentJuice = x.Actor.CurrentStats.MaxJuice;
+						}
+						else if (x.Actor.CurrentHP == 0)
+						{
 							x.Actor.CurrentHP = 1;
+							x.Actor.SetState("neutral", true);
+						}
+						if (!Stages[CurrentStage].KeepEmotion)
+							x.Actor.SetState("neutral", true);
+						if (!Stages[CurrentStage].KeepStatusEffects)
+							x.Actor.RemoveAllStatModifiers();
 					});
-					await Task.Delay(2000);
-					await AnimationManager.Instance.WaitForTintScreen(Colors.Transparent, 1f);
+					AudioManager.Instance.PlayBGM(Stages[CurrentStage].BGM, 0.05f, (float)Stages[CurrentStage].BGMPitch);
+					if (previousBGM == Stages[CurrentStage].BGM)
+						AudioManager.Instance.SeekBGM(currentPosition);
+					AudioManager.Instance.SetBGMLoopOffset(Stages[CurrentStage].BGMLoopPoint);
+					AudioManager.Instance.FadeBGMTo(1f, 0.5f);
+					await AnimationManager.Instance.WaitForTintScreen(ColorsExtension.TransparentBlack, 0.5f);
 					CallDeferred(MethodName.PreBattle);
 					return;
 				}
-			} 
+			}
+			else
+			{
+				AudioManager.Instance.PlayBGM("xx_victory");
+				BattleLogManager.Instance.ClearAndShowMessage(CurrentParty[0].Actor.Name.ToUpper() + "'s party was victorious!");
+			}
 			
 			MenuButtonContainer.Visible = true;
 			return;
@@ -1658,19 +1681,12 @@ public partial class BattleManager : Node
 		if (DamageNumbersDisabled)
 			return;
 		
-		DamageNumber dmg = new(damage, type, critical);
-		while (DamageNumbers.Contains(position))
-		{
-			position.Y += 40;
-		}
-		dmg.Position = position;
+		DamageNumber dmg = new(damage, position, type, critical);
 		AddChild(dmg);
-		DamageNumbers.Add(position);
 
 		GetTree().CreateTimer(1.5f).Timeout += () =>
 		{
 			dmg.Despawn();
-			DamageNumbers.Remove(position);
 		};
 	}
 	

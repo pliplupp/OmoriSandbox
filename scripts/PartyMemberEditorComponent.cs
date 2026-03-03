@@ -132,7 +132,9 @@ internal partial class PartyMemberEditorComponent : Control
 		PartyMember member = Database.CreatePartyMember(who);
 
 		string attackSkill;
-		if (member.IsRealWorld)
+		if (member is SunnyAlt)
+			attackSkill = "SRWAltAttack";
+		else if (member.IsRealWorld)
 			attackSkill = member.Name[0] + "RWAttack";
 		else
 			attackSkill = member.Name[0] + "Attack";

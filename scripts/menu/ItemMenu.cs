@@ -101,6 +101,7 @@ internal partial class ItemMenu : Menu
 			return;
 		}
 
+		int old = CursorIndex;
 		int x = CursorIndex % 2;
 		int y = CursorIndex / 2;
 		x = (x + direction.X + GridSize.X) % GridSize.X;
@@ -108,9 +109,12 @@ internal partial class ItemMenu : Menu
 		int newIndex = y * GridSize.X + x;
 		newIndex = Mathf.Min(newIndex, DisplayedItems.Count - 1);
 		CursorIndex = newIndex;
-		UpdateCursor();
-		ShowItemInfo();
-		AudioManager.Instance.PlaySFX("SYS_move");
+		if (CursorIndex != old)
+		{
+			UpdateCursor();
+			ShowItemInfo();
+			AudioManager.Instance.PlaySFX("SYS_move");
+		}
 	}
 
 	private void ShowItemInfo()
