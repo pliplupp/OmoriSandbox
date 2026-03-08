@@ -43,7 +43,7 @@ internal partial class PartyMemberEditorComponent : Control
 
 	public int ActorPosition { get; private set; }
 
-	private readonly string[] States = ["neutral", "happy", "sad", "angry", "ecstatic", "depressed", "furious", "manic", "miserable", "furious", "manic", "afraid", "stressed", "hurt", "toast", "victory"];
+	private readonly string[] States = ["neutral", "happy", "sad", "angry", "ecstatic", "depressed", "enraged", "manic", "miserable", "furious", "manic", "afraid", "stressed", "hurt", "toast", "victory"];
 
 	public override void _Ready()
 	{
